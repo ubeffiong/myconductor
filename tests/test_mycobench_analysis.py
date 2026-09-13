@@ -389,6 +389,67 @@ class VariantEffectTests(unittest.TestCase):
         self.assertTrue(any("lineage" in w for w in effect.warnings))
 
 
+class UntypedLineageTests(unittest.TestCase):
+    """An untyped lineage is unknown, never "one lineage".
+
+    The CRyPTIC reuse table has no lineage column, so every isolate loaded from
+    it has ``lineage=None``. Folding those into a single "unknown" bucket gives
+    an effective diversity of exactly 1.0 — identical to carriers genuinely
+    confined to one lineage — and every variant in the scan then carries a
+    warning that its effect "may be lineage-specific rather than causal". That
+    is an absence of evidence reported as evidence of restriction.
+    """
+
+    def setUp(self):
+        self.index = DeterminantIndex(
+            by_drug_label={"rifampicin": {"rpoB_S450L"}})
+
+    def _panel(self, n=12):
+        panel = mic.DrugPanel("rifampicin")
+        for i in range(n):
+            panel.add(f"c{i}", "8.0")
+            panel.add(f"n{i}", "0.5")
+        return panel
+
+    def _effect(self, lineages):
+        isolates = ([Isolate(f"c{i}", frozenset({"V_1"}), lineage=lineages(i))
+                     for i in range(12)]
+                    + [Isolate(f"n{i}", frozenset(), lineage=lineages(i))
+                       for i in range(12)])
+        stratification = stratify("V_1", "rifampicin", isolates, self.index)
+        return stratification, effects.variant_effect(stratification,
+                                                      self._panel())
+
+    def test_untyped_carriers_give_no_diversity_number(self):
+        stratification, effect = self._effect(lambda i: None)
+        self.assertIsNone(stratification.lineage_diversity())
+        self.assertIsNone(effect.lineage_diversity)
+
+    def test_untyped_carriers_are_reported_as_unknown_not_restricted(self):
+        _stratification, effect = self._effect(lambda i: None)
+        self.assertTrue(any("NOT assessed" in w for w in effect.warnings))
+        self.assertFalse(any("lineage-specific" in w for w in effect.warnings))
+
+    def test_genuinely_single_lineage_carriers_are_still_warned(self):
+        # The real restriction must keep firing; this is the case the warning
+        # was written for.
+        _stratification, effect = self._effect(lambda i: "l2")
+        self.assertEqual(effect.lineage_diversity, 1.0)
+        self.assertTrue(any("lineage-specific" in w for w in effect.warnings))
+
+    def test_a_diverse_cohort_is_not_warned_about_lineage(self):
+        _stratification, effect = self._effect(lambda i: ("l1", "l2", "l3",
+                                                          "l4")[i % 4])
+        self.assertGreater(effect.lineage_diversity, 1.5)
+        self.assertFalse(any("lineage" in w for w in effect.warnings))
+
+    def test_partially_typed_cohorts_are_measured_on_what_is_known(self):
+        stratification, effect = self._effect(
+            lambda i: ("l1", "l2", None, None)[i % 4])
+        self.assertIsNotNone(effect.lineage_diversity)
+        self.assertAlmostEqual(stratification.lineage_typed_fraction(), 0.5)
+
+
 class PermutationResolutionTests(unittest.TestCase):
     """The permutation statistic must be the effect size, not a median.
 

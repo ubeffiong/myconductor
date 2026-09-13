@@ -342,6 +342,48 @@ class LoadGenotypesTests(unittest.TestCase):
         path = genotypes.fetch_vcf("../reproducibility/a.vcf.gz", self.cache)
         self.assertTrue(path.is_file())
 
+    def test_prefetch_downloads_nothing_when_the_cache_is_warm(self):
+        self._cache("reproducibility/a.vcf.gz",
+                    "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n")
+        fetched = genotypes.prefetch_vcfs(["../reproducibility/a.vcf.gz"],
+                                          self.cache, jobs=4, progress_every=0)
+        self.assertEqual(fetched, 0)
+
+    def test_concurrent_load_matches_the_serial_one(self):
+        """``jobs`` changes the waiting, never the result."""
+        for name in ("a", "b"):
+            self._cache(f"reproducibility/{name}.vcf.gz",
+                        "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n")
+        rows = [{"ENA_RUN": f"ERR{i}", "VCF": f"../reproducibility/{n}.vcf.gz",
+                 "REGENOTYPED_VCF": "", "UNIQUEID": "site.02.subj.0001"}
+                for i, n in enumerate(("a", "b"), start=1)]
+        serial = genotypes.load_genotypes(list(rows), self.index, self.cache,
+                                          progress_every=0, jobs=1)
+        parallel = genotypes.load_genotypes(list(rows), self.index, self.cache,
+                                            progress_every=0, jobs=4)
+        self.assertEqual(serial.n_loaded, parallel.n_loaded)
+        self.assertEqual(serial.n_matched, parallel.n_matched)
+        self.assertEqual(serial.carriers_per_variant,
+                         parallel.carriers_per_variant)
+
+    def test_a_row_without_a_vcf_path_is_recorded_not_counted(self):
+        rows = [{"ENA_RUN": "ERR1", "VCF": "", "REGENOTYPED_VCF": ""}]
+        load = genotypes.load_genotypes(rows, self.index, self.cache,
+                                        progress_every=0)
+        self.assertEqual(load.n_requested, 0)
+        self.assertTrue(any("no VCF path" in f for f in load.failures))
+
+    def test_limit_counts_only_rows_that_have_a_vcf(self):
+        self._cache("reproducibility/a.vcf.gz",
+                    "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n")
+        rows = [{"ENA_RUN": "ERR0", "VCF": "", "REGENOTYPED_VCF": ""},
+                {"ENA_RUN": "ERR1", "VCF": "../reproducibility/a.vcf.gz",
+                 "REGENOTYPED_VCF": "", "UNIQUEID": "site.02.subj.0001"}]
+        load = genotypes.load_genotypes(rows, self.index, self.cache,
+                                        limit=1, progress_every=0)
+        self.assertEqual(load.n_requested, 1)
+        self.assertEqual(load.n_loaded, 1)
+
     def test_loads_isolates_and_keys_them_for_the_phenotype_table(self):
         self._cache("reproducibility/a.vcf.gz",
                     "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n")

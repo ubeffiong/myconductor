@@ -366,6 +366,7 @@ def _run_analyse(args) -> int:
         drugs=tuple(args.drug) if args.drug else None,
         cached_only=args.cached_only, metadata=Path(args.metadata) if args.metadata else None,
         partition=args.partition, independent_clusters=args.independent_clusters,
+        jobs=args.jobs, sample_seed=args.sample_seed,
     )
     print(f"[analyse] catalogue  {inputs.catalogue}")
     print(f"[analyse] phenotypes {inputs.phenotypes}")
@@ -535,6 +536,13 @@ def build_parser() -> argparse.ArgumentParser:
     an.add_argument("--drug", action="append",
                     help="Restrict to these drugs; repeat as needed.")
     an.add_argument("--cached-only", action="store_true", help="Never download missing VCFs.")
+    an.add_argument("--sample-seed", type=int, default=None, metavar="S",
+                    help="Draw --limit isolates at random with this seed "
+                         "instead of taking the first N, which come from one "
+                         "or two sites and leave the confounding checks inert.")
+    an.add_argument("--jobs", type=int, default=1, metavar="N",
+                    help="Download this many VCFs concurrently before parsing "
+                         "(parsing stays serial). Each is ~20 MB.")
     an.add_argument("--metadata", help="TSV with isolate_id, lineage, site_id, patient_id, cluster_id, partition.")
     an.add_argument("--partition", choices=("development", "evaluation"))
     an.add_argument("--independent-clusters", action="store_true",

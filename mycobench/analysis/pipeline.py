@@ -70,10 +70,14 @@ class AnalysisInputs:
     metadata: Optional[Path] = None
     partition: Optional[str] = None
     independent_clusters: bool = False
+    jobs: int = 1
+    sample_seed: Optional[int] = None
 
     def validate(self) -> None:
         if self.limit is not None and self.limit <= 0 or self.min_carriers <= 0:
             raise AnalysisError("limit and min_carriers must be positive")
+        if self.jobs < 1:
+            raise AnalysisError("jobs must be at least 1")
         if (self.partition or self.independent_clusters) and not self.metadata:
             raise AnalysisError("partition/independent-clusters requires metadata")
         for label, path in (("catalogue", self.catalogue),
@@ -147,7 +151,9 @@ class AnalysisResult:
                                  else "yes" if effect.survives_fdr else "no"),
                 "n_carriers": effect.n_carriers,
                 "n_informative_strata": effect.n_informative_strata,
-                "lineage_diversity": f"{effect.lineage_diversity:.2f}",
+                # Empty, never "1.00", when lineage was never typed.
+                "lineage_diversity": ("" if effect.lineage_diversity is None
+                                      else f"{effect.lineage_diversity:.2f}"),
                 "top_cooccurrence": top[0] if top else "",
                 "top_cooccurrence_fraction": (f"{top[1]:.4f}" if top else ""),
                 "warnings": " | ".join(effect.warnings),
@@ -243,7 +249,9 @@ def run(inputs: AnalysisInputs) -> AnalysisResult:
 
     rows = _read_reuse_rows(inputs.reuse_table)
     result.load = load_genotypes(rows, coordinate_index, inputs.cache_dir,
-                                 limit=inputs.limit, **({"cached_only": True} if inputs.cached_only else {}))
+                                 limit=inputs.limit, jobs=inputs.jobs,
+                                 sample_seed=inputs.sample_seed,
+                                 **({"cached_only": True} if inputs.cached_only else {}))
     if not result.load.isolates:
         raise AnalysisError(
             "no isolate was genotyped; nothing can be analysed. Check the "

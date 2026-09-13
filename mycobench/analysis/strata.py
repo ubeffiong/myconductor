@@ -166,14 +166,41 @@ class Stratification:
         """
         return self.n_carriers > 0 and self.n_informative == 0
 
-    def lineage_diversity(self) -> float:
-        """Effective number of lineages among carriers in informative strata."""
+    def lineage_diversity(self) -> Optional[float]:
+        """Effective number of lineages among carriers, or ``None`` if unknown.
+
+        ``None`` when no carrier has a recorded lineage, and it matters that
+        this is not a number. Folding unrecorded lineages into one "unknown"
+        bucket returns an effective count of exactly 1.0, which is
+        indistinguishable from carriers genuinely confined to a single lineage
+        — so a caller thresholding on it would report "these carriers are
+        lineage-restricted, the effect may not be causal" about a cohort whose
+        lineages were simply never typed. The CRyPTIC reuse table carries no
+        lineage column at all, so that is the common case, not a corner one.
+
+        Isolates without a lineage are excluded from the count rather than
+        grouped, so a partially typed cohort is measured on what is known.
+        """
         counts: dict[str, int] = {}
+        untyped = 0
         for stratum in self.informative_strata:
             for isolate in stratum.carriers:
-                key = isolate.lineage or "unknown"
-                counts[key] = counts.get(key, 0) + 1
+                if not isolate.lineage:
+                    untyped += 1
+                    continue
+                counts[isolate.lineage] = counts.get(isolate.lineage, 0) + 1
+        if not counts:
+            return None
         return stats.inverse_simpson(list(counts.values()))
+
+    def lineage_typed_fraction(self) -> float:
+        """Share of carriers in informative strata with a recorded lineage."""
+        typed = total = 0
+        for stratum in self.informative_strata:
+            for isolate in stratum.carriers:
+                total += 1
+                typed += bool(isolate.lineage)
+        return typed / total if total else 0.0
 
     def describe(self) -> str:
         if self.fully_confounded:

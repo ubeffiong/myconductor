@@ -3,8 +3,21 @@
 The reuse table pairs an isolate with its MICs and with a *path* to its VCF; it
 does not carry variant calls. Without those calls there is nothing to stratify,
 so this module is what makes the effect-size analysis runnable rather than
-theoretical. Measured on the real release, each masked VCF is about 25 KB, so
-the whole compendium is roughly 0.3 GB — small enough to cache locally.
+theoretical.
+
+These files are large, and planning around a wrong figure wastes a lot of time
+-----------------------------------------------------------------------------
+The release's re-genotyped VCFs are **~20 MB compressed and ~178 MB
+decompressed each**, about 1.27 million records, because every callable site in
+the genome is present including the ``0/0`` reference calls. Measured, not
+assumed. The full 12,287-isolate compendium is therefore roughly **248 GB**,
+not the fraction of a gigabyte a small-file assumption suggests, and caching
+all of it is an infrastructure decision rather than an incidental download.
+
+Those reference calls are the reason the files are worth their size: a
+catalogued position called ``0/0`` is positive evidence that the locus was
+examined and the variant was absent, which is what ``assessed_variants``
+carries and what lets a drug reach SUSCEPTIBLE instead of NOT_ASSESSED.
 
 Genotyping is restricted to catalogued positions, deliberately
 -------------------------------------------------------------
@@ -30,9 +43,11 @@ from __future__ import annotations
 
 import gzip
 import json
+import random
 import urllib.error
 import urllib.request
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
@@ -394,11 +409,53 @@ class GenotypeLoad:
         return "\n".join(lines)
 
 
+def prefetch_vcfs(paths: Sequence[str], cache_dir: str | Path, jobs: int = 4,
+                  progress_every: int = 50) -> int:
+    """Populate the cache concurrently. Returns how many were downloaded.
+
+    Fetching is network-bound and one file takes several seconds, so a serial
+    load spends most of its wall clock waiting. Parsing stays serial — it is
+    CPU-bound and threads would not help it — so this only moves the waiting.
+
+    Failures are **not** raised. A path that cannot be fetched here is simply
+    left out of the cache, and the serial pass that follows reports it as that
+    isolate's failure with the same message it would have produced anyway. That
+    keeps one transient FTP error from discarding a partial load of thousands.
+    """
+    cache_dir = Path(cache_dir)
+    missing = []
+    for path in paths:
+        try:
+            fetch_vcf(path, cache_dir, cached_only=True)
+        except GenotypeError:
+            missing.append(path)
+    if not missing:
+        return 0
+
+    print(f"[genotypes] fetching {len(missing)} VCF(s) with {jobs} worker(s)",
+          flush=True)
+    done = 0
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        futures = {pool.submit(fetch_vcf, path, cache_dir): path
+                   for path in missing}
+        for future in as_completed(futures):
+            done += 1
+            try:
+                future.result()
+            except GenotypeError:
+                pass  # reported by the serial pass, against its isolate
+            if progress_every and done % progress_every == 0:
+                print(f"[genotypes] fetched {done}/{len(missing)}", flush=True)
+    return done
+
+
 def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
                    cache_dir: str | Path,
                    limit: Optional[int] = None,
                    prefer_regenotyped: bool = True,
-                   progress_every: int = 250, cached_only: bool = False) -> GenotypeLoad:
+                   progress_every: int = 250, cached_only: bool = False,
+                   jobs: int = 1,
+                   sample_seed: Optional[int] = None) -> GenotypeLoad:
     """Genotype isolates from reuse-table rows.
 
     ``rows`` are dicts from the CRyPTIC reuse table, needing ``ENA_RUN`` and a
@@ -408,10 +465,21 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
 
     ``prefer_regenotyped`` uses the regenotyped VCF where present, which is the
     consortium's own reconciled call set.
+
+    ``jobs`` above one downloads the selected VCFs concurrently before parsing
+    any of them. It changes nothing about the result, only how long it waits.
+
+    ``sample_seed`` draws the ``limit`` isolates at random instead of taking
+    the first ones. The reuse table is ordered by site and subject, so a plain
+    prefix is drawn from one or two laboratories: every isolate then shares a
+    site, lineage diversity collapses, and the site and lineage confounding
+    checks silently have nothing to compare. Sampling is seeded so a run stays
+    reproducible.
     """
     result = GenotypeLoad()
-    for position, row in enumerate(rows, start=1):
-        if limit is not None and result.n_requested >= limit:
+    eligible: list[tuple[str, str, dict]] = []
+    for row in rows:
+        if limit is not None and sample_seed is None and len(eligible) >= limit:
             break
         run = (row.get("ENA_RUN") or "").strip()
         if not run or run.upper() == "NONE":
@@ -421,10 +489,24 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
         if not path:
             result.failures.append(f"{run}: no VCF path in the reuse table")
             continue
+        eligible.append((run, path, row))
 
+    if sample_seed is not None and limit is not None and len(eligible) > limit:
+        # Sort first: the draw must not depend on the order rows arrived in.
+        eligible.sort(key=lambda item: item[0])
+        eligible = random.Random(sample_seed).sample(eligible, limit)
+        print(f"[genotypes] sampled {limit} isolate(s) with seed {sample_seed}",
+              flush=True)
+    selected = eligible
+
+    if jobs > 1 and not cached_only and selected:
+        prefetch_vcfs([path for _run, path, _row in selected], cache_dir,
+                      jobs=jobs)
+
+    for run, path, row in selected:
         result.n_requested += 1
         try:
-            local = fetch_vcf(path, cache_dir, cached_only=True) if cached_only else fetch_vcf(path, cache_dir)
+            local = fetch_vcf(path, cache_dir, cached_only=cached_only)
             genotype = parse_vcf(local, index)
         except GenotypeError as exc:
             result.failures.append(str(exc))

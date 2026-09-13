@@ -80,7 +80,8 @@ class VariantEffect:
     survives_fdr: Optional[bool] = None
     n_carriers: int = 0
     n_informative_strata: int = 0
-    lineage_diversity: float = 0.0
+    #: None when no carrier has a recorded lineage: unknown, not 1.0.
+    lineage_diversity: Optional[float] = None
     strata: list[StratumEffect] = field(default_factory=list)
     cooccurrence: dict[str, float] = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
@@ -371,7 +372,15 @@ def variant_effect(stratification: Stratification, panel: mic.DrugPanel,
             f"co-occurs with the established determinant {top[0]} in "
             f"{top[1]:.0%} of carriers; the conditional estimate rests on the "
             f"minority of carriers that lack it")
-    if effect.lineage_diversity < 1.5 and effect.n_carriers >= min_carriers:
+    if effect.lineage_diversity is None:
+        # Not a diversity of 1.0. Saying "these carriers span one lineage"
+        # about isolates that were never typed would report an absence of
+        # evidence as evidence of restriction — the exact substitution this
+        # codebase exists to prevent.
+        effect.warnings.append(
+            "lineage is not recorded for any carrier, so lineage confounding "
+            "was NOT assessed; this is unknown, not absent")
+    elif effect.lineage_diversity < 1.5 and effect.n_carriers >= min_carriers:
         effect.warnings.append(
             f"carriers span an effective {effect.lineage_diversity:.1f} "
             f"lineage(s); the effect may be lineage-specific rather than causal")
