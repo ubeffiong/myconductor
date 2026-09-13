@@ -352,6 +352,49 @@ def _run_report(args) -> int:
     return 0
 
 
+# -- analyse --------------------------------------------------------------
+def _run_analyse(args) -> int:
+    from .analysis.pipeline import AnalysisError, AnalysisInputs, run, write_outputs
+
+    inputs = AnalysisInputs(
+        catalogue=Path(args.catalogue),
+        phenotypes=Path(args.phenotypes),
+        reuse_table=Path(args.reuse_table),
+        cache_dir=Path(args.cache_dir),
+        limit=args.limit,
+        min_carriers=args.min_carriers,
+        drugs=tuple(args.drug) if args.drug else None,
+    )
+    print(f"[analyse] catalogue  {inputs.catalogue}")
+    print(f"[analyse] phenotypes {inputs.phenotypes}")
+    print(f"[analyse] VCF cache  {inputs.cache_dir}")
+    if args.limit:
+        print(f"[analyse] limited to the first {args.limit} isolate(s)")
+    else:
+        print("[analyse] no --limit: every isolate in the reuse table will be "
+              "genotyped, which downloads ~0.3 GB of VCFs on a first run")
+
+    try:
+        result = run(inputs)
+    except AnalysisError as exc:
+        raise SystemExit(f"error: {exc}")
+
+    print()
+    print(result.summary())
+    if result.skipped:
+        print(f"\nskipped {len(result.skipped)} variant-drug pair(s); first:")
+        for line in result.skipped[:5]:
+            print(f"  - {line}")
+
+    for path in write_outputs(result, args.out_dir):
+        print(f"Wrote {path}")
+
+    print("\nNothing above is a resistance call. Effect sizes are conditional")
+    print("on resistance background and restricted to catalogued coordinates;")
+    print("no variant is promoted to a predictive call by this analysis.")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="mycobench",
@@ -460,6 +503,30 @@ def build_parser() -> argparse.ArgumentParser:
     rep.add_argument("--samples", help="Cohort TSV, for composition detail.")
     rep.add_argument("--out", default="results/mycobench_report.html")
     rep.set_defaults(func=_run_report)
+
+    an = sub.add_parser(
+        "analyse",
+        help="Background-conditional effect sizes for uncertain catalogue "
+             "variants, from CRyPTIC genotypes and MICs.")
+    an.add_argument("--catalogue",
+                    default="data/who/mtb_amr_catalogue.ingested.json",
+                    help="INGESTED catalogue JSON; the bundled illustrative "
+                         "file is refused.")
+    an.add_argument("--phenotypes",
+                    default="data/cryptic/cryptic_phenotypes.tsv")
+    an.add_argument("--reuse-table",
+                    default="data/cryptic/CRyPTIC_reuse_table_20240917.csv")
+    an.add_argument("--cache-dir", default="data/cryptic/vcf",
+                    help="Where per-isolate VCFs are cached (~25 KB each).")
+    an.add_argument("--out-dir", default="results/analysis")
+    an.add_argument("--limit", type=int,
+                    help="Genotype only the first N isolates; useful for a "
+                         "first run.")
+    an.add_argument("--min-carriers", type=int, default=5,
+                    help="Skip a variant carried by fewer isolates (default 5).")
+    an.add_argument("--drug", action="append",
+                    help="Restrict to these drugs; repeat as needed.")
+    an.set_defaults(func=_run_analyse)
 
     sub.add_parser("version", help="Print version.").set_defaults(
         func=lambda _a: (print(f"mycobench {__version__}"), 0)[1])

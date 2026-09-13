@@ -152,6 +152,12 @@ class Consequence(str, Enum):
     UPSTREAM = "upstream"
     RRNA = "rrna"
     DELETION = "deletion"
+    #: Insertional inactivation, including mobile-element insertion. Kept
+    #: distinct from DELETION because the detection evidence differs, and
+    #: added because IS-element insertion into mmpR5 is a leading route to
+    #: bedaquiline resistance — a mechanism the model previously could not
+    #: represent at all.
+    INSERTION = "insertion"
     UNKNOWN = "unknown"
 
     @property
@@ -160,8 +166,14 @@ class Consequence(str, Enum):
 
     @property
     def is_truncating(self) -> bool:
+        """Does this consequence abolish the product's function?
+
+        Load-bearing for efflux regulators: loss of function in mmpR5 is a
+        materially stronger inference than a missense change of unknown
+        effect, and is reported as such.
+        """
         return self in (Consequence.NONSENSE, Consequence.FRAMESHIFT,
-                        Consequence.DELETION)
+                        Consequence.DELETION, Consequence.INSERTION)
 
 
 @dataclass(frozen=True)

@@ -246,11 +246,39 @@ def _parse_vcf(text: str, sample: Optional[str] = None) -> AdapterResult:
         chrom, pos_s, _id, ref, alt_field, qual_s, filt, info = f[:8]
         meta = _info_dict(info)
 
-        # Structural / symbolic records: reject rather than coerce.
-        if "SVTYPE" in meta or "END" in meta and not alt_field.strip():
-            result.rejected.append(RejectedRecord(
-                line, "structural variant record; not representable by the "
-                      "current variant model"))
+        # Structural records. Previously rejected wholesale, which meant the
+        # pipeline could not see insertional inactivation of mmpR5 — a leading
+        # route to bedaquiline resistance. A gene-disrupting SV in a named
+        # gene is now represented as a truncating change, because that is what
+        # it is; only records with no interpretable gene are still refused.
+        svtype = meta.get("SVTYPE", "").upper()
+        if svtype or ("END" in meta and not alt_field.strip()):
+            gene_name = meta.get("GENE", "")
+            disrupting = svtype in ("DEL", "INS", "DUP", "INV", "BND", "CNV")
+            if not gene_name or not disrupting:
+                result.rejected.append(RejectedRecord(
+                    line,
+                    f"structural record (SVTYPE={svtype or 'absent'}) with no "
+                    f"interpretable gene; not representable"))
+                continue
+            consequence = (Consequence.INSERTION if svtype in ("INS", "DUP")
+                           else Consequence.DELETION)
+            label = meta.get("AACHANGE") or f"{svtype.lower()}_disruption"
+            identity = VariantIdentity(
+                gene=gene_name, assembly=result.assembly, chrom=chrom,
+                pos=_opt_int(pos_s), hgvs_p=label, consequence=consequence)
+            result.variants.append(Variant(
+                identity=identity,
+                depth=_opt_int(meta.get("DP")),
+                region=_region_of(meta.get("REGION"), label),
+                filters=tuple(f for f in filt.split(";") if f) if filt else (),
+                qual=_opt_float(qual_s),
+                platform=result.platform))
+            result.warnings.append(
+                f"{gene_name}: structural record SVTYPE={svtype} represented as "
+                f"a gene-disrupting {consequence.value}. Breakpoint-level "
+                f"evidence is NOT assessed, so the disruption is asserted from "
+                f"the caller's own claim.")
             continue
 
         # Sample column selection for multi-sample files.

@@ -52,6 +52,15 @@ _RULE_BASED = (
     "rule-based inference, not graded catalogue evidence and not a validated "
     "predictive model"
 )
+_LOF_NOT_GRADED = (
+    "loss of function is the strongest inference this lane can make, but it is "
+    "still not a graded catalogue entry; an ingested WHO catalogue grades many "
+    "regulator variants directly and should be preferred where it does"
+)
+_MISSENSE_WEAKER = (
+    "a missense change in a regulator carries materially weaker evidence than "
+    "loss of function; prioritise it for validation rather than acting on it"
+)
 
 
 class EffluxRegulatoryModule(VariantModule):
@@ -75,12 +84,39 @@ class EffluxRegulatoryModule(VariantModule):
 
         evidence: list[DrugEvidence] = []
 
-        # Efflux regulator: loss of function de-represses the pump.
+        # Efflux regulator. Loss of function and missense are separated
+        # because the published evidence for them is not comparable: repeated,
+        # independent truncation of mmpR5/Rv0678 accounts for the large
+        # majority of described bedaquiline resistance, whereas a missense
+        # change there is a variant of unknown significance like any other.
+        # Treating both identically — as this lane previously did — discards
+        # the strongest signal available for the drug that matters most.
         drugs = self.profile.drugs_for_efflux_regulator(variant.gene)
         if drugs:
-            strength = ("loss-of-function" if variant.consequence.is_truncating
-                        else "missense")
+            truncating = variant.consequence.is_truncating
             for drug in drugs:
+                if truncating:
+                    limitations = (_NO_EXPRESSION_DATA, _RULE_BASED,
+                                   _LOF_NOT_GRADED)
+                    rationale = (
+                        f"Loss of function ({variant.consequence.value}) in "
+                        f"efflux regulator {variant.gene}: MmpS5-MmpL5 "
+                        f"de-repression would raise {drug} MIC, and repeated "
+                        f"independent truncation of this regulator is the "
+                        f"commonest described route to bedaquiline resistance. "
+                        f"Susceptibility withheld; resistance NOT asserted, "
+                        f"because this lane holds no graded evidence."
+                    )
+                else:
+                    limitations = (_NO_EXPRESSION_DATA, _RULE_BASED,
+                                   _MISSENSE_WEAKER)
+                    rationale = (
+                        f"Missense change in efflux regulator {variant.gene}: "
+                        f"de-repression is plausible but unquantified, and "
+                        f"carries materially weaker evidence than loss of "
+                        f"function. Susceptibility withheld pending "
+                        f"phenotypic testing."
+                    )
                 evidence.append(DrugEvidence(
                     drug=drug,
                     call=Call.INDETERMINATE,
@@ -89,13 +125,8 @@ class EffluxRegulatoryModule(VariantModule):
                     confidence=None,
                     variant=variant.identity,
                     engine=_ENGINE,
-                    limitations=(_NO_EXPRESSION_DATA, _RULE_BASED),
-                    rationale=(
-                        f"{strength} change in efflux regulator {variant.gene}: "
-                        f"MmpS5-MmpL5 de-repression is plausible and would raise "
-                        f"{drug} MIC. Not established — susceptibility withheld "
-                        f"pending phenotypic testing."
-                    ),
+                    limitations=limitations,
+                    rationale=rationale,
                 ))
 
         # Promoter / intergenic variant modulating target expression.
