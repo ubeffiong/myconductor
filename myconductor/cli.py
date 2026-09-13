@@ -41,11 +41,25 @@ def _engine_reports(args: argparse.Namespace) -> list:
         reports.append(MykrobeAdapter().parse(args.mykrobe))
     if getattr(args, "amrfinder", None):
         from .adapters.amrfinderplus import AMRFinderPlusAdapter
-        reports.append(AMRFinderPlusAdapter().parse(args.amrfinder))
+        report = AMRFinderPlusAdapter().parse(args.amrfinder)
+        if not args.amrfinder_sample:
+            raise ValueError("AMRFinder TSV requires --amrfinder-sample")
+        report.sample_id = args.amrfinder_sample
+        reports.append(report)
+    if getattr(args, "ntm_profiler", None):
+        from .adapters.ntm_profiler import NTMProfilerAdapter
+        reports.append(NTMProfilerAdapter().parse(args.ntm_profiler))
+    if getattr(args, "gnomonicus", None):
+        from .adapters.gnomonicus import GnomonicusAdapter
+        reports.append(GnomonicusAdapter(sample_id=args.gnomonicus_sample).parse(args.gnomonicus))
     return reports
 
 
 def _run_analyze(args: argparse.Namespace) -> int:
+    if bool(args.compare_catalogue) != bool(args.change_impact):
+        raise ValueError("catalogue replay requires both --compare-catalogue and --change-impact")
+    if args.case_store and not args.reviewer:
+        raise ValueError("--case-store requires --reviewer")
     if args.bam and not args.bed:
         raise ValueError("--bam requires --bed (the locus regions to assess)")
     if args.bed and not args.bam:
@@ -65,30 +79,69 @@ def _run_analyze(args: argparse.Namespace) -> int:
         local_validation_store = LocalValidationStore.load(
             args.local_validation_store)
 
+    from .core.context import SampleContext, InterpretationPolicy
+    from .catalogue.profile import load_profile
+    from .io.phenotypes import load_phenotypes
+    from .reporting.json_report import report_dict, atomic_json
+    context = SampleContext.from_dict(json.loads(Path(args.context).read_text(encoding="utf-8"))) if args.context else None
+    policy = InterpretationPolicy.from_dict(json.loads(Path(args.policy).read_text(encoding="utf-8"))) if args.policy else None
+    if bool(args.drug_loci) != bool(args.drugs):
+        raise ValueError("custom profiles require both --drug-loci and --drugs")
+    profile = load_profile(Path(args.drug_loci), Path(args.drugs)) if args.drug_loci else None
     conductor = Myconductor(
+        profile=profile, catalogue_path=args.catalogue, policy=policy,
         depth_floor=args.depth_floor,
         callable_fraction_floor=args.callable_floor,
         platform=args.platform,
         local_validation_store=local_validation_store,
         organism=args.organism,
     )
-    report = conductor.analyze(
-        args.input,
+    analysis_args = dict(
         mask=mask,
         mask_path=args.mask,
         sample=args.sample,
-        engine_reports=_engine_reports(args),
+        engine_reports=_engine_reports(args), context=context,
+        phenotypes=load_phenotypes(args.phenotypes) if args.phenotypes else (),
+        test_menu=json.loads(Path(args.test_menu).read_text(encoding="utf-8")) if args.test_menu else (),
+        follow_up_budget=args.follow_up_budget,
     )
+    report = conductor.analyze(args.input, **analysis_args)
+    if args.compare_catalogue:
+        from .federated.change_impact import compare_reports
+        replay = Myconductor(
+            profile=conductor.profile, catalogue_path=args.compare_catalogue, policy=policy,
+            depth_floor=args.depth_floor, callable_fraction_floor=args.callable_floor,
+            platform=args.platform, local_validation_store=local_validation_store,
+        ).analyze(args.input, **analysis_args)
+        impact_path = Path(args.change_impact)
+        before_path = impact_path.with_name(impact_path.stem + ".before.json")
+        after_path = impact_path.with_name(impact_path.stem + ".after.json")
+        before_data, after_data = report_dict(report), report_dict(replay)
+        atomic_json(before_path, before_data)
+        atomic_json(after_path, after_data)
+        impact = compare_reports(before_data, after_data)
+        impact["replay_reports"] = {"before": str(before_path), "after": str(after_path)}
+        atomic_json(impact_path, impact)
     print(render_text(report))
 
-    if not args.mask and not args.bam:
-        print("\n[note] no --mask or --bam supplied, so no drug can be "
-              "reported susceptible. This is intended: susceptibility "
-              "requires evidence that the loci were sequenced.",
-              file=sys.stderr)
+    if args.json:
+        atomic_json(args.json, report_dict(report))
+    if args.html:
+        from .reporting.html_report import render_html
+        Path(args.html).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.html).write_text(render_html(report), encoding="utf-8")
+    if args.case_store:
+        if not args.reviewer:
+            raise ValueError("--case-store requires --reviewer")
+        from .federated.case_review import CaseReviewStore
+        store = CaseReviewStore.load(args.case_store)
+        case_id = store.open(report_dict(report), args.reviewer)
+        store.save(args.case_store)
+        print(f"Case opened: {case_id}")
 
     if args.fhir:
-        Path(args.fhir).write_text(to_fhir_json(report))
+        Path(args.fhir).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.fhir).write_text(to_fhir_json(report), encoding="utf-8")
         print(f"\n[FHIR bundle written to {args.fhir}]")
     return 0
 
@@ -97,7 +150,7 @@ def _run_demo(args: argparse.Namespace) -> int:
     print(f"Myconductor demo — {_DEMO_INPUT.name} with {_DEMO_MASK.name}\n")
     print("The bundled input and catalogue are illustrative. This demonstrates "
           "the evidence flow, not a validated analysis.\n")
-    report = Myconductor(platform="illumina").analyze(
+    report = Myconductor(platform="illumina", demo_mode=True).analyze(
         _DEMO_INPUT, mask_path=_DEMO_MASK)
     print(render_text(report))
     return 0
@@ -209,6 +262,36 @@ def _run_governance_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_case_review(args):
+    from .federated.case_review import CaseReviewStore
+    store = CaseReviewStore.load(args.store)
+    if args.action == "list":
+        print(json.dumps(store.cases(), indent=2))
+        return 0
+    if not args.case_id or not args.reviewer or not args.rationale:
+        raise ValueError("case transitions require --case-id, --reviewer and --rationale")
+    if args.action == "attach":
+        from .reporting.json_report import load_report
+        if not args.report:
+            raise ValueError("attach requires --report")
+        store.attach(args.case_id, load_report(args.report), args.reviewer, args.rationale)
+    else:
+        store.transition(args.case_id, args.action, args.reviewer, args.rationale,
+                         args.evidence_id or (), args.resolution, args.reviewer_minutes)
+    store.save(args.store)
+    print(f"Case {args.case_id}: {args.action}")
+    return 0
+
+
+def _run_change_impact(args):
+    from .federated.change_impact import compare_reports
+    from .reporting.json_report import load_report, atomic_json
+    result = compare_reports(load_report(args.before), load_report(args.after))
+    atomic_json(args.out, result)
+    print(f"{len(result['changes'])} drug evidence change(s); wrote {args.out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="myconductor",
@@ -219,6 +302,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     a = sub.add_parser("analyze", help="Analyze variants (.vcf/.tsv/.json).")
     a.add_argument("input", help="Path to input variants.")
+    a.add_argument("--compare-catalogue", help="Replay identical inputs against this second catalogue.")
+    a.add_argument("--change-impact", help="Replay comparison JSON; also freezes before/after reports.")
     a.add_argument("--mask", metavar="PATH",
                    help="Callable-locus evidence (.tsv depth table or .bed "
                         "mask). Without it, no drug can be reported "
@@ -257,6 +342,22 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Mykrobe predict JSON to reconcile.")
     a.add_argument("--amrfinder", metavar="TSV",
                    help="AMRFinderPlus TSV to reconcile.")
+    a.add_argument("--context", help="Specimen/assay context JSON; IDs must match input.")
+    a.add_argument("--policy", help="Versioned, externally reviewed validation scopes JSON.")
+    a.add_argument("--catalogue", help="Explicit ingested catalogue JSON (default: illustrative).")
+    a.add_argument("--drug-loci", help="Custom organism drug-locus profile JSON.")
+    a.add_argument("--drugs", help="Custom organism drug definitions JSON.")
+    a.add_argument("--phenotypes", help="Matched laboratory phenotype observations JSON.")
+    a.add_argument("--test-menu", help="Local follow-up options, availability and costs JSON.")
+    a.add_argument("--follow-up-budget", type=float, help="Budget in the menu's single currency.")
+    a.add_argument("--json", help="Write versioned evidence/review JSON.")
+    a.add_argument("--html", help="Write an offline HTML review report.")
+    a.add_argument("--case-store", help="Open an auditable local review case.")
+    a.add_argument("--reviewer", help="Reviewer identity for opening a case.")
+    a.add_argument("--ntm-profiler", help="NTM-Profiler results JSON.")
+    a.add_argument("--gnomonicus", help="gnomonicus JSON output.")
+    a.add_argument("--gnomonicus-sample", help="Explicit sample binding for gnomonicus output.")
+    a.add_argument("--amrfinder-sample", help="Explicit sample binding for AMRFinder TSV.")
     a.set_defaults(func=_run_analyze)
 
     d = sub.add_parser("demo", help="Run the bundled illustrative demo.")
@@ -333,6 +434,23 @@ def build_parser() -> argparse.ArgumentParser:
                          "Repeat for each site.")
     gr.set_defaults(func=_run_governance_report)
 
+    cr = sub.add_parser("review-case", help="List or transition a local review case.")
+    cr.add_argument("--store", required=True)
+    cr.add_argument("--action", choices=("list", "attach", "in_review", "resolved", "reopened"), required=True)
+    cr.add_argument("--report", help="Frozen analysis report to attach.")
+    cr.add_argument("--case-id")
+    cr.add_argument("--reviewer")
+    cr.add_argument("--rationale")
+    cr.add_argument("--evidence-id", action="append")
+    cr.add_argument("--resolution")
+    cr.add_argument("--reviewer-minutes", type=float)
+    cr.set_defaults(func=_run_case_review)
+    ci = sub.add_parser("change-impact", help="Compare frozen reports for one input sample.")
+    ci.add_argument("--before", required=True)
+    ci.add_argument("--after", required=True)
+    ci.add_argument("--out", required=True)
+    ci.set_defaults(func=_run_change_impact)
+
     v = sub.add_parser("version", help="Print version.")
     v.set_defaults(func=lambda _a: (print(f"Myconductor {__version__}"), 0)[1])
 
@@ -344,7 +462,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.func(args)
-    except (ValueError, FileNotFoundError) as exc:
+    except (ValueError, OSError, TypeError, KeyError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
 

@@ -90,6 +90,13 @@ class VUSValidationRecord:
         default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     def __post_init__(self) -> None:
+        for name in ("variant_key", "variant_label", "gene", "drug", "isolate_id", "site_id"):
+            if not getattr(self, name).strip():
+                raise VUSFeedbackError(f"validation requires {name}")
+        if self.mic is not None:
+            import math
+            if not math.isfinite(self.mic) or self.mic <= 0:
+                raise VUSFeedbackError("MIC must be finite and positive")
         if not self.result.is_established:
             raise VUSFeedbackError(
                 f"a validation record must resolve to RESISTANT or "
@@ -227,9 +234,8 @@ class LocalValidationStore:
     def validated_labels(self) -> set[str]:
         """Every variant display label with at least one non-retracted record.
 
-        Wired into ``VUSWorkbench.known`` (which excludes by label, not
-        coordinate key) so a locally-resolved VUS drops out of the "needs
-        validation" ranking — it already has an answer here.
+        Historical lookup only. These labels do not remove a variant from the
+        uncertainty queue and never establish another isolate's phenotype.
         """
         out: set[str] = set()
         for (variant_key, drug), records in self._records.items():
@@ -260,8 +266,8 @@ class LocalValidationStore:
         }
 
     def save(self, path: str | Path) -> None:
-        Path(path).write_text(
-            json.dumps(self.to_json(), indent=2) + "\n", encoding="utf-8")
+        from ..reporting.json_report import atomic_json
+        atomic_json(path, self.to_json())
 
     @classmethod
     def from_json(cls, data: dict) -> "LocalValidationStore":
@@ -280,6 +286,23 @@ class LocalValidationStore:
                        prev_hash=e["prev_hash"], entry_hash=e["entry_hash"])
             for e in data.get("ledger", [])
         ]
+        ok, reason = store.ledger.verify()
+        if not ok:
+            raise VUSFeedbackError(f"validation ledger integrity failed: {reason}")
+        replay = cls()
+        for seq, entry in enumerate(store.ledger.entries):
+            if entry.seq != seq:
+                raise VUSFeedbackError("validation ledger sequence is not contiguous")
+            if entry.action == "validated":
+                replay.ingest(VUSValidationRecord.from_dict(entry.payload))
+            elif entry.action == "retracted":
+                replay.retract(**entry.payload)
+            else:
+                raise VUSFeedbackError(f"unknown ledger action: {entry.action}")
+        expected = replay.to_json()
+        actual = store.to_json()
+        if expected["records"] != actual["records"] or expected["retracted"] != actual["retracted"]:
+            raise VUSFeedbackError("validation records do not match the audit ledger")
         return store
 
     @classmethod

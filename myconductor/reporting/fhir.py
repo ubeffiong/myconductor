@@ -38,6 +38,7 @@ central rule.
 from __future__ import annotations
 
 import json
+import uuid
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -134,6 +135,11 @@ def _observation(index: int, r: DrugResult, report: AnalysisReport,
         ],
     }
 
+    for name, value in (("genomic-call", r.genomic_call), ("phenotypic-call", r.phenotypic_call)):
+        if value is not None:
+            obs["extension"].append({"url": f"{_EXT}/{name}", "valueCode": value.value})
+    obs["extension"].append({"url": f"{_EXT}/assay-status", "valueCode": r.assay_status})
+    obs["method"] = {"text": "Measured phenotype and genomic evidence reconciled"}
     if r.confidence is not None:
         obs["extension"].append(
             {"url": f"{_EXT}/confidence", "valueDecimal": r.confidence})
@@ -201,7 +207,9 @@ def to_fhir_bundle(report: AnalysisReport,
         for i, r in enumerate(report.drug_results)
     ]
 
-    organism = {"text": "Mycobacterium tuberculosis complex"}
+    organism = {"text": {"mtbc": "Mycobacterium tuberculosis complex",
+                          "mabscessus": "Mycobacterium abscessus complex"}.get(
+                              report.provenance.organism_profile, report.provenance.organism_profile)}
     if terminology.organism_snomed:
         organism["coding"] = [{
             "system": "http://snomed.info/sct",
@@ -222,14 +230,13 @@ def to_fhir_bundle(report: AnalysisReport,
                          f"(genotypic prediction)"},
         "specimen": [{"reference": f"Specimen/{specimen_id}"}],
         "result": [{"reference": f"Observation/{o['id']}"} for o in observations],
-        "conclusion": report.eligibility.summary,
         "extension": [
             {"url": f"{_EXT}/organism", "valueCodeableConcept": organism},
             {"url": f"{_EXT}/requires-clinical-review", "valueBoolean": True},
             {"url": f"{_EXT}/synthetic-demonstration",
              "valueBoolean": report.demo_mode},
         ],
-        "note": [{"text": n} for n in conformance_notes(report, terminology)],
+        "conclusion": report.eligibility.summary + " " + " ".join(conformance_notes(report, terminology)),
     }
 
     entries = [
@@ -286,6 +293,26 @@ def to_fhir_bundle(report: AnalysisReport,
             ),
         }})
         diagnostic_report["result"].append({"reference": "Observation/qc-1"})
+
+    # RFC 4122 UUIDs for fullUrl and reference, including arbitrary sample IDs.
+    identity_map = {}
+    for entry in entries:
+        resource = entry["resource"]
+        old_key = resource["resourceType"] + "/" + resource["id"]
+        ident = str(uuid.uuid5(uuid.NAMESPACE_URL, "myconductor:" + report.sample_id + ":" + old_key))
+        resource["id"] = ident
+        entry["fullUrl"] = "urn:uuid:" + ident
+        identity_map[old_key] = entry["fullUrl"]
+    def fix_references(node):
+        if isinstance(node, dict):
+            if "reference" in node and node["reference"] in identity_map:
+                node["reference"] = identity_map[node["reference"]]
+            for value in node.values():
+                fix_references(value)
+        elif isinstance(node, list):
+            for value in node:
+                fix_references(value)
+    fix_references(entries)
 
     return {
         "resourceType": "Bundle",

@@ -85,6 +85,9 @@ class Fixture:
                 if carries_candidate:
                     records += (f"NC_000962.3\t{CANDIDATE_POS}\t.\tA\tC\t60\t"
                                 f"PASS\t.\tGT\t1\n")
+                else:
+                    records += (f"NC_000962.3\t{CANDIDATE_POS}\t.\tA\tC\t60\t"
+                                f"PASS\t.\tGT\t0\n")
                 relative = f"reproducibility/{run}.vcf.gz"
                 destination = self.cache / relative
                 destination.parent.mkdir(parents=True, exist_ok=True)

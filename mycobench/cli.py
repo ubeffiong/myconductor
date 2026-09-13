@@ -364,6 +364,8 @@ def _run_analyse(args) -> int:
         limit=args.limit,
         min_carriers=args.min_carriers,
         drugs=tuple(args.drug) if args.drug else None,
+        cached_only=args.cached_only, metadata=Path(args.metadata) if args.metadata else None,
+        partition=args.partition, independent_clusters=args.independent_clusters,
     )
     print(f"[analyse] catalogue  {inputs.catalogue}")
     print(f"[analyse] phenotypes {inputs.phenotypes}")
@@ -411,6 +413,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version",
                         version=f"mycobench {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
+    from .workflow_evaluation import run as evaluate_workflow
+    evaluation = sub.add_parser("evaluate-workflow", help="Evaluate paired laboratory review against independent phenotypes.")
+    evaluation.add_argument("--input", required=True, help="Paired isolate-drug TSV or CSV.")
+    evaluation.add_argument("--out", required=True)
+    evaluation.add_argument("--html")
+    evaluation.set_defaults(func=evaluate_workflow)
 
     d = sub.add_parser("discover-cohort",
                        help="Find candidate runs at NCBI, confirming origin.")
@@ -526,6 +534,11 @@ def build_parser() -> argparse.ArgumentParser:
                     help="Skip a variant carried by fewer isolates (default 5).")
     an.add_argument("--drug", action="append",
                     help="Restrict to these drugs; repeat as needed.")
+    an.add_argument("--cached-only", action="store_true", help="Never download missing VCFs.")
+    an.add_argument("--metadata", help="TSV with isolate_id, lineage, site_id, patient_id, cluster_id, partition.")
+    an.add_argument("--partition", choices=("development", "evaluation"))
+    an.add_argument("--independent-clusters", action="store_true",
+                    help="Keep one deterministic representative per patient and reviewed genetic cluster.")
     an.set_defaults(func=_run_analyse)
 
     sub.add_parser("version", help="Print version.").set_defaults(

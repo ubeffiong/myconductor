@@ -42,6 +42,7 @@ from ..core.models import (
     Tier,
 )
 from ..io.callable_mask import CallableMask
+from ..core.context import InterpretationPolicy, SampleContext
 
 
 def _best_tier(evs: Iterable[DrugEvidence]) -> Tier:
@@ -62,7 +63,7 @@ def _discordance(drug: str, evs: list[DrugEvidence]) -> Optional[Discordance]:
     being resolved away by picking a winner.
     """
     resistant = [ev for ev in evs if ev.call.is_resistant]
-    susceptible = [ev for ev in evs if ev.call.is_susceptible]
+    susceptible = [ev for ev in evs if ev.call.is_susceptible and ev.scope == "isolate"]
     if not (resistant and susceptible):
         return None
     return Discordance(
@@ -71,145 +72,122 @@ def _discordance(drug: str, evs: list[DrugEvidence]) -> Optional[Discordance]:
         sources=tuple(dict.fromkeys(ev.source_name for ev in evs)),
         note=(
             f"{len(resistant)} source(s) call {drug} resistant and "
-            f"{len(susceptible)} call it susceptible. Resistance is carried "
-            f"forward as the safer position; the conflict is unresolved and "
+            f"{len(susceptible)} call it susceptible. The conclusion is "
+            f"indeterminate; the conflict is unresolved and "
             f"needs phenotypic testing."
         ),
     )
 
 
 class EvidenceReconciler:
-    """Turns lane evidence plus coverage evidence into per-drug results."""
+    """Separate analytical adequacy, genomic inference and measured phenotype.
 
-    def __init__(
-        self,
-        profile: Optional[OrganismProfile] = None,
-        depth_floor: int = 10,
-        callable_fraction_floor: float = 0.95,
-        include_tier2_loci: bool = False,
-    ):
+    An empty variant list plus coverage is only a negative genomic screen.
+    Susceptibility additionally requires an externally reviewed validation scope.
+    Direct, quality-reviewed phenotype applies only to the tested isolate.
+    """
+
+    def __init__(self, profile=None, depth_floor=10, callable_fraction_floor=0.95,
+                 include_tier2_loci=False, policy=None, context=None,
+                 catalogue_engine=None, catalogue_sha256=None, illustrative=True):
+        if depth_floor <= 0 or not 0 < callable_fraction_floor <= 1:
+            raise ValueError("invalid coverage thresholds")
         self.profile = profile or load_profile()
         self.depth_floor = depth_floor
         self.callable_fraction_floor = callable_fraction_floor
         self.include_tier2_loci = include_tier2_loci
+        self.policy = policy or InterpretationPolicy()
+        self.context = context
+        self.catalogue_engine = catalogue_engine
+        self.catalogue_sha256 = catalogue_sha256
+        self.illustrative = illustrative
 
-    def reconcile(
-        self,
-        evidence: list[DrugEvidence],
-        mask: Optional[CallableMask] = None,
-        drugs: Optional[Iterable[str]] = None,
-    ) -> list[DrugResult]:
-        """Produce one result per drug in the profile.
-
-        Every profile drug gets a result, including drugs nothing was found
-        for: a drug missing from the output is indistinguishable from a drug
-        that was assessed and cleared, which is the ambiguity this whole module
-        exists to remove.
-        """
+    def reconcile(self, evidence, mask=None, drugs=None):
         mask = mask or CallableMask.absent()
-        by_drug: dict[str, list[DrugEvidence]] = {}
+        by_drug = {}
         for ev in evidence:
+            if ev.tier is Tier.PHENOTYPIC:
+                if (self.context is None or ev.sample_id != self.context.sample_id
+                        or not ev.observation_id):
+                    raise ValueError("phenotypic evidence requires the current sample and observation ID")
             by_drug.setdefault(ev.drug, []).append(ev)
+        universe = set(drugs if drugs is not None else self.profile.drugs) | set(by_drug)
+        return [self._resolve(drug, by_drug.get(drug, []), mask) for drug in sorted(universe)]
 
-        universe = list(drugs) if drugs is not None else list(self.profile.drugs)
-        # Include any drug evidence arrived for, even if outside the profile,
-        # so nothing is silently discarded.
-        for drug in by_drug:
-            if drug not in universe:
-                universe.append(drug)
-
-        return [self._resolve(drug, by_drug.get(drug, []), mask)
-                for drug in sorted(universe)]
-
-    def _resolve(self, drug: str, evs: list[DrugEvidence],
-                 mask: CallableMask) -> DrugResult:
+    def _resolve(self, drug, evs, mask):
+        genomic = [e for e in evs if e.tier is not Tier.PHENOTYPIC]
+        phenotypes = [e for e in evs if e.tier is Tier.PHENOTYPIC]
+        result = self._genomic(drug, genomic, mask)
+        result.genomic_call = result.call
+        result.evidence = evs
+        result.discordance = _discordance(drug, evs)
         if not self.profile.supports_drug(drug):
-            return DrugResult(
-                drug=drug, call=Call.UNSUPPORTED, tier=Tier.NONE,
-                evidence=evs,
-                reason=(f"{drug} is not in the {self.profile.name} profile "
-                        f"v{self.profile.version}"),
-            )
+            return result
+        if phenotypes:
+            calls = {e.call for e in phenotypes}
+            measured = next(iter(calls)) if len(calls) == 1 else Call.INDETERMINATE
+            result.phenotypic_call = measured
+            if measured.is_established:
+                result.call = measured
+                result.tier = Tier.PHENOTYPIC
+                result.reason = "Measured phenotype for this isolate: " + phenotypes[0].rationale
+            else:
+                result.call = Call.INDETERMINATE
+                result.reason = "Phenotype measurements conflict or lack adequate quality/context."
+        if result.discordance:
+            result.call = Call.INDETERMINATE
+            result.confidence = None
+            result.reason = result.discordance.note
+        return result
 
-        discordance = _discordance(drug, evs)
-
-        # 1. Established resistance wins, and only graded or phenotypic
-        #    evidence can establish it (enforced in DrugEvidence).
-        resistant = [ev for ev in evs if ev.call.is_resistant]
-        if resistant:
-            return DrugResult(
-                drug=drug, call=Call.RESISTANT, tier=_best_tier(resistant),
-                confidence=_confidence(resistant), evidence=evs,
-                discordance=discordance,
-                reason=resistant[0].rationale,
-            )
-
-        # 2. A lane withheld susceptibility without asserting resistance.
-        indeterminate = [ev for ev in evs if ev.call is Call.INDETERMINATE]
-        if indeterminate:
-            return DrugResult(
-                drug=drug, call=Call.INDETERMINATE,
-                tier=_best_tier(indeterminate), evidence=evs,
-                discordance=discordance,
-                reason=indeterminate[0].rationale,
-            )
-
-        # 3. An unreliable genotype at the locus.
-        no_call = [ev for ev in evs if ev.call is Call.NO_CALL]
-        if no_call:
-            return DrugResult(
-                drug=drug, call=Call.NO_CALL, tier=_best_tier(no_call),
-                evidence=evs, discordance=discordance,
-                reason=no_call[0].rationale,
-            )
-
-        # 4. No resistance evidence. This is the branch that used to return
-        #    "usable". Susceptibility now has to be earned with coverage.
+    def _genomic(self, drug, evs, mask):
+        if not self.profile.supports_drug(drug):
+            return DrugResult(drug, Call.UNSUPPORTED, Tier.NONE, evidence=evs,
+                              reason=f"{drug} is outside the {self.profile.name} profile")
         loci = self.profile.required_loci(drug, self.include_tier2_loci)
-        callable_ok, coverages, reasons = mask.assess(
-            loci,
-            depth_floor=self.depth_floor,
-            fraction_floor=self.callable_fraction_floor,
-        )
-
-        # 4a. An external engine may have done its own coverage assessment.
-        #     Honour it, and attribute it, rather than discarding a validated
-        #     tool's susceptible call for want of our own mask.
-        asserted = [ev for ev in evs
-                    if ev.asserts_coverage and ev.call.is_susceptible]
-        if not callable_ok and asserted:
-            sources = ", ".join(dict.fromkeys(ev.source_name for ev in asserted))
-            return DrugResult(
-                drug=drug, call=Call.SUSCEPTIBLE, tier=_best_tier(asserted),
-                confidence=_confidence(asserted), evidence=evs,
-                coverage=coverages, discordance=discordance,
-                reason=(f"susceptibility asserted by {sources}, which performed "
-                        f"its own callable-locus assessment; Myconductor's own "
-                        f"mask did not cover it ({'; '.join(reasons)})"),
-            )
-
-        if not callable_ok:
-            return DrugResult(
-                drug=drug, call=Call.NOT_ASSESSED, tier=Tier.NONE,
-                evidence=evs, coverage=coverages, discordance=discordance,
-                reason=("cannot establish susceptibility: " + "; ".join(reasons)),
-            )
-
-        return DrugResult(
-            drug=drug,
-            call=Call.SUSCEPTIBLE,
-            tier=_best_tier(evs) if evs else Tier.CATALOGUED,
-            confidence=_confidence(evs),
-            evidence=evs,
-            coverage=coverages,
-            discordance=discordance,
-            reason=(
-                f"no resistance-associated variant found across "
-                f"{len(loci)} callable locus/loci "
-                f"({', '.join(sorted(loci))}); "
-                f"coverage source: {mask.source}"
-            ),
-        )
+        ok, coverage, reasons = mask.assess(loci, depth_floor=self.depth_floor,
+                                          fraction_floor=self.callable_fraction_floor)
+        status = "adequate" if ok else "insufficient"
+        def result(call, tier, reason):
+            return DrugResult(drug, call, tier, evidence=evs, coverage=coverage,
+                              reason=reason, assay_status=status)
+        discordance = _discordance(drug, evs)
+        if discordance:
+            return result(Call.INDETERMINATE, _best_tier(evs), discordance.note)
+        for call in (Call.RESISTANT, Call.INDETERMINATE, Call.NO_CALL):
+            matched = [e for e in evs if e.call is call]
+            if matched:
+                return result(call, _best_tier(matched), matched[0].rationale)
+        # Every NTM macrolide negative call needs the relevant reference state,
+        # including functional wild-type alleles invisible in a variant-only VCF.
+        if self.profile.name == "mabscessus" and drug == "clarithromycin":
+            c = self.context
+            if c is None or not c.subspecies or c.erm41_status != "nonfunctional" or c.rrl_status != "wild_type":
+                return result(Call.INDETERMINATE, Tier.NONE,
+                              "M. abscessus macrolide interpretation requires subspecies, "
+                              "nonfunctional erm(41) evidence and assessed rrl status; "
+                              "inducible resistance cannot be excluded from a variant list.")
+        asserted = [e for e in evs if e.call is Call.SUSCEPTIBLE
+                    and e.scope == "isolate" and e.asserts_coverage]
+        for ev in asserted:
+            if self.policy.permits(drug, self.context, ev.engine):
+                r = result(Call.SUSCEPTIBLE, ev.tier,
+                           f"Susceptibility asserted by {ev.source_name} within the "
+                           f"externally reviewed scope of policy {self.policy.version}.")
+                r.assay_status = "engine_assessed"
+                return r
+        if not ok and not asserted:
+            return result(Call.NOT_ASSESSED, Tier.NONE,
+                          "cannot establish susceptibility: " + "; ".join(reasons))
+        if (ok and not self.illustrative and self.policy.permits(
+                drug, self.context, self.catalogue_engine, self.catalogue_sha256)):
+            return result(Call.SUSCEPTIBLE, Tier.CATALOGUED,
+                          "No resistance-associated variant detected in callable loci; "
+                          f"interpretation covered by policy {self.policy.version}.")
+        return result(Call.INDETERMINATE, Tier.NONE,
+                      "No resistance-associated variant detected, but susceptibility "
+                      "is not established: no matching validated organism/drug/assay/"
+                      "engine/database scope with required QC. Coverage alone is insufficient.")
 
 
 class EligibilityAssessor:

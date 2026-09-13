@@ -277,13 +277,13 @@ class StratificationTests(unittest.TestCase):
         self.assertTrue(result.fully_confounded)
         self.assertEqual(result.n_informative, 0)
 
-    def test_a_variant_that_varies_within_background_is_informative(self):
+    def test_a_variant_confounded_with_lineage_is_not_informative(self):
         isolates = self._isolates(
             [(f"c{i}", {"V_1", "rpoB_S450L"}, "l4") for i in range(6)]
             + [(f"d{i}", {"rpoB_S450L"}, "l2") for i in range(6)])
         result = stratify("V_1", "rifampicin", isolates, self.index)
-        self.assertFalse(result.fully_confounded)
-        self.assertEqual(result.n_informative, 1)
+        self.assertTrue(result.fully_confounded)
+        self.assertEqual(result.n_informative, 0)
 
     def test_lineage_diversity_of_carriers_is_measured(self):
         isolates = self._isolates(

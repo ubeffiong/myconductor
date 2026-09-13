@@ -32,8 +32,8 @@ class PipelineTests(unittest.TestCase):
         self.assertIs(self._call("ethambutol"), Call.RESISTANT)
 
     def test_covered_loci_with_no_findings_are_susceptible(self):
-        self.assertIs(self._call("linezolid"), Call.SUSCEPTIBLE)
-        self.assertIs(self._call("pretomanid"), Call.SUSCEPTIBLE)
+        self.assertIs(self._call("linezolid"), Call.INDETERMINATE)
+        self.assertIs(self._call("pretomanid"), Call.INDETERMINATE)
 
     def test_uncovered_locus_is_not_assessed_or_indeterminate(self):
         # rrs is absent from the mask and its record was dropped for depth.
@@ -129,8 +129,8 @@ class EngineIntegrationTests(unittest.TestCase):
         # thing that can license this call -- and it is attributed.
         report = self._analyze(self.MYKROBE_CLEAN)
         linezolid = report.result_for("linezolid")
-        self.assertIs(linezolid.call, Call.SUSCEPTIBLE)
-        self.assertIn("mykrobe", linezolid.reason)
+        self.assertIs(linezolid.call, Call.INDETERMINATE)
+        self.assertIn("validated", linezolid.reason)
 
     def test_local_withholding_is_not_overridden_by_an_engine(self):
         # Myconductor found a regulatory variant in eis. Mykrobe's panel may
@@ -186,7 +186,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("absent, not passed", self.text)
 
     def test_susceptibility_gate_is_explained(self):
-        self.assertIn("Only a coverage-backed S counts", self.text)
+        self.assertIn("Only a validated genomic S or matched laboratory S counts", self.text)
 
     def test_no_demo_banner_by_default(self):
         self.assertNotIn("SYNTHETIC DEMONSTRATION", self.text)
@@ -214,7 +214,7 @@ class FHIRTests(unittest.TestCase):
         self.assertTrue(dr["result"])
         ids = {o["id"] for o in self.observations}
         for ref in dr["result"]:
-            self.assertIn(ref["reference"].split("/")[1], ids)
+            self.assertIn(ref["reference"].removeprefix("urn:uuid:"), ids)
 
     def test_not_assessed_uses_data_absent_reason_not_a_value(self):
         for r in self.report.drug_results:
@@ -243,7 +243,7 @@ class FHIRTests(unittest.TestCase):
                    if o.get("code", {}).get("text", "").startswith("linezolid"))
         flag = next(x for x in lzd["extension"]
                     if x["url"].endswith("/permits-regimen-use"))
-        self.assertTrue(flag["valueBoolean"])
+        self.assertFalse(flag["valueBoolean"])
 
     def test_no_loinc_codes_are_invented(self):
         for obs in self.observations:
@@ -260,14 +260,14 @@ class FHIRTests(unittest.TestCase):
     def test_conformance_gaps_travel_with_the_bundle(self):
         dr = next(e["resource"] for e in self.bundle["entry"]
                   if e["resource"]["resourceType"] == "DiagnosticReport")
-        notes = " ".join(n["text"] for n in dr["note"])
+        notes = dr["conclusion"]
         self.assertIn("Not validated against any FHIR implementation guide",
                       notes)
         self.assertIn("LOINC", notes)
 
     def test_unperformed_qc_is_carried_in_the_bundle(self):
         qc = next((e["resource"] for e in self.bundle["entry"]
-                   if e["resource"].get("id") == "qc-1"), None)
+                   if e["resource"].get("code", {}).get("text") == "Analytical quality control summary"), None)
         self.assertIsNotNone(qc)
         notes = " ".join(n["text"] for n in qc["note"])
         self.assertIn("NOT PERFORMED", notes)

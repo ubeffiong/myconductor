@@ -1,0 +1,22 @@
+[
+  {
+    "engine": "ntm-profiler",
+    "repository": "jodyphelan/NTM-Profiler",
+    "commit": "1ccb5adc4aa0b17ca818517d47e7d49a7aa4d421",
+    "source_path": "tests/ERR459870.results.json",
+    "url": "https://raw.githubusercontent.com/jodyphelan/NTM-Profiler/1ccb5adc4aa0b17ca818517d47e7d49a7aa4d421/tests/ERR459870.results.json",
+    "file": "ntm-results.json",
+    "sha256": "63461346946e0df9eb7c54800024d229da076ee28e53c2c07b9866444650488b",
+    "kind": "upstream example output; not independently regenerated"
+  },
+  {
+    "engine": "tb-profiler",
+    "repository": "jodyphelan/TBProfiler",
+    "commit": "47e6c639c342eeda9791e5c700c1802fc5e8cb86",
+    "source_path": "tests/example_collate.txt",
+    "url": "https://raw.githubusercontent.com/jodyphelan/TBProfiler/47e6c639c342eeda9791e5c700c1802fc5e8cb86/tests/example_collate.txt",
+    "file": "tb-collate.tsv",
+    "sha256": "ccd745a9ad478a1e60bbb3c45633e94c7e800df5f9cc319107b2326518059f40",
+    "kind": "upstream example output; not independently regenerated"
+  }
+]

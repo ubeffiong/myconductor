@@ -232,7 +232,7 @@ def _stratified_bootstrap(stratification: Stratification,
             delta = _delta_from_matrix(matrix, rows, cols)
             if delta is None:
                 continue
-            weight = n_a * n_b
+            weight = sum(matrix[i][j] != 2 for i in rows for j in cols)
             weighted_sum += delta * weight
             weight_total += weight
         if weight_total > 0:
@@ -243,6 +243,46 @@ def _stratified_bootstrap(stratification: Stratification,
     draws.sort()
     return (draws[int(0.025 * len(draws))],
             draws[min(len(draws) - 1, int(0.975 * len(draws)))])
+
+
+def _stratified_permutation(stratification, panel, observed, min_per_side=MIN_PER_SIDE):
+    prepared = []
+    pairs = 0
+    for stratum in stratification.informative_strata:
+        a = panel.subset(i.isolate_id for i in stratum.carriers)
+        b = panel.subset(i.isolate_id for i in stratum.non_carriers)
+        if min(len(a), len(b)) < min_per_side:
+            continue
+        pooled = a + b
+        pairs += len(a) * len(b)
+        if pairs > 100000 or len(pooled) ** 2 > 1000000:
+            return None
+        # Matrix preserves censoring when the labels change. The statistic
+        # cannot be computed by treating censored bounds as exact MICs.
+        prepared.append((_comparison_matrix(pooled, pooled), len(a), len(b)))
+    if not prepared or observed is None:
+        return None
+    # Refuse excessive work rather than silently subsampling the hypothesis.
+    if pairs > 100000:
+        return None
+    iterations = max(199, min(1999, 2000000 // max(1, pairs)))
+    rng = random.Random(stats.PERMUTATION_SEED)
+    extreme = valid = 0
+    for _ in range(iterations):
+        numerator = denominator = 0
+        for matrix, na, nb in prepared:
+            indices = list(range(na + nb))
+            rng.shuffle(indices)
+            for i in indices[:na]:
+                for j in indices[na:]:
+                    order = matrix[i][j]
+                    if order != 2:
+                        numerator += order
+                        denominator += 1
+        if denominator:
+            valid += 1
+            extreme += abs(numerator / denominator) >= abs(observed) - 1e-12
+    return (extreme + 1) / (valid + 1) if valid >= iterations // 2 else None
 
 
 def variant_effect(stratification: Stratification, panel: mic.DrugPanel,
@@ -304,19 +344,11 @@ def variant_effect(stratification: Stratification, panel: mic.DrugPanel,
     effect.delta = _pooled_delta(usable)
     effect.interval = _stratified_bootstrap(stratification, panel)
 
-    # A permutation test on the largest informative stratum. Pooling p-values
-    # across strata would need a combination procedure whose assumptions are
-    # harder to defend than simply reporting the best-powered stratum.
-    largest = max(usable, key=lambda s: s.weight)
-    stratum = next((s for s in stratification.informative_strata
-                    if s.background == largest.background), None)
-    if stratum is not None:
-        carrier_values = [o.log2_bound for o in
-                          panel.subset(i.isolate_id for i in stratum.carriers)]
-        other_values = [o.log2_bound for o in
-                        panel.subset(i.isolate_id for i in stratum.non_carriers)]
-        effect.pvalue = stats.permutation_pvalue(carrier_values, other_values,
-                                                 min_n=min_per_side)
+    # Test the same censor-aware pooled ordering statistic as the effect,
+    # permuting labels only within the same background/site/lineage strata.
+    # A median test on one stratum answers a different question and can have
+    # very low power even when every carrier exceeds every non-carrier.
+    effect.pvalue = _stratified_permutation(stratification, panel, effect.delta, min_per_side)
 
     top = effect.top_cooccurrence
     if top and top[1] >= COOCCURRENCE_WARN:
@@ -329,7 +361,10 @@ def variant_effect(stratification: Stratification, panel: mic.DrugPanel,
             f"carriers span an effective {effect.lineage_diversity:.1f} "
             f"lineage(s); the effect may be lineage-specific rather than causal")
 
-    if effect.interval is not None and (effect.interval[0] > 0
+    if effect.pvalue is None:
+        effect.verdict = "underpowered"
+        effect.reasons.append("no valid pooled permutation test; effect is descriptive only")
+    elif effect.interval is not None and (effect.interval[0] > 0
                                         or effect.interval[1] < 0):
         effect.verdict = "evidence-of-effect"
         effect.reasons.append(

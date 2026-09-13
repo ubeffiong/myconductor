@@ -24,8 +24,8 @@ So this module does two things differently. It **refuses** to return a location
 statistic when censoring makes it unidentifiable, naming the reason rather than
 returning a number. And it provides a comparison that remains valid under heavy
 censoring, by only counting a pairwise comparison when the censoring bounds
-make its direction unambiguous — which makes the resulting effect size a
-conservative lower bound rather than an optimistic point estimate.
+make its direction unambiguous. The effect is conditional on decidable pairs;
+it is not a lower bound on the uncensored population effect.
 """
 from __future__ import annotations
 
@@ -84,7 +84,7 @@ def to_observation(value: MIC | str | None) -> Optional[Observation]:
     if value is None:
         return None
     mic = parse_mic(value) if isinstance(value, str) else value
-    if mic is None or mic.value is None or mic.value <= 0:
+    if mic is None or mic.value is None or not math.isfinite(mic.value) or mic.value <= 0:
         return None
     return Observation(log2_bound=math.log2(mic.value),
                        censoring=mic.censoring, raw=mic.raw)
@@ -178,10 +178,24 @@ def median_log2(obs: Sequence[Observation],
     reason = profile.why_not_identifiable()
     if reason:
         return Location(None, profile=profile, refused_because=reason)
-    values = [o.log2_bound for o in obs]
-    interval = (stats.bootstrap_ci(values, stats.median)
-                if with_interval else None)
-    return Location(stats.median(values), interval, profile)
+    def bounds(sample):
+        lower = stats.median([float("-inf") if o.censoring == LEFT else o.log2_bound for o in sample])
+        upper = stats.median([float("inf") if o.censoring == RIGHT else o.log2_bound for o in sample])
+        return lower, upper
+    low, high = bounds(obs)
+    if low != high or not math.isfinite(low):
+        return Location(None, profile=profile,
+                        refused_because="censoring intervals do not identify a unique median")
+    interval = None
+    if with_interval:
+        import random
+        rng = random.Random(stats.BOOTSTRAP_SEED)
+        draws = [bounds([obs[rng.randrange(len(obs))] for _ in obs]) for _ in range(1000)]
+        lower = sorted(x[0] for x in draws)[25]
+        upper = sorted(x[1] for x in draws)[975]
+        if math.isfinite(lower) and math.isfinite(upper):
+            interval = (lower, upper)
+    return Location(low, interval, profile)
 
 
 # -- comparison that survives censoring ----------------------------------
@@ -198,11 +212,10 @@ def compare(a: Observation, b: Observation) -> Optional[int]:
     * two left-censored values are never decidable against each other, however
       different their bounds, because both true values lie in the same open
       region below the plate;
-    * left versus right censored is always decidable.
+    * left versus right censored is decidable only when the bounds do not overlap.
 
-    Counting only decidable pairs is what makes the resulting effect size
-    conservative: undecidable pairs dilute it toward zero rather than being
-    resolved by an assumption.
+    Only decidable pairs enter the denominator. The effect is conditional on
+    those pairs; undecidable pairs do not dilute it toward zero.
     """
     if a.exact and b.exact:
         if a.log2_bound > b.log2_bound:
@@ -216,9 +229,9 @@ def compare(a: Observation, b: Observation) -> Optional[int]:
     if a.censoring == RIGHT and b.censoring == RIGHT:
         return None
     if a.censoring == LEFT and b.censoring == RIGHT:
-        return -1
+        return -1 if a.log2_bound <= b.log2_bound else None
     if a.censoring == RIGHT and b.censoring == LEFT:
-        return 1
+        return 1 if b.log2_bound <= a.log2_bound else None
 
     # One censored, one exact.
     if a.censoring == LEFT:
@@ -237,8 +250,8 @@ class StochasticShift:
 
     ``delta`` is Cliff's delta over decidable pairs only: the probability a
     carrier exceeds a non-carrier minus the reverse. It is bounded in
-    [-1, 1], needs no distributional assumption, and is a **lower bound** on
-    the true effect because undecidable pairs are excluded rather than imputed.
+    [-1, 1] and is conditional on the decidable subset. Excluding undecidable
+    pairs does not make it a bound on the full population effect.
     """
 
     delta: Optional[float]

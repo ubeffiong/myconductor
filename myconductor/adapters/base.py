@@ -53,6 +53,8 @@ class EngineReport:
     warnings: list[str] = field(default_factory=list)
     #: Coverage evidence the engine itself computed, where it exposes any.
     mask: Optional[CallableMask] = None
+    context_findings: dict = field(default_factory=dict)
+    source_sha256: Optional[str] = None
 
     @property
     def drugs(self) -> set[str]:

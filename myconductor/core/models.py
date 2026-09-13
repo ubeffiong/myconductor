@@ -29,6 +29,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional
+import math
 
 #: H37Rv, the MTBC reference assembly the bundled profile is written against.
 MTB_ASSEMBLY = "NC_000962.3"
@@ -315,6 +316,17 @@ class LocusCoverage:
     callable_fraction: Optional[float] = None
     source: str = "absent"
 
+    def __post_init__(self) -> None:
+        if self.callable_fraction is not None and (
+            not math.isfinite(self.callable_fraction)
+            or not 0 <= self.callable_fraction <= 1
+        ):
+            raise ValueError("callable_fraction must be finite and in [0, 1]")
+        if self.mean_depth is not None and (
+            not math.isfinite(self.mean_depth) or self.mean_depth < 0
+        ):
+            raise ValueError("mean_depth must be finite and nonnegative")
+
     def is_callable(self, depth_floor: int, fraction_floor: float) -> bool:
         if self.callable_fraction is None:
             return False
@@ -376,8 +388,19 @@ class DrugEvidence:
     #: call — and the assertion is attributed to that engine in the report.
     #: Never set by a lane that only inspects a variant list.
     asserts_coverage: bool = False
+    sample_id: Optional[str] = None
+    observation_id: Optional[str] = None
+    # Variant-level non-association is not a susceptible isolate verdict.
+    scope: str = "isolate"
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        if self.scope not in ("isolate", "variant", "historical", "determinant"):
+            raise ValueError(f"unknown evidence scope: {self.scope}")
+        if self.confidence is not None and (
+            not math.isfinite(self.confidence) or not 0 <= self.confidence <= 1
+        ):
+            raise ValueError("confidence must be finite and in [0, 1]")
         # The invariant that makes the rest of the system safe.
         if self.call is Call.RESISTANT and not self.tier.may_establish_resistance:
             raise ValueError(
@@ -422,6 +445,9 @@ class DrugResult:
     discordance: Optional[Discordance] = None
     coverage: list[LocusCoverage] = field(default_factory=list)
     reason: Optional[str] = None
+    genomic_call: Optional[Call] = None
+    phenotypic_call: Optional[Call] = None
+    assay_status: str = "not_assessed"
 
     @property
     def permits_use(self) -> bool:
@@ -589,6 +615,10 @@ class Provenance:
     coverage_source: str = "absent"
     demo_mode: bool = False
     generated_utc: Optional[str] = None
+    input_sha256: Optional[str] = None
+    analysis_fingerprint: Optional[str] = None
+    policy_version: str = "research-default"
+    source_hashes: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -605,6 +635,11 @@ class AnalysisReport:
     qc_warnings: list[str] = field(default_factory=list)
     lane_counts: dict[str, int] = field(default_factory=dict)
     demo_mode: bool = False
+    context: dict[str, Any] = field(default_factory=dict)
+    investigations: list[dict[str, Any]] = field(default_factory=list)
+    follow_up: list[dict[str, Any]] = field(default_factory=list)
+    report_schema: str = "myconductor.report.v1"
+    analysis_manifest: dict = field(default_factory=dict)
 
     @property
     def resistant_drugs(self) -> list[str]:

@@ -19,6 +19,7 @@ coverage assessment is what licenses Myconductor's susceptible calls.
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 from typing import Any, Optional
 
@@ -106,6 +107,7 @@ class TBProfilerAdapter(EngineAdapter):
 
         report = EngineReport(
             engine=engine,
+            source_sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest(),
             sample_id=data.get("id") or data.get("sample_name"),
             lineage=_lineage_of(data),
         )
@@ -132,6 +134,8 @@ class TBProfilerAdapter(EngineAdapter):
                 f"skipped a dr_variant with no gene/change: {sorted(raw)[:8]}")
             return []
         report.variants.append(variant)
+        if str(raw.get("filter", "pass")).lower() not in ("pass", "."):
+            report.qc.append(QCFinding("engine_variant_filter", "fail", "TB-Profiler variant failed FILTER"))
 
         annotations = raw.get("drugs") or raw.get("annotation") or []
         if not annotations:
@@ -173,7 +177,8 @@ class TBProfilerAdapter(EngineAdapter):
                 drug=drug, call=call, tier=tier, lane=Lane.ENGINE,
                 confidence=None, variant=variant.identity,
                 who_grade=str(grade) or None, engine=engine,
-                limitations=tuple(limitations),
+                limitations=tuple(limitations), scope="variant",
+                sample_id=report.sample_id, catalogue_version=engine.database_version,
                 rationale=(f"TB-Profiler reports {variant.label()} for {drug} "
                            f"(grading: {grade or 'none'})."),
             ))
@@ -247,7 +252,7 @@ def _mask_from_qc(data: dict) -> Optional[CallableMask]:
     if not isinstance(qc, dict):
         return None
     rows = None
-    for key in ("gene_coverage", "target_coverage", "gene_qc"):
+    for key in ("gene_coverage", "target_coverage", "gene_qc", "target_qc"):
         value = qc.get(key)
         if isinstance(value, list) and value:
             rows = value
@@ -263,9 +268,8 @@ def _mask_from_qc(data: dict) -> Optional[CallableMask]:
         if not locus:
             continue
         fraction = _as_fraction(
-            row.get("fraction")
-            or row.get("percent_depth_pass")
-            or row.get("fraction_covered")
+            next((row[k] for k in ("fraction", "percent_depth_pass", "fraction_covered")
+                  if row.get(k) is not None), None)
         )
         depth = row.get("median_depth") or row.get("depth")
         loci[str(locus)] = LocusCoverage(

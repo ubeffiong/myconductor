@@ -95,7 +95,7 @@ def site_call_records(report: AnalysisReport, site_id: str,
         for ev in result.evidence:
             if ev.variant_key is None:
                 continue
-            key = (ev.variant_key, ev.drug)
+            key = (ev.variant_key, ev.drug, ev.source_name, ev.rule_id, ev.call.value)
             if key in seen:
                 continue
             seen.add(key)
@@ -112,6 +112,7 @@ def site_call_records(report: AnalysisReport, site_id: str,
 class DiscordanceCategory(str, Enum):
     CATALOGUE_VERSION = "catalogue_version"
     RULE = "rule"
+    UNKNOWN = "unknown"
 
 
 @dataclass
@@ -122,6 +123,7 @@ class CrossSiteDiscordance:
     calls_by_site: dict[str, str]
     catalogue_versions_by_site: dict[str, Optional[str]]
     note: str
+    records: list[dict] = field(default_factory=list)
 
 
 def reconcile_sites(records: Iterable[SiteCallRecord]
@@ -142,11 +144,20 @@ def reconcile_sites(records: Iterable[SiteCallRecord]
 
     out: list[CrossSiteDiscordance] = []
     for (variant_key, drug), group in sorted(grouped.items()):
-        calls_by_site = {r.site_id: r.call for r in group}
+        # Keep every isolate/source observation. Multiple calls at one site
+        # are not overwritten by the last row of an input file.
+        labelled = {}
+        for record in group:
+            label = record.site_id
+            if label in labelled:
+                if labelled[label] == record:
+                    continue
+                label = f"{record.site_id}/{record.isolate_id}/{len(labelled)}"
+            labelled[label] = record
+        calls_by_site = {label: r.call for label, r in labelled.items()}
         if len(set(calls_by_site.values())) <= 1:
-            continue  # every site agrees; nothing to report
-
-        versions_by_site = {r.site_id: r.catalogue_version for r in group}
+            continue
+        versions_by_site = {label: r.catalogue_version for label, r in labelled.items()}
         distinct_calls = sorted(set(calls_by_site.values()))
 
         # For each pair of distinct calls, does a version difference explain
@@ -170,15 +181,15 @@ def reconcile_sites(records: Iterable[SiteCallRecord]
                              for s, v in sorted(versions_by_site.items())]
             note = (
                 f"disagreement tracks catalogue version "
-                f"({', '.join(version_parts)}); resolve by propagating the "
-                f"newer catalogue, not by debugging either site's pipeline"
+                f"({', '.join(version_parts)}); this is a hypothesis; replay identical input against both "
+                f"catalogues before attributing causation or propagating an update"
             )
         elif rule_explains and not version_explains:
             category = DiscordanceCategory.RULE
             note = (
                 f"sites report the same catalogue version(s) but different "
                 f"calls ({', '.join(f'{s}={c}' for s, c in sorted(calls_by_site.items()))}); "
-                f"this is a pipeline/rule discordance, not a catalogue-"
+                f"possible pipeline/rule discordance; investigate QC and phenotype context as well as a catalogue-"
                 f"propagation gap"
             )
         else:
@@ -190,8 +201,12 @@ def reconcile_sites(records: Iterable[SiteCallRecord]
                 "rule discordance may be present; investigate both"
             )
 
+        if any(v in (None, "", "unknown") for v in versions_by_site.values()):
+            category = DiscordanceCategory.UNKNOWN
+            note = "Catalogue provenance is incomplete; no cause can be assigned."
         out.append(CrossSiteDiscordance(
             variant_key=variant_key, drug=drug, category=category,
+            records=[r.to_dict() for r in group],
             calls_by_site=calls_by_site,
             catalogue_versions_by_site=versions_by_site, note=note,
         ))

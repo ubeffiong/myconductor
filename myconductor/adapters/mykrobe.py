@@ -16,6 +16,7 @@ as resistance with the minority basis recorded as a limitation.
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 from typing import Optional
 
@@ -58,6 +59,9 @@ class MykrobeAdapter(EngineAdapter):
             raise AdapterSchemaError(
                 f"{path}: expected a JSON object keyed by sample name")
 
+        if len(data) != 1:
+            raise AdapterSchemaError("Mykrobe output must contain exactly one sample")
+
         # Mykrobe nests everything under the sample name.
         sample_id, payload = next(iter(data.items()))
         if not isinstance(payload, dict):
@@ -82,6 +86,7 @@ class MykrobeAdapter(EngineAdapter):
 
         report = EngineReport(
             engine=engine,
+            source_sha256=hashlib.sha256(Path(path).read_bytes()).hexdigest(),
             sample_id=str(sample_id),
             lineage=_lineage_of(payload),
             species=_species_of(payload),
@@ -89,15 +94,11 @@ class MykrobeAdapter(EngineAdapter):
 
         for drug_name, entry in susceptibility.items():
             if not isinstance(entry, dict):
-                report.warnings.append(f"{drug_name}: unexpected entry shape")
-                continue
+                raise AdapterSchemaError(f"{drug_name}: unexpected entry shape")
             code = str(entry.get("predict", "")).strip()
             mapping = _PREDICT.get(code)
             if mapping is None:
-                report.warnings.append(
-                    f"{drug_name}: unrecognised predict code {code!r}; skipped "
-                    f"rather than guessed")
-                continue
+                raise AdapterSchemaError(f"{drug_name}: unrecognised predict code {code!r}")
             call, description = mapping
             drug = drug_name.strip().lower()
 
@@ -124,6 +125,7 @@ class MykrobeAdapter(EngineAdapter):
                 confidence=None,
                 variant=variants[0].identity if variants else None,
                 engine=engine,
+                sample_id=str(sample_id), catalogue_version=engine.database_version,
                 limitations=tuple(limitations),
                 asserts_coverage=(code == "S"),
                 rationale=(

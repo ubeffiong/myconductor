@@ -125,10 +125,15 @@ class VUSWorkbench(VariantModule):
         # every gene GENE_DRUG_CONTEXT names is already declared in the
         # bundled MTBC profile's own loci, so this is a no-op for the
         # default pipeline.
-        self.applicable_genes = (
-            set(GENE_DRUG_CONTEXT) & set(profile.loci) if profile is not None
-            else set(GENE_DRUG_CONTEXT)
-        )
+        self.gene_drugs = {}
+        if profile is not None:
+            for drug, tiers in profile.drug_loci.items():
+                for genes in tiers.values():
+                    for gene in genes:
+                        self.gene_drugs.setdefault(gene, set()).add(drug)
+        else:
+            self.gene_drugs = {g: {d} for g, d in GENE_DRUG_CONTEXT.items()}
+        self.applicable_genes = set(self.gene_drugs)
 
     @property
     def synthetic(self) -> bool:
@@ -151,8 +156,8 @@ class VUSWorkbench(VariantModule):
         """
         if not self.applies_to(variant):
             return []
-        drug = GENE_DRUG_CONTEXT.get(variant.gene)
-        if drug is None:
+        drugs = sorted(self.gene_drugs.get(variant.gene, ()))
+        if not drugs:
             return []
         return [DrugEvidence(
             drug=drug,
@@ -174,12 +179,13 @@ class VUSWorkbench(VariantModule):
                 f"{drug}. Susceptibility cannot be concluded; resistance is not "
                 f"asserted."
             ),
-        )]
+        ) for drug in drugs]
 
     # -- the actual output ------------------------------------------------
     def priorities(self, variants: list[Variant]) -> list[VUSPriority]:
-        out = [self._rank(v) for v in variants
-               if self.applies_to(v) and v.label() not in self.known]
+        out = [self._rank(v, drug) for v in variants
+               if self.applies_to(v) and v.label() not in self.known
+               for drug in sorted(self.gene_drugs.get(v.gene, ()))]
         # Present the most tractable and most likely-functional first. With the
         # null annotator this is a triage ordering over consequence class, not
         # an evidence-weighted ranking -- `priority` says which it is.
@@ -190,9 +196,8 @@ class VUSWorkbench(VariantModule):
         ))
         return out
 
-    def _rank(self, variant: Variant) -> VUSPriority:
+    def _rank(self, variant: Variant, drug: str) -> VUSPriority:
         features: FeatureSet = self.annotator.annotate(variant)
-        drug = GENE_DRUG_CONTEXT.get(variant.gene)
         available = features.available_names
         gaps = features.gaps
 

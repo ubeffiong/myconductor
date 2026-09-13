@@ -40,11 +40,11 @@ class ReconciliationTests(unittest.TestCase):
         self.assertEqual(discordances[0].category, DiscordanceCategory.RULE)
         self.assertIn("pipeline/rule", discordances[0].note)
 
-    def test_missing_catalogue_version_on_both_sides_is_a_rule_problem(self):
+    def test_missing_catalogue_version_does_not_establish_a_cause(self):
         records = [rec("site-A", "resistant", None),
                   rec("site-B", "susceptible", None)]
         discordances = reconcile_sites(records)
-        self.assertEqual(discordances[0].category, DiscordanceCategory.RULE)
+        self.assertEqual(discordances[0].category, DiscordanceCategory.UNKNOWN)
 
     def test_never_resolves_by_vote(self):
         records = [rec("site-A", "resistant", "v3"),

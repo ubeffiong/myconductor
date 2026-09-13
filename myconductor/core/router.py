@@ -104,7 +104,7 @@ class TriageRouter:
         of data.
         """
         if variant.silent:
-            return []
+            return [self.catalogue] if self.catalogue.applies_to(variant) else []
         return [lane for lane in self.lanes if lane.applies_to(variant)]
 
     def route(self, variants: list[Variant]) -> RoutingOutcome:

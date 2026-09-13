@@ -17,6 +17,7 @@ annotator spellings differ and a label match is weaker than a coordinate match.
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 from typing import Optional
 
@@ -66,27 +67,31 @@ class CatalogueModule(VariantModule):
         path = path or _CATALOGUE_PATH
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         self.version: str = data["catalogue_version"]
+        self.sha256 = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+        self.path = str(Path(path))
         self.is_illustrative: bool = bool(data.get("illustrative", True))
         self.efflux_genes: set[str] = set(data.get("efflux_genes", []))
 
         self.engine = EngineRef(
             name="myconductor-bundled-catalogue",
             version="0.2.0",
-            database="mtb_amr_catalogue.json",
+            database=Path(path).name,
             database_version=self.version,
         )
 
-        self._by_coord: dict[str, dict] = {}
-        self._by_label: dict[str, dict] = {}
+        self._by_coord: dict[str, list[dict]] = {}
+        self._by_label: dict[str, list[dict]] = {}
         for entry in data["variants"]:
             label = f"{entry['gene']}_{entry['change']}"
-            self._by_label[label] = entry
-            coord = entry.get("coordinate_key")
-            if coord:
-                self._by_coord[coord] = entry
+            self._by_label.setdefault(label, []).append(entry)
+            coords = set(entry.get("coordinate_keys", []))
+            if entry.get("coordinate_key"):
+                coords.add(entry["coordinate_key"])
+            for coord in coords:
+                self._by_coord.setdefault(coord, []).append(entry)
 
     # -- lookup -----------------------------------------------------------
-    def _lookup(self, variant: Variant) -> tuple[Optional[dict], bool]:
+    def _lookup(self, variant: Variant) -> tuple[Optional[list[dict]], bool]:
         """Return ``(entry, matched_on_coordinates)``."""
         key = variant.identity.key()
         if key in self._by_coord:
@@ -102,6 +107,13 @@ class CatalogueModule(VariantModule):
         """
         return set(self._by_label)
 
+    @property
+    def resolved_labels(self) -> set[str]:
+        """Only labels with no uncertain drug association can leave the VUS queue."""
+        return {label for label, entries in self._by_label.items()
+                if all(e["call"] in {"resistant", "susceptible", "not_associated"}
+                       for e in entries)}
+
     def knows(self, variant: Variant) -> bool:
         entry, _ = self._lookup(variant)
         return entry is not None
@@ -111,10 +123,12 @@ class CatalogueModule(VariantModule):
 
     # -- evaluation -------------------------------------------------------
     def evaluate(self, variant: Variant) -> list[DrugEvidence]:
-        entry, by_coord = self._lookup(variant)
-        if entry is None:
+        entries, by_coord = self._lookup(variant)
+        if entries is None:
             return []
+        return [ev for entry in entries for ev in self._evaluate_entry(entry, variant, by_coord)]
 
+    def _evaluate_entry(self, entry, variant, by_coord):
         call = _CALL_MAP.get(entry["call"])
         if call is None:
             raise ValueError(
@@ -139,7 +153,8 @@ class CatalogueModule(VariantModule):
                 call=call,
                 tier=Tier.CATALOGUED,
                 lane=Lane.CATALOGUE,
-                confidence=float(entry["confidence"]),
+                confidence=float(entry["confidence"]) if entry.get("confidence") is not None else None,
+                scope="variant",
                 variant=variant.identity,
                 who_grade=grade,
                 engine=self.engine,

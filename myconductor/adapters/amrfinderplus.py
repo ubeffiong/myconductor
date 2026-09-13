@@ -21,6 +21,7 @@ are preserved on the evidence rather than flattened away.
 from __future__ import annotations
 
 import csv
+import hashlib
 from pathlib import Path
 from typing import Optional
 
@@ -72,7 +73,7 @@ class AMRFinderPlusAdapter(EngineAdapter):
                 f"understands AMRFinderPlus TSV output."
             )
 
-        report = EngineReport(engine=self.engine)
+        report = EngineReport(engine=self.engine, source_sha256=hashlib.sha256(path.read_bytes()).hexdigest())
         n_rows = 0
         n_virulence = 0
 
@@ -103,7 +104,7 @@ class AMRFinderPlusAdapter(EngineAdapter):
             subtype = _get(row, lowered, "element subtype", "").strip().upper()
 
             limitations = [f"imported from {self.engine}", _CLASS_LIMITATION]
-            call = Call.RESISTANT
+            call = Call.INDETERMINATE
             tier = Tier.CATALOGUED
 
             if identity_pct is not None and identity_pct < self.min_identity:
@@ -138,15 +139,15 @@ class AMRFinderPlusAdapter(EngineAdapter):
                 drug=drug_class,
                 call=call,
                 tier=tier,
-                lane=Lane.ENGINE,
+                lane=Lane.ENGINE, scope="determinant",
                 confidence=None,
                 variant=variant.identity,
                 engine=self.engine,
                 limitations=tuple(limitations),
                 rationale=(
                     f"AMRFinderPlus detected {gene} "
-                    f"({subtype or element_type}) conferring {drug_class} "
-                    f"resistance"
+                    f"({subtype or element_type}) associated with {drug_class}; "
+                    f"phenotypic resistance is not predicted"
                     + (f"; {identity_pct:.1f}% identity" if identity_pct else "")
                     + (f", {coverage_pct:.1f}% coverage" if coverage_pct else "")
                     + f", method {method or 'unreported'}."

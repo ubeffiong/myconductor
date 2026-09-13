@@ -98,14 +98,14 @@ class LocalValidationModuleTests(unittest.TestCase):
         self.assertFalse(self.lane.applies_to(self.v))
         self.assertEqual(self.lane.evaluate(self.v), [])
 
-    def test_consistent_verdict_emits_phenotypic_evidence(self):
+    def test_historical_association_does_not_become_current_phenotype(self):
         self.store.ingest(record(self.v, Call.RESISTANT))
         self.assertTrue(self.lane.applies_to(self.v))
         evidence = self.lane.evaluate(self.v)
         self.assertEqual(len(evidence), 1)
-        self.assertEqual(evidence[0].call, Call.RESISTANT)
-        self.assertEqual(evidence[0].tier, Tier.PHENOTYPIC)
-        self.assertIn("site-local validation", " ".join(evidence[0].limitations))
+        self.assertEqual(evidence[0].call, Call.INDETERMINATE)
+        self.assertEqual(evidence[0].tier, Tier.INFERRED)
+        self.assertEqual(evidence[0].scope, "historical")
 
     def test_conflicting_verdict_never_asserts_resistance(self):
         self.store.ingest(record(self.v, Call.RESISTANT, isolate_id="iso1"))

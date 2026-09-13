@@ -66,8 +66,16 @@ class AnalysisInputs:
     limit: Optional[int] = None
     min_carriers: int = MIN_CARRIERS
     drugs: Optional[tuple[str, ...]] = None
+    cached_only: bool = False
+    metadata: Optional[Path] = None
+    partition: Optional[str] = None
+    independent_clusters: bool = False
 
     def validate(self) -> None:
+        if self.limit is not None and self.limit <= 0 or self.min_carriers <= 0:
+            raise AnalysisError("limit and min_carriers must be positive")
+        if (self.partition or self.independent_clusters) and not self.metadata:
+            raise AnalysisError("partition/independent-clusters requires metadata")
         for label, path in (("catalogue", self.catalogue),
                             ("phenotype table", self.phenotypes),
                             ("reuse table", self.reuse_table)):
@@ -216,7 +224,7 @@ def candidate_variants(catalogue: Path,
             continue
         drugs = [d for d in entry.get("drugs", [])]
         if drugs:
-            candidates[label] = drugs
+            candidates[label] = sorted(set(candidates.get(label, [])) | set(drugs))
     return candidates
 
 
@@ -235,7 +243,7 @@ def run(inputs: AnalysisInputs) -> AnalysisResult:
 
     rows = _read_reuse_rows(inputs.reuse_table)
     result.load = load_genotypes(rows, coordinate_index, inputs.cache_dir,
-                                 limit=inputs.limit)
+                                 limit=inputs.limit, **({"cached_only": True} if inputs.cached_only else {}))
     if not result.load.isolates:
         raise AnalysisError(
             "no isolate was genotyped; nothing can be analysed. Check the "
@@ -249,6 +257,17 @@ def run(inputs: AnalysisInputs) -> AnalysisResult:
             f"{'/'.join(ACCEPTED_PHENOTYPE_QUALITY)}")
 
     isolates: list[Isolate] = list(result.load.isolates.values())
+    if inputs.metadata:
+        from .metadata import apply_metadata
+        isolates, notes = apply_metadata(isolates, inputs.metadata, inputs.partition, inputs.independent_clusters)
+        result.notes.extend(notes)
+        result.load.isolates = {i.isolate_id: i for i in isolates}
+    result.notes.extend([
+        f"{sum(not i.lineage for i in isolates)} isolates lack lineage; {sum(not i.site for i in isolates)} lack site.",
+        "Conditional association is a discovery result, not a causal determinant or susceptibility prediction.",
+        "CRyPTIC and WHO catalogue samples may overlap; this scan is not independent predictive validation.",
+        "Relatedness is not controlled unless independent-clusters is explicitly enabled with reviewed cluster metadata.",
+    ])
     observed = result.load.carriers_per_variant
     candidates = candidate_variants(inputs.catalogue, observed,
                                     inputs.min_carriers)

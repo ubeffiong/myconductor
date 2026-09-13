@@ -168,12 +168,13 @@ class ParseVCFTests(unittest.TestCase):
         result = genotypes.parse_vcf(path, self.index)
         self.assertEqual(result.n_records, 0)
 
-    def test_multiallelic_alts_are_each_checked(self):
+    def test_only_the_genotyped_multiallelic_alt_is_present(self):
         path = write_vcf(
             "NC_000962.3\t761155\t.\tC\tA,T\t60\tPASS\t.\tGT\t1\n")
         result = genotypes.parse_vcf(path, self.index)
-        self.assertEqual(result.n_records, 2)
-        self.assertIn("rpoB_p.Ser450Leu", result.variants)
+        self.assertEqual(result.n_records, 1)
+        self.assertNotIn("rpoB_p.Ser450Leu", result.variants)
+        self.assertIn("rpoB_p.Ser450Leu", result.assessed_variants)
 
     def test_multi_drug_variant_resolves_once(self):
         path = write_vcf("NC_000962.3\t779010\t.\tG\tA\t60\tPASS\t.\tGT\t1\n")

@@ -152,11 +152,10 @@ class MykrobeTests(unittest.TestCase):
         inh = self._call("isoniazid")
         self.assertEqual(inh.variant_label, "katG_S315T")
 
-    def test_unrecognised_predict_code_is_skipped_with_a_warning(self):
+    def test_unrecognised_predict_code_is_rejected(self):
         data = {"S": {"susceptibility": {"Isoniazid": {"predict": "Z"}}}}
-        report = MykrobeAdapter().parse(write("m.json", json.dumps(data)))
-        self.assertEqual(report.evidence, [])
-        self.assertTrue(any("unrecognised" in w for w in report.warnings))
+        with self.assertRaises(AdapterSchemaError):
+            MykrobeAdapter().parse(write("m.json", json.dumps(data)))
 
     def test_missing_susceptibility_raises(self):
         with self.assertRaises(AdapterSchemaError):
@@ -189,9 +188,10 @@ class AMRFinderPlusTests(unittest.TestCase):
         for ev in self.report.evidence:
             self.assertTrue(any("drug class" in l for l in ev.limitations))
 
-    def test_full_length_high_identity_hit_is_resistant(self):
+    def test_full_length_hit_is_a_determinant_not_a_phenotype(self):
         kpc = [ev for ev in self.report.evidence if ev.drug == "carbapenem"][0]
-        self.assertIs(kpc.call, Call.RESISTANT)
+        self.assertIs(kpc.call, Call.INDETERMINATE)
+        self.assertEqual(kpc.scope, "determinant")
 
     def test_partial_coverage_downgrades_to_indeterminate(self):
         partial = [ev for ev in self.report.evidence if ev.drug == "amikacin"][0]

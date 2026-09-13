@@ -3,6 +3,8 @@ import unittest
 from pathlib import Path
 
 from myconductor.catalogue.profile import load_profile
+from myconductor.core.context import SampleContext, InterpretationPolicy, ValidationScope
+from myconductor.core.models import QCFinding
 from myconductor.core.models import (
     Call,
     DrugEvidence,
@@ -36,6 +38,17 @@ def catalogued(drug, call=Call.RESISTANT, gene="rpoB", change="S450L"):
     )
 
 
+def validated_reconciler(*drugs):
+    context = SampleContext("s", "i", "site", "mtbc", assay="WGS")
+    context.qc = [QCFinding(k, "pass", "reviewed fixture") for k in InterpretationPolicy().required_qc]
+    engine = EngineRef("test", "1", "db", "v1")
+    policy = InterpretationPolicy("fixture", [
+        ValidationScope("mtbc", "WGS", d, "test", "1", "v1", "fixture validation",
+                        "reviewer", "2026-01-01", "digest") for d in drugs])
+    return EvidenceReconciler(context=context, policy=policy, catalogue_engine=engine,
+                              catalogue_sha256="digest", illustrative=False)
+
+
 class CoverageGateTests(unittest.TestCase):
     def setUp(self):
         self.profile = load_profile()
@@ -47,12 +60,16 @@ class CoverageGateTests(unittest.TestCase):
             self.assertIs(r.call, Call.NOT_ASSESSED, r.drug)
             self.assertFalse(r.permits_use)
 
-    def test_no_evidence_with_coverage_is_susceptible(self):
+    def test_coverage_without_validation_is_indeterminate(self):
         mask = mask_for("rplC", "rrl")
         results = self.reconciler.reconcile([], mask)
         linezolid = next(r for r in results if r.drug == "linezolid")
-        self.assertIs(linezolid.call, Call.SUSCEPTIBLE)
-        self.assertTrue(linezolid.permits_use)
+        self.assertIs(linezolid.call, Call.INDETERMINATE)
+        self.assertFalse(linezolid.permits_use)
+
+    def test_matching_validation_and_coverage_permit_susceptibility(self):
+        results = validated_reconciler("linezolid").reconcile([], mask_for("rplC", "rrl"))
+        self.assertIs(next(r for r in results if r.drug == "linezolid").call, Call.SUSCEPTIBLE)
 
     def test_partial_locus_coverage_is_not_enough(self):
         # linezolid needs rplC AND rrl.
@@ -92,7 +109,7 @@ class CoverageGateTests(unittest.TestCase):
 
 
 class EngineCoverageAssertionTests(unittest.TestCase):
-    def test_engine_assertion_can_license_susceptibility(self):
+    def test_engine_assertion_without_validation_is_indeterminate(self):
         evidence = [DrugEvidence(
             drug="linezolid", call=Call.SUSCEPTIBLE, tier=Tier.CATALOGUED,
             lane=Lane.ENGINE,
@@ -101,8 +118,8 @@ class EngineCoverageAssertionTests(unittest.TestCase):
         )]
         results = EvidenceReconciler().reconcile(evidence, CallableMask.absent())
         lzd = next(r for r in results if r.drug == "linezolid")
-        self.assertIs(lzd.call, Call.SUSCEPTIBLE)
-        self.assertIn("mykrobe", lzd.reason)
+        self.assertIs(lzd.call, Call.INDETERMINATE)
+        self.assertIn("validated", lzd.reason)
 
     def test_susceptible_without_the_assertion_does_not_license_it(self):
         evidence = [DrugEvidence(
@@ -128,7 +145,7 @@ class DiscordanceTests(unittest.TestCase):
         results = EvidenceReconciler().reconcile(evidence, mask_for("rpoB"))
         rif = next(r for r in results if r.drug == "rifampicin")
         self.assertIsNotNone(rif.discordance)
-        self.assertIs(rif.call, Call.RESISTANT, "resistance is the safer side")
+        self.assertIs(rif.call, Call.INDETERMINATE, "unresolved conflicts require adjudication")
         self.assertEqual(len(rif.evidence), 2, "no evidence is discarded")
         self.assertEqual(len(collect_discordances(results)), 1)
 
@@ -153,7 +170,7 @@ class EligibilityTests(unittest.TestCase):
     def test_eligibility_requires_established_susceptibility(self):
         mask = mask_for("atpE", "Rv0678", "ddn", "fbiA", "fbiB", "fbiC",
                         "fgd1", "rplC", "rrl", "gyrA", "gyrB")
-        results = EvidenceReconciler().reconcile([], mask)
+        results = validated_reconciler("bedaquiline", "pretomanid", "linezolid", "moxifloxacin").reconcile([], mask)
         report = self.assessor.assess(results)
         bpalm = next(a for a in report.assessments if a.name == "BPaLM")
         self.assertTrue(bpalm.eligible)

@@ -430,7 +430,9 @@ class EvidenceLedger:
 
     def verify(self) -> tuple[bool, Optional[str]]:
         prev = self.GENESIS
-        for entry in self.entries:
+        for expected_seq, entry in enumerate(self.entries):
+            if entry.seq != expected_seq:
+                return False, f"noncontiguous ledger at seq {entry.seq}"
             if entry.prev_hash != prev:
                 return False, f"chain broken at seq {entry.seq}"
             body = json.dumps(

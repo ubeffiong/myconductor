@@ -138,7 +138,7 @@ def vcf_url(relative_path: str) -> str:
 
 
 def fetch_vcf(relative_path: str, cache_dir: str | Path,
-              timeout: int = 120) -> Path:
+              timeout: int = 120, cached_only: bool = False) -> Path:
     """Download one VCF into a local cache, or reuse what is already there.
 
     Caching is by the release-relative path, so a re-run of the analysis costs
@@ -148,9 +148,13 @@ def fetch_vcf(relative_path: str, cache_dir: str | Path,
     cleaned = relative_path.strip()
     while cleaned.startswith("../"):
         cleaned = cleaned[3:]
-    destination = cache_dir / cleaned
+    destination = (cache_dir / cleaned).resolve()
+    if not destination.is_relative_to(cache_dir.resolve()):
+        raise GenotypeError("VCF path escapes cache directory")
     if destination.is_file() and destination.stat().st_size > 0:
         return destination
+    if cached_only:
+        raise GenotypeError(f"not cached: {cleaned}")
 
     destination.parent.mkdir(parents=True, exist_ok=True)
     request = urllib.request.Request(vcf_url(relative_path),
@@ -175,6 +179,7 @@ class VCFGenotype:
     n_matched: int = 0
     n_filtered_out: int = 0
     contigs: frozenset[str] = frozenset()
+    assessed_variants: frozenset[str] = frozenset()
 
     @property
     def match_rate(self) -> float:
@@ -186,6 +191,7 @@ def parse_vcf(path: str | Path, index: CoordinateIndex) -> VCFGenotype:
     path = Path(path)
     opener = gzip.open if path.suffix == ".gz" else open
     variants: set[str] = set()
+    assessed: set[str] = set()
     contigs: set[str] = set()
     records = matched = filtered = 0
 
@@ -208,14 +214,29 @@ def parse_vcf(path: str | Path, index: CoordinateIndex) -> VCFGenotype:
                     filtered += 1
                     continue
 
-                for alt in alt_field.split(","):
+                alleles = None
+                if len(fields) > 10:
+                    raise GenotypeError("cohort VCF must contain exactly one sample")
+                if len(fields) == 10 and "GT" in fields[8].split(":"):
+                    fmt = dict(zip(fields[8].split(":"), fields[9].split(":")))
+                    gt = fmt.get("GT", ".").replace("|", "/").split("/")
+                    if not gt or any(not a.isdigit() for a in gt):
+                        filtered += 1
+                        continue
+                    alleles = {int(a) for a in gt}
+                    if max(alleles) > len(alt_field.split(",")):
+                        raise GenotypeError("VCF genotype allele index exceeds ALT count")
+                for allele_index, alt in enumerate(alt_field.split(","), 1):
                     alt = alt.strip()
                     # A symbolic or absent ALT carries no allele to match.
                     if not alt or alt in (".", "<NON_REF>", "*") \
                             or alt.startswith("<"):
                         continue
-                    records += 1
                     found = index.lookup(int(position), ref, alt)
+                    assessed |= found
+                    if alleles is not None and allele_index not in alleles:
+                        continue
+                    records += 1
                     if found:
                         matched += 1
                         variants |= found
@@ -224,7 +245,7 @@ def parse_vcf(path: str | Path, index: CoordinateIndex) -> VCFGenotype:
 
     return VCFGenotype(variants=frozenset(variants), n_records=records,
                        n_matched=matched, n_filtered_out=filtered,
-                       contigs=frozenset(contigs))
+                       contigs=frozenset(contigs), assessed_variants=frozenset(assessed))
 
 
 # -- driver ---------------------------------------------------------------
@@ -272,7 +293,7 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
                    cache_dir: str | Path,
                    limit: Optional[int] = None,
                    prefer_regenotyped: bool = True,
-                   progress_every: int = 250) -> GenotypeLoad:
+                   progress_every: int = 250, cached_only: bool = False) -> GenotypeLoad:
     """Genotype isolates from reuse-table rows.
 
     ``rows`` are dicts from the CRyPTIC reuse table, needing ``ENA_RUN`` and a
@@ -298,7 +319,7 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
 
         result.n_requested += 1
         try:
-            local = fetch_vcf(path, cache_dir)
+            local = fetch_vcf(path, cache_dir, cached_only=True) if cached_only else fetch_vcf(path, cache_dir)
             genotype = parse_vcf(local, index)
         except GenotypeError as exc:
             result.failures.append(str(exc))
@@ -309,6 +330,7 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
         result.contigs |= set(genotype.contigs)
         result.isolates[run] = Isolate(
             isolate_id=f"cr_{run}", genotype=genotype.variants,
+            assessed_variants=genotype.assessed_variants,
             lineage=(row.get("LINEAGE") or None),
             site=(row.get("UNIQUEID") or "").split(".")[1]
                  if (row.get("UNIQUEID") or "").startswith("site.") else None)

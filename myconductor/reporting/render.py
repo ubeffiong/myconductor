@@ -68,7 +68,7 @@ def render_text(report: AnalysisReport) -> str:
     lines.append("           ?  indeterminate · -  not assessed · "
                  "x  no call · n/a unsupported")
     lines.append("")
-    lines.append("   Only a coverage-backed S counts toward regimen eligibility.")
+    lines.append("   Only a validated genomic S or matched laboratory S counts toward eligibility.")
     lines.append("")
 
     for r in sorted(report.drug_results,
@@ -189,6 +189,17 @@ def render_text(report: AnalysisReport) -> str:
             if m.resolving_experiments:
                 lines.append(f"       would resolve it: "
                              f"{_wrap('; '.join(m.resolving_experiments), 26)}")
+
+    if report.investigations:
+        lines += ["", " INVESTIGATION AND FOLLOW-UP", _THIN]
+        actions = {a["investigation_id"]: a for a in report.follow_up}
+        for finding in report.investigations:
+            lines.append(f"   [{finding['certainty']}] {finding['drug']}: {finding['category']}")
+            lines.append("       " + _wrap(finding["explanation"], 7))
+            action = actions.get(finding["id"], {})
+            selected = action.get("selected") or {}
+            lines.append("       next: " + selected.get("action", action.get("status", "unknown")))
+        lines.append("   Rule-based review priorities; no test is ordered automatically.")
 
     # -- QC ----------------------------------------------------------------
     if report.qc:

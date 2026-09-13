@@ -96,6 +96,7 @@ class Isolate:
     genotype: frozenset[str] = frozenset()
     lineage: Optional[str] = None
     site: Optional[str] = None
+    assessed_variants: Optional[frozenset[str]] = None
 
     def carries(self, variant: str) -> bool:
         return variant in self.genotype
@@ -106,6 +107,8 @@ class Stratum:
     """One resistance background, and who does or does not carry the candidate."""
 
     background: frozenset[str]
+    lineage: Optional[str] = None
+    site: Optional[str] = None
     carriers: list[Isolate] = field(default_factory=list)
     non_carriers: list[Isolate] = field(default_factory=list)
 
@@ -119,9 +122,8 @@ class Stratum:
         return bool(self.carriers) and bool(self.non_carriers)
 
     def label(self) -> str:
-        if not self.background:
-            return "(no established determinant)"
-        return " + ".join(sorted(self.background))
+        background = " + ".join(sorted(self.background)) or "(no established determinant)"
+        return background + (f" | lineage={self.lineage}" if self.lineage else "") + (f" | site={self.site}" if self.site else "")
 
     def lineage_counts(self) -> dict[str, int]:
         counts: dict[str, int] = {}
@@ -197,13 +199,16 @@ def stratify(variant: str, drug: str, isolates: Sequence[Isolate],
     result = Stratification(variant=variant, drug=drug)
 
     for isolate in isolates:
+        if isolate.assessed_variants is not None and variant not in isolate.assessed_variants:
+            continue
         background = index.background(drug, isolate.genotype)
         if exclude_self:
             background = frozenset(background - {variant})
-        stratum = buckets.get(background)
+        key = (background, isolate.lineage, isolate.site)
+        stratum = buckets.get(key)
         if stratum is None:
-            stratum = Stratum(background=background)
-            buckets[background] = stratum
+            stratum = Stratum(background=background, lineage=isolate.lineage, site=isolate.site)
+            buckets[key] = stratum
         if isolate.carries(variant):
             stratum.carriers.append(isolate)
             result.n_carriers += 1
