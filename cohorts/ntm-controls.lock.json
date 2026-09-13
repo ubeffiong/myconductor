@@ -1,0 +1,284 @@
+{
+  "schema_version": "1.0",
+  "sample_sheet": "ntm-controls.tsv",
+  "sample_sheet_sha256": "d5a9c5b83f51858a8574276f162109cbeb84af04b242d085020747b40e77d325",
+  "country_confirmed": "",
+  "evidence": [
+    {
+      "sample_id": "ntm_ERR16089446",
+      "run": {
+        "run": "ERR16089446",
+        "biosample": "SAMEA120916422",
+        "bioproject": "PRJEB106303",
+        "sample_name": "SAMEA120916422",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1855946700",
+        "organism": "Mycobacteroides abscessus"
+      },
+      "biosample": {
+        "accession": "SAMEA120916422",
+        "geo_loc_name": "",
+        "collection_date": "",
+        "host": "",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_ERR16089452",
+      "run": {
+        "run": "ERR16089452",
+        "biosample": "SAMEA120916427",
+        "bioproject": "PRJEB106303",
+        "sample_name": "SAMEA120916427",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1065294300",
+        "organism": "Mycobacteroides abscessus"
+      },
+      "biosample": {
+        "accession": "SAMEA120916427",
+        "geo_loc_name": "",
+        "collection_date": "",
+        "host": "",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_ERR16089464",
+      "run": {
+        "run": "ERR16089464",
+        "biosample": "SAMEA120916437",
+        "bioproject": "PRJEB106303",
+        "sample_name": "SAMEA120916437",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1246589700",
+        "organism": "Mycobacteroides abscessus"
+      },
+      "biosample": {
+        "accession": "SAMEA120916437",
+        "geo_loc_name": "",
+        "collection_date": "",
+        "host": "",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_DRR1049646",
+      "run": {
+        "run": "DRR1049646",
+        "biosample": "SAMD01916989",
+        "bioproject": "PRJDB42275",
+        "sample_name": "SAMD01916989",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1305884240",
+        "organism": "Mycobacterium avium"
+      },
+      "biosample": {
+        "accession": "SAMD01916989",
+        "geo_loc_name": "Japan",
+        "collection_date": "2023-06-15",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_DRR1049647",
+      "run": {
+        "run": "DRR1049647",
+        "biosample": "SAMD01916990",
+        "bioproject": "PRJDB42275",
+        "sample_name": "SAMD01916990",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1324007260",
+        "organism": "Mycobacterium avium"
+      },
+      "biosample": {
+        "accession": "SAMD01916990",
+        "geo_loc_name": "Japan",
+        "collection_date": "2023-02-27",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_ERR16089430",
+      "run": {
+        "run": "ERR16089430",
+        "biosample": "SAMEA120916407",
+        "bioproject": "PRJEB106303",
+        "sample_name": "SAMEA120916407",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "980759100",
+        "organism": "Mycobacterium avium"
+      },
+      "biosample": {
+        "accession": "SAMEA120916407",
+        "geo_loc_name": "",
+        "collection_date": "",
+        "host": "",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_DRR1049645",
+      "run": {
+        "run": "DRR1049645",
+        "biosample": "SAMD01916988",
+        "bioproject": "PRJDB42275",
+        "sample_name": "SAMD01916988",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "650286332",
+        "organism": "Mycobacterium intracellulare"
+      },
+      "biosample": {
+        "accession": "SAMD01916988",
+        "geo_loc_name": "Japan",
+        "collection_date": "2023-06-15",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_ERR16089413",
+      "run": {
+        "run": "ERR16089413",
+        "biosample": "SAMEA120916392",
+        "bioproject": "PRJEB106303",
+        "sample_name": "SAMEA120916392",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1727719800",
+        "organism": "Mycobacterium intracellulare"
+      },
+      "biosample": {
+        "accession": "SAMEA120916392",
+        "geo_loc_name": "",
+        "collection_date": "",
+        "host": "",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_ERR16089425",
+      "run": {
+        "run": "ERR16089425",
+        "biosample": "SAMEA120916403",
+        "bioproject": "PRJEB106303",
+        "sample_name": "SAMEA120916403",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1792490400",
+        "organism": "Mycobacterium intracellulare"
+      },
+      "biosample": {
+        "accession": "SAMEA120916403",
+        "geo_loc_name": "",
+        "collection_date": "",
+        "host": "",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_SRR39351089",
+      "run": {
+        "run": "SRR39351089",
+        "biosample": "SAMN61131881",
+        "bioproject": "PRJNA1482696",
+        "sample_name": "050015R2",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1961344800",
+        "organism": "Mycobacterium marinum"
+      },
+      "biosample": {
+        "accession": "SAMN61131881",
+        "geo_loc_name": "China: Sichuan",
+        "collection_date": "2021",
+        "host": "Homo sapiens",
+        "isolation_source": "tissue biopsy",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_SRR39351088",
+      "run": {
+        "run": "SRR39351088",
+        "biosample": "SAMN61131882",
+        "bioproject": "PRJNA1482696",
+        "sample_name": "050016R2",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1910250600",
+        "organism": "Mycobacterium marinum"
+      },
+      "biosample": {
+        "accession": "SAMN61131882",
+        "geo_loc_name": "China: Sichuan",
+        "collection_date": "2022",
+        "host": "Homo sapiens",
+        "isolation_source": "tissue biopsy",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ntm_SRR39351087",
+      "run": {
+        "run": "SRR39351087",
+        "biosample": "SAMN61131883",
+        "bioproject": "PRJNA1482696",
+        "sample_name": "050017R2",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1930931100",
+        "organism": "Mycobacterium marinum"
+      },
+      "biosample": {
+        "accession": "SAMN61131883",
+        "geo_loc_name": "China: Sichuan",
+        "collection_date": "2022",
+        "host": "Homo sapiens",
+        "isolation_source": "tissue biopsy",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    }
+  ]
+}

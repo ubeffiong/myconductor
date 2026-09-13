@@ -37,6 +37,19 @@ jobs:
       - name: Run the programmatic example
         run: python examples/run_demo.py
 
+      - name: mycobench imports and its CLI resolves
+        run: |
+          python -c "import mycobench; print(mycobench.__version__)"
+          python -m mycobench --help > /dev/null
+          python -m mycobench version
+
+      # Offline: schema only. The --online path needs NCBI and is not run in CI.
+      - name: Shipped cohort panels validate
+        run: |
+          for panel in nigeria-v1 nigeria-full ntm-controls; do
+            python -m mycobench validate-cohort --cohort "$panel"
+          done
+
   safety-invariants:
     name: Safety invariants
     runs-on: ubuntu-latest
@@ -96,6 +109,29 @@ jobs:
             echo "::error::documentation must not claim validation"
             exit 1
           fi
+
+      # A cohort row must never claim a phenotype it does not have: that is
+      # what separates the concordance track from an accuracy claim.
+      - name: No Nigerian panel row claims a phenotype
+        run: |
+          python - <<'PY'
+          import csv, sys
+          bad = []
+          for panel in ("cohorts/nigeria-v1.tsv", "cohorts/nigeria-full.tsv"):
+              with open(panel, encoding="utf-8") as fh:
+                  rows = csv.DictReader(
+                      (l for l in fh if l.strip() and not l.startswith("#")),
+                      delimiter="\t")
+                  for row in rows:
+                      if (row.get("phenotype_source") or "").strip():
+                          bad.append((panel, row["sample_id"]))
+                      if not row["geo_loc_name"].lower().startswith("nigeria"):
+                          bad.append((panel, row["sample_id"] + " geo"))
+          if bad:
+              print(f"::error::rows claim a phenotype or unconfirmed origin: {bad[:5]}")
+              sys.exit(1)
+          print("pass: Nigerian panels claim no phenotype and confirm origin")
+          PY
 
       - name: Verify safety invariants hold at runtime
         run: python -m unittest tests.test_safety_invariants -v

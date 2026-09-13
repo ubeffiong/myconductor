@@ -57,3 +57,15 @@ desktop.ini
 # Local run outputs
 *.fhir.json
 out/
+
+# mycobench working directories. These hold downloaded reads and tool output:
+# tens of gigabytes per cohort, already publicly hosted by NCBI, and never
+# something to commit. The cohort manifests and their locks ARE committed;
+# everything a run produces is not.
+data/
+results/
+logs/
+curation/
+review/
+run_*.sh
+

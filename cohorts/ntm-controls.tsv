@@ -1,0 +1,29 @@
+# mycobench species-control panel: ntm-controls
+#
+# 12 NON-TUBERCULOUS MYCOBACTERIA runs. These are NEGATIVE CONTROLS, not
+# benchmark subjects: TB-Profiler targets MTBC only, and the mycobacterial
+# organism profile is written against H37Rv.
+#
+# What this panel tests: that the pipeline REFUSES to interpret a non-MTBC
+# genome against the MTBC profile, rather than silently producing drug calls
+# for the wrong organism. A run here passes when its drugs come back
+# UNSUPPORTED / NOT_ASSESSED and the species QC check fails loudly.
+#
+# expected_outcome states that contract per row, and the validator treats any
+# RESISTANT or SUSCEPTIBLE call on these rows as a FAILURE.
+#
+# Every accession was retrieved from NCBI SRA. cohort_tier is B: deposited
+# evidence checks pass, no publication reviewed.
+sample_id	sra_run	biosample	bioproject	organism	geo_loc_name	platform	layout	bases	cohort_tier	phenotype_source	source_study	expected_outcome
+ntm_ERR16089446	ERR16089446	SAMEA120916422	PRJEB106303	Mycobacteroides abscessus		ILLUMINA	PAIRED	1855946700	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_ERR16089452	ERR16089452	SAMEA120916427	PRJEB106303	Mycobacteroides abscessus		ILLUMINA	PAIRED	1065294300	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_ERR16089464	ERR16089464	SAMEA120916437	PRJEB106303	Mycobacteroides abscessus		ILLUMINA	PAIRED	1246589700	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_DRR1049646	DRR1049646	SAMD01916989	PRJDB42275	Mycobacterium avium		ILLUMINA	PAIRED	1305884240	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_DRR1049647	DRR1049647	SAMD01916990	PRJDB42275	Mycobacterium avium		ILLUMINA	PAIRED	1324007260	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_ERR16089430	ERR16089430	SAMEA120916407	PRJEB106303	Mycobacterium avium		ILLUMINA	PAIRED	980759100	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_DRR1049645	DRR1049645	SAMD01916988	PRJDB42275	Mycobacterium intracellulare		ILLUMINA	PAIRED	650286332	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_ERR16089413	ERR16089413	SAMEA120916392	PRJEB106303	Mycobacterium intracellulare		ILLUMINA	PAIRED	1727719800	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_ERR16089425	ERR16089425	SAMEA120916403	PRJEB106303	Mycobacterium intracellulare		ILLUMINA	PAIRED	1792490400	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_SRR39351089	SRR39351089	SAMN61131881	PRJNA1482696	Mycobacterium marinum		ILLUMINA	PAIRED	1961344800	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_SRR39351088	SRR39351088	SAMN61131882	PRJNA1482696	Mycobacterium marinum		ILLUMINA	PAIRED	1910250600	B		NCBI_discovery_pending_publication_review	species_mismatch_refused
+ntm_SRR39351087	SRR39351087	SAMN61131883	PRJNA1482696	Mycobacterium marinum		ILLUMINA	PAIRED	1930931100	B		NCBI_discovery_pending_publication_review	species_mismatch_refused

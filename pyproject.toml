@@ -30,9 +30,10 @@ Repository = "https://github.com/ubeffiong/myconductor"
 
 [project.scripts]
 myconductor = "myconductor.cli:main"
+mycobench = "mycobench.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["myconductor*"]
+include = ["myconductor*", "mycobench*"]
 
 [tool.setuptools.package-data]
 myconductor = ["catalogue/*.json", "data/*"]

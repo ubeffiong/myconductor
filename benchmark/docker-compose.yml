@@ -1,0 +1,65 @@
+# Three services, one per stage that needs a different toolchain.
+#
+# Every image is pinned BY DIGEST. A tag can be repointed at new content, which
+# would silently change what produced a published number; a digest cannot.
+# Digests recorded 2026-09-13 — verify with:
+#   docker buildx imagetools inspect <image>:<tag>
+#
+# The stages share ../data, ../results and ../logs so output from one is input
+# to the next. config is read-only: a container must not be able to edit the
+# cohort it is being measured against.
+
+services:
+  # Stage 1 — download reads from SRA.
+  sra:
+    image: ncbi/sra-tools:3.4.1@sha256:1bf9aa259adc315df1cf9d6f8e9d5de7146f1d167e4b7abdc7a61438423da795
+    working_dir: /work
+    volumes:
+      - ../cohorts:/work/cohorts:ro
+      - ../data:/work/data
+      - ../logs:/work/logs
+      - ../results:/work/results
+    environment:
+      DATA_DIR: /work/data
+      LOG_DIR: /work/logs
+      RESULTS_DIR: /work/results
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["echo 'Run: docker compose run --rm sra <prefetch|fasterq-dump> ...'"]
+
+  # Stage 2 — TB-Profiler. Carries its own tbdb catalogue; that version is
+  # recorded in the run manifest because it determines the engine's calls.
+  tbprofiler:
+    image: staphb/tbprofiler:6.7.0@sha256:c3785d4267c21b3ea6c083a49260271753054954750f39f8cea38056d7390eee
+    working_dir: /work
+    volumes:
+      - ../cohorts:/work/cohorts:ro
+      - ../data:/work/data
+      - ../logs:/work/logs
+      - ../results:/work/results
+    environment:
+      DATA_DIR: /work/data
+      LOG_DIR: /work/logs
+      RESULTS_DIR: /work/results
+    command: ["tb-profiler", "version"]
+
+  # Stages 3-5 — interpret, validate, report. Zero runtime dependencies.
+  mycobench:
+    build:
+      context: ..
+      dockerfile: benchmark/Dockerfile
+    image: mycobench:local
+    working_dir: /work
+    volumes:
+      - ../cohorts:/work/cohorts:ro
+      - ../data:/work/data
+      - ../logs:/work/logs
+      - ../results:/work/results
+    environment:
+      DATA_DIR: /work/data
+      LOG_DIR: /work/logs
+      RESULTS_DIR: /work/results
+      # E-utilities asks callers to identify themselves; an API key raises the
+      # allowance from 3 to 10 requests/second. Pass through from the host.
+      NCBI_EMAIL: "${NCBI_EMAIL:-}"
+      NCBI_API_KEY: "${NCBI_API_KEY:-}"
+    command: ["mycobench", "--help"]

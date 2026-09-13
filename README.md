@@ -194,6 +194,38 @@ tests/                 unittest suite, including tests/test_safety_invariants.py
 examples/run_demo.py   with and without coverage, plus the federated contract
 ```
 
+## Validating it against real data
+
+`mycobench` is the harness that measures this thing instead of asserting it. It
+runs TB-Profiler and Myconductor over public mycobacterial isolates and reports
+what the comparison supports — see [`docs/BENCHMARK.md`](docs/BENCHMARK.md).
+
+```bash
+mycobench validate-cohort --cohort nigeria-v1 --online --country Nigeria
+mycobench estimate-download --cohort nigeria-v1
+mycobench fetch-catalogue --out-dir data/who --write-profile
+mycobench run --cohort nigeria-v1 --write-script run_v1.sh
+```
+
+Three shipped panels, every accession retrieved from NCBI rather than composed:
+
+| Panel | Rows | Track | Download |
+|---|---:|---|---:|
+| `nigeria-v1` | 25 | concordance | ~10 GB |
+| `nigeria-full` | 213 | concordance | ~40 GB |
+| `ntm-controls` | 12 | species control | ~11 GB |
+
+Two things about this are worth stating plainly. **The Nigerian panels cannot
+measure accuracy** — their BioSamples carry no DST or MIC metadata, so they
+measure agreement with TB-Profiler and nothing more; accuracy comes from the
+CRyPTIC compendium via `mycobench fetch-phenotypes`. And **origin is confirmed
+on the controlled `geo_loc_name` field, not free text**: an SRA search for
+`Nigeria` also returns 37 runs deposited from the East China Sea.
+
+`mycobench fetch-catalogue` also closes the null-coordinate gap, because WHO's
+published files supply real genomic coordinates that the bundled illustrative
+profile refuses to invent.
+
 ## Tests
 
 ```bash

@@ -1,0 +1,47 @@
+# mycobench frozen panel: nigeria-v1
+#
+# GENERATED from verified NCBI metadata -- do not hand-edit. Every geo_loc_name,
+# collection_date and isolation_source below is the value deposited in the
+# BioSample record, retrieved via E-utilities.
+#
+# 25 Mycobacterium tuberculosis runs whose BioSample geo_loc_name CONFIRMS
+# Nigeria, capped at 4 runs per BioProject so no single study dominates. Within
+# each project the deepest runs were taken, which makes the selection
+# reproducible.
+#
+# Origin was confirmed on geo_loc_name, NOT on a free-text search: an SRA search
+# for 'Nigeria[All Fields]' also returns 37 runs whose geo_loc_name is
+# 'China: East China Sea, Xiangshan Bay'. See cohorts/README.md.
+#
+# phenotype_source is EMPTY on every row: no DST or MIC metadata exists in these
+# BioSamples, so this panel supports the CONCORDANCE track only and cannot
+# measure accuracy. For that, build cryptic-phenotyped.tsv.
+#
+# cohort_tier is B throughout: deposited-evidence checks pass, no publication
+# reviewed.
+sample_id	sra_run	biosample	bioproject	organism	geo_loc_name	collection_date	isolation_source	platform	layout	bases	cohort_tier	phenotype_source	source_study
+ng_SRR5535815	SRR5535815	SAMN06251222	PRJNA300846	Mycobacterium tuberculosis	Nigeria	missing	sputum	ILLUMINA	PAIRED	1384893820	B		NCBI_discovery_pending_publication_review
+ng_SRR5535860	SRR5535860	SAMN06251239	PRJNA300846	Mycobacterium tuberculosis	Nigeria	missing	sputum	ILLUMINA	PAIRED	1372072880	B		NCBI_discovery_pending_publication_review
+ng_SRR5535823	SRR5535823	SAMN06251243	PRJNA300846	Mycobacterium tuberculosis	Nigeria	missing	sputum	ILLUMINA	PAIRED	1267368604	B		NCBI_discovery_pending_publication_review
+ng_SRR5535824	SRR5535824	SAMN06251230	PRJNA300846	Mycobacterium tuberculosis	Nigeria	missing	sputum	ILLUMINA	PAIRED	1155038222	B		NCBI_discovery_pending_publication_review
+ng_SRR14334195	SRR14334195	SAMN18880038	PRJNA725394	Mycobacterium tuberculosis	Nigeria	2019-07-10		ILLUMINA	PAIRED	985881891	B		NCBI_discovery_pending_publication_review
+ng_SRR18715441	SRR18715441	SAMN27520129	PRJNA825524	Mycobacterium tuberculosis	Nigeria:Ibadan_OyoState	2020	sputum	ILLUMINA	PAIRED	969565769	B		NCBI_discovery_pending_publication_review
+ng_SRR14334194	SRR14334194	SAMN18880039	PRJNA725394	Mycobacterium tuberculosis	Nigeria	2019-07-25		ILLUMINA	PAIRED	951068300	B		NCBI_discovery_pending_publication_review
+ng_SRR24302112	SRR24302112	SAMN34369191	PRJNA961800	Mycobacterium tuberculosis	Nigeria	2021	sputum	ILLUMINA	PAIRED	831817097	B		NCBI_discovery_pending_publication_review
+ng_SRR18714978	SRR18714978	SAMN27520212	PRJNA825524	Mycobacterium tuberculosis	Nigeria:Ibadan_OyoState	2021	sputum	ILLUMINA	PAIRED	798554126	B		NCBI_discovery_pending_publication_review
+ng_SRR24302114	SRR24302114	SAMN34369189	PRJNA961800	Mycobacterium tuberculosis	Nigeria	2021	sputum	ILLUMINA	PAIRED	778609708	B		NCBI_discovery_pending_publication_review
+ng_SRR29341580	SRR29341580	SAMN41772237	PRJNA1122079	Mycobacterium tuberculosis	Nigeria	2022	missing	ILLUMINA	PAIRED	702364565	B		NCBI_discovery_pending_publication_review
+ng_SRR24302113	SRR24302113	SAMN34369190	PRJNA961800	Mycobacterium tuberculosis	Nigeria	2021	sputum	ILLUMINA	PAIRED	674652407	B		NCBI_discovery_pending_publication_review
+ng_SRR24783280	SRR24783280	SAMN35526101	PRJNA905483	Mycobacterium tuberculosis	Nigeria	2023-05-05	sputum	ILLUMINA	PAIRED	598778064	B		NCBI_discovery_pending_publication_review
+ng_SRR29163952	SRR29163952	SAMN41525267	PRJNA1116203	Mycobacterium tuberculosis	Nigeria:NIGER	2016-07/2017-02	Culture isolate	ILLUMINA	PAIRED	498637334	B		NCBI_discovery_pending_publication_review
+ng_SRR24783286	SRR24783286	SAMN35526095	PRJNA905483	Mycobacterium tuberculosis	Nigeria	2023-05-05	sputum	ILLUMINA	PAIRED	493524972	B		NCBI_discovery_pending_publication_review
+ng_SRR24783281	SRR24783281	SAMN35526100	PRJNA905483	Mycobacterium tuberculosis	Nigeria	2023-05-05	sputum	ILLUMINA	PAIRED	477738208	B		NCBI_discovery_pending_publication_review
+ng_SRR29163966	SRR29163966	SAMN41525254	PRJNA1116203	Mycobacterium tuberculosis	Nigeria:PLATEAU	2016-07/2017-02	Culture isolate	ILLUMINA	PAIRED	469132538	B		NCBI_discovery_pending_publication_review
+ng_SRR29163995	SRR29163995	SAMN41525228	PRJNA1116203	Mycobacterium tuberculosis	Nigeria:NASARAWA	2016-07/2017-02	Culture isolate	ILLUMINA	PAIRED	438956728	B		NCBI_discovery_pending_publication_review
+ng_SRR24783282	SRR24783282	SAMN35526099	PRJNA905483	Mycobacterium tuberculosis	Nigeria	2023-05-05	sputum	ILLUMINA	PAIRED	414358234	B		NCBI_discovery_pending_publication_review
+ng_SRR29163983	SRR29163983	SAMN41525239	PRJNA1116203	Mycobacterium tuberculosis	Nigeria:FCT	2016-07/2017-02	Culture isolate	ILLUMINA	PAIRED	411569526	B		NCBI_discovery_pending_publication_review
+ng_SRR29056126	SRR29056126	SAMN41421869	PRJNA1109295	Mycobacterium tuberculosis	Nigeria	2012	missing	ILLUMINA	PAIRED	333724496	B		NCBI_discovery_pending_publication_review
+ng_SRR35084735	SRR35084735	SAMN50741055	PRJNA1309160	Mycobacterium tuberculosis	Nigeria	2020-06-24		ILLUMINA	PAIRED	217642790	B		NCBI_discovery_pending_publication_review
+ng_SRR35084740	SRR35084740	SAMN50741051	PRJNA1309160	Mycobacterium tuberculosis	Nigeria	2020-04-27		ILLUMINA	PAIRED	202844736	B		NCBI_discovery_pending_publication_review
+ng_SRR35084734	SRR35084734	SAMN50741056	PRJNA1309160	Mycobacterium tuberculosis	Nigeria	2020-08-14		ILLUMINA	PAIRED	201574688	B		NCBI_discovery_pending_publication_review
+ng_SRR35084744	SRR35084744	SAMN50741047	PRJNA1309160	Mycobacterium tuberculosis	Nigeria	2020-02-28		ILLUMINA	PAIRED	184764540	B		NCBI_discovery_pending_publication_review
