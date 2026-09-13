@@ -122,6 +122,15 @@ def permutation_pvalue(group_a: Sequence[float], group_b: Sequence[float],
     Deliberately a permutation test rather than a parametric one: log-MIC
     distributions are censored and multimodal, so a t-test's assumptions do not
     hold here.
+
+    **Do not use the default median statistic on MIC data.** Values lie on a
+    discrete doubling-dilution series, so a median takes only a few distinct
+    values and the test loses nearly all resolution: on a perfectly separated
+    eight-versus-eight comparison it returns p near 0.6, because any split
+    placing most high values on one side reproduces the observed difference
+    exactly. ``analysis.effects._permutation_delta_pvalue`` permutes the
+    censoring-aware effect size instead, which varies continuously with the
+    split. This function remains for continuous statistics.
     """
     group_a, group_b = list(group_a), list(group_b)
     if len(group_a) < min_n or len(group_b) < min_n:

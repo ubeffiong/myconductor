@@ -2,8 +2,15 @@
 import math
 from dataclasses import replace
 from statistics import median
+from typing import Protocol
 
 from ..core.models import PopulationStructure, Subpopulation
+
+
+class TimingModelProtocol(Protocol):
+    """External, independently calibrated dating result; no built-in clock."""
+    def estimate(self, context, linked_populations) -> dict:
+        ...
 
 
 def cluster_subpopulations(variants, heteroresistance_findings, tolerance=0.05):

@@ -155,6 +155,11 @@ class Myconductor:
         epistasis_table=None,
         mic_predictions=(),
         structural_annotations=None,
+        regulatory_catalogue=None,
+        expression_evidence=(),
+        in_silico_predictions=(),
+        model_registry=None,
+        watchlist=None,
     ) -> AnalysisReport:
         if population_lineage_hints and not include_population_structure:
             raise ValueError("population lineage hints require population-structure analysis")
@@ -226,6 +231,20 @@ class Myconductor:
                 variants_by_key.setdefault(v.key(), v)
         outcome = self.router.route(list(variants_by_key.values()))
         evidence = list(outcome.evidence) + merge_evidence(engine_reports)
+        regulatory_findings = []
+        if regulatory_catalogue is not None:
+            for variant in variants_by_key.values():
+                for entry in regulatory_catalogue.matches(variant, self.profile.name):
+                    regulatory_findings.append(dict(asdict(entry), variant_key=variant.key(),
+                        catalogue_version=regulatory_catalogue.version, illustrative=regulatory_catalogue.illustrative))
+                    if entry.evidence_tier == "CATALOGUED":
+                        for drug in entry.drug_associations:
+                            if self.profile.supports_drug(drug):
+                                evidence.append(DrugEvidence(drug, Call.INDETERMINATE, Tier.INFERRED,
+                                    Lane.EFFLUX_REGULATORY, variant=variant.identity,
+                                    rationale=f"Regulatory-region record {entry.id} ({entry.evidence_tier}); region membership does not establish expression or resistance.",
+                                    scope="variant", catalogue_version=regulatory_catalogue.version,
+                                    rule_id=entry.id, metadata={"regulatory_region": asdict(entry)}))
 
         all_variants = list(adapted.variants)
         for report in engine_reports:
@@ -267,6 +286,8 @@ class Myconductor:
         results = reconciler.reconcile(evidence, mask)
         from ..modules.mic_evidence import reconcile_predictions
         quantitative_findings = reconcile_predictions(results, mic_predictions, context)
+        from ..modules.expression_evidence import reconcile_expression
+        expression_findings = reconcile_expression(results, expression_evidence, context)
         eligibility = self.assessor.assess(results)
         vus = self.workbench.priorities(list(variants_by_key.values()))
         mechanism_queue = self.router.efflux.mechanism_queue(adapted.variants)
@@ -275,6 +296,8 @@ class Myconductor:
             structural_records, structural_hypotheses = structural_annotations.attach(
                 vus, self.profile.name, self.profile.reference_assembly)
             mechanism_queue.extend(structural_hypotheses)
+        from ..modules.in_silico import reconcile_in_silico_predictions
+        in_silico_findings = reconcile_in_silico_predictions(vus, in_silico_predictions, context, model_registry)
 
         discordances = list(collect_discordances(results))
         if len(engine_reports) > 1:
@@ -321,6 +344,11 @@ class Myconductor:
         manifest["epistasis_table"] = epistasis_table.to_dict() if epistasis_table else None
         manifest["mic_predictions"] = [asdict(p) for p in mic_predictions]
         manifest["structural_annotations"] = structural_annotations.to_dict() if structural_annotations is not None else []
+        manifest["regulatory_catalogue"] = regulatory_catalogue.to_dict() if regulatory_catalogue is not None else None
+        manifest["expression_evidence"] = [asdict(e) for e in expression_evidence]
+        manifest["in_silico_predictions"] = [asdict(p) for p in in_silico_predictions]
+        manifest["model_registry"] = model_registry.to_dict() if model_registry is not None else None
+        manifest["watchlist_enabled"] = watchlist is not None
         fingerprint = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
         provenance = Provenance(
             input_sha256=source_hashes["variants"], analysis_fingerprint=fingerprint,
@@ -340,6 +368,9 @@ class Myconductor:
         )
 
         report = AnalysisReport(
+            expression_findings=expression_findings,
+            in_silico_findings=in_silico_findings,
+            regulatory_findings=regulatory_findings,
             structural_annotations=structural_records,
             mic_predictions=[asdict(p) for p in mic_predictions],
             quantitative_findings=quantitative_findings,
@@ -372,6 +403,8 @@ class Myconductor:
         from ..modules.investigation import investigate, plan_follow_up
         report.investigations = investigate(report)
         report.follow_up = plan_follow_up(report.investigations, test_menu, follow_up_budget)
+        if watchlist is not None:
+            report.discordance_tickets = watchlist.capture(report)
         return report
 
 

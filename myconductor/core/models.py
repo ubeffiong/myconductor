@@ -645,6 +645,10 @@ class AnalysisReport:
     mic_predictions: list[dict] = field(default_factory=list)
     quantitative_findings: list[dict] = field(default_factory=list)
     structural_annotations: list[dict] = field(default_factory=list)
+    regulatory_findings: list[dict] = field(default_factory=list)
+    expression_findings: list[dict] = field(default_factory=list)
+    in_silico_findings: list[dict] = field(default_factory=list)
+    discordance_tickets: list[dict] = field(default_factory=list)
 
     @property
     def resistant_drugs(self) -> list[str]:
@@ -703,3 +707,84 @@ class PopulationStructure:
     data_gaps: list[str] = field(default_factory=list)
     method: str = "bounded-span VAF grouping; no haplotype inference"
     tolerance: float = 0.05
+    dating: Optional[dict] = None
+
+
+@dataclass(frozen=True)
+class ExpressionEvidence:
+    gene: str
+    measurement_type: str
+    expression_level: float
+    reference_level: float
+    fold_change: float
+    provenance: str
+    sample_id: str
+    observation_id: str
+    isolate_id: str
+    site_id: str
+    organism: str
+    unit: str
+    timestamp: str
+    confidence: Optional[float] = None
+    reported_conclusion: str = "uncertain"
+    interpretation_source: Optional[str] = None
+    linked_variant_keys: tuple[str, ...] = ()
+    linkage_source: Optional[str] = None
+    measurement_scale: str = "reported_metric"
+
+    def __post_init__(self):
+        for name in ("gene", "provenance", "sample_id", "observation_id", "isolate_id", "site_id", "organism", "unit", "timestamp"):
+            if not isinstance(getattr(self, name), str) or not getattr(self, name).strip():
+                raise ValueError(f"expression observation requires {name}")
+        if self.measurement_type not in {"rna_seq", "qpcr", "proteomics", "phenotypic_assay"}:
+            raise ValueError("unknown expression measurement type")
+        for name in ("expression_level", "reference_level", "fold_change"):
+            value = getattr(self, name)
+            if not math.isfinite(value) or value < 0:
+                raise ValueError("expression values must be finite and nonnegative")
+        if self.reference_level == 0:
+            raise ValueError("expression reference level must be positive")
+        if self.measurement_scale not in {"reported_metric", "linear_abundance"}:
+            raise ValueError("unknown expression measurement scale")
+        if self.measurement_scale == "linear_abundance" and not math.isclose(
+                self.fold_change, self.expression_level / self.reference_level, rel_tol=0.01, abs_tol=1e-8):
+            raise ValueError("fold change disagrees with supplied linear abundance ratio")
+        if self.confidence is not None and (not math.isfinite(self.confidence) or not 0 <= self.confidence <= 1):
+            raise ValueError("measurement confidence must be in [0,1]")
+        if self.reported_conclusion not in {"elevated", "not_elevated", "uncertain"}:
+            raise ValueError("unknown expression conclusion")
+        if self.reported_conclusion != "uncertain" and not self.interpretation_source:
+            raise ValueError("reported expression conclusion requires interpretation source")
+        if self.linked_variant_keys and not self.linkage_source:
+            raise ValueError("expression-to-variant linkage requires a source")
+
+
+@dataclass(frozen=True)
+class InSilicoPrediction:
+    variant_key: str
+    drug: str
+    model_id: str
+    model_version: str
+    training_data_reference: str
+    prediction: str
+    source: str
+    sample_id: str
+    isolate_id: str
+    site_id: str
+    organism: str
+    timestamp: str
+    confidence: Optional[float] = None
+    feature_attributions: dict[str, float] = field(default_factory=dict)
+    structural_context: Optional[dict] = None
+
+    def __post_init__(self):
+        for name in ("variant_key", "drug", "model_id", "model_version", "training_data_reference",
+                     "source", "sample_id", "isolate_id", "site_id", "organism", "timestamp"):
+            if not isinstance(getattr(self, name), str) or not getattr(self, name).strip():
+                raise ValueError(f"in-silico prediction requires {name}")
+        if self.prediction not in {"resistant", "susceptible", "uncertain"}:
+            raise ValueError("unknown in-silico prediction")
+        if self.confidence is not None and (not math.isfinite(self.confidence) or not 0 <= self.confidence <= 1):
+            raise ValueError("model confidence must be in [0,1]")
+        if any(not isinstance(k, str) or not k or not math.isfinite(v) for k, v in self.feature_attributions.items()):
+            raise ValueError("feature attributions must be named finite values")
