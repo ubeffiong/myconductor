@@ -290,5 +290,33 @@ class CalibratedPosteriorCannotBecomeAResistanceCall(unittest.TestCase):
         self.assertEqual(evidence[0].call, Call.INDETERMINATE)
 
 
+class OrganismProfilesDoNotLeakIntoEachOther(unittest.TestCase):
+    """The defect this guards against: a lane holding hardcoded gene->drug
+    knowledge (VUSWorkbench.GENE_DRUG_CONTEXT is written against MTBC) being
+    applied to a variant under a different organism's profile, attributing a
+    gene to a drug that organism's own profile has no declared relationship
+    to — e.g. M. abscessus's own rpoB being flagged as rifampicin-relevant,
+    a drug not even in its profile's drug list."""
+
+    def test_mtbc_gene_is_not_flagged_under_a_profile_that_does_not_declare_it(self):
+        conductor = Myconductor(organism="mabscessus", platform="illumina")
+        v = Variant.of("rpoB", "S450L")
+        outcome = conductor.router.route([v])
+        self.assertEqual(
+            outcome.evidence, [],
+            "rpoB is not declared anywhere in the mabscessus profile; no "
+            "lane may still associate it with an MTBC drug",
+        )
+
+    def test_default_pipeline_still_examines_every_bundled_mtbc_gene(self):
+        # The fix must narrow cross-organism leakage without narrowing the
+        # default (organism=None) pipeline's own behaviour.
+        from myconductor.modules.vus_workbench import GENE_DRUG_CONTEXT
+
+        conductor = Myconductor(platform="illumina")
+        self.assertEqual(conductor.workbench.applicable_genes,
+                         set(GENE_DRUG_CONTEXT))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -124,8 +124,9 @@ not independent evidence.
 | Router | `core/router.py` | Runs **all** applicable lanes | — |
 | Engine adapters | `adapters/` | Normalise external tools into one evidence schema | the tools themselves |
 | BAM coverage | `io/bam_coverage.py` | Automates deriving a `CallableMask` from a BAM via mosdepth/samtools; coverage only, no alignment or variant calling | mosdepth or samtools on PATH |
+| Read calling | `io/read_calling.py` | Orchestrates FASTQ -> BAM -> VCF via minimap2/bwa-mem2 + bcftools/GATK; the resulting VCF is treated exactly like one from any other source once it reaches `io/adapter.py` | minimap2/bwa-mem2 + bcftools/GATK on PATH |
 | Reporting | `reporting/` | Text + FHIR R4 | LIMS / EHR |
-| Federated | `federated/` | Isolate-level learning, governance, signed transport, closed-loop VUS validation, catalogue-version reconciliation across sites | secure-aggregation transport |
+| Federated | `federated/` | Isolate-level learning, governance, signed transport, closed-loop VUS validation, catalogue-version reconciliation across sites, an unreviewed secure-aggregation reference implementation (not wired into the transport) | a cryptographer's review before the reference implementation could be trusted, then wiring it in |
 | Discovery | `modules/discovery.py` | Cohort-level prioritisation brief | DEG, BLASTP, a real docking backend |
 
 ## Extension points
@@ -145,7 +146,20 @@ enforces this.
 An organism profile is JSON: `catalogue/drug_loci.json` plus
 `catalogue/drugs.json`. Adding an organism means shipping a profile, not editing
 the engine — but a profile is only as good as its own evaluation data, and every
-bundled profile reports `ships_validated = False`.
+bundled profile reports `ships_validated = False`. A second bundled profile
+(`catalogue/organisms/mabscessus/`, selected via `Myconductor(organism=...)` or
+`myconductor analyze --organism mabscessus`) exercises this claim rather than
+just asserting it, and exposed one real gap while doing so:
+`modules/vus_workbench.py`'s gene->drug context was a flat, MTBC-only
+dictionary with no organism awareness, so a gene from a foreign profile that
+happened to share a name with an MTBC gene (M. abscessus's own `rpoB`, say)
+would have been silently attributed to an MTBC drug it has no declared
+relationship to. `VUSWorkbench` now intersects that dictionary with the active
+profile's own `loci` before using it — a pure narrowing, so the bundled MTBC
+pipeline's behaviour is unchanged (every gene the dictionary names is already
+in the MTBC profile's own loci), while a profile that doesn't declare a gene
+can no longer have it silently borrowed from another organism's knowledge.
+See `tests/test_safety_invariants.py::OrganismProfilesDoNotLeakIntoEachOther`.
 
 Everything in the pipeline is constructor-injected.
 
@@ -168,9 +182,15 @@ more dangerous than a gap:
 - **No fabricated reference annotation.** Locus lengths are `null` throughout the
   bundled profile; where a length is unknown, the input must supply an explicit
   callable fraction.
-- **No claim of secure aggregation or differential privacy.** The federated
-  transport authenticates sites and gates disclosure. It does not hide a site's
-  contribution from the coordinator, and it says so.
+- **No claim of secure aggregation or differential privacy in the shipped
+  transport.** `federated/transport.py` authenticates sites and gates
+  disclosure. It does not hide a site's contribution from the coordinator,
+  and it says so. `federated/secure_aggregation.py` is a separate, explicitly
+  unreviewed reference implementation of the pairwise-masking arithmetic
+  behind Bonawitz et al. 2017 — it exists to make the idea testable, is
+  gated behind `acknowledged=True`, does not solve pairwise key agreement or
+  dropout tolerance, and is not wired into `transport.py`. See its own module
+  docstring before reading its presence here as more than that.
 - **No bundled minority-allele calibration or resistance prior.**
   `modules/calibration.py::CalibrationTable` ships empty and
   `NullPriorSource` is the default; a deployment supplies its own

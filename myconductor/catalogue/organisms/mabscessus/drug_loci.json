@@ -1,0 +1,18 @@
+{
+  "profile": "mabscessus",
+  "profile_version": "0.1.0-illustrative",
+  "reference_assembly": "GCF_000069185.1 (M. abscessus ATCC 19977, INSDC CU458896)",
+  "note": "A second, ILLUSTRATIVE organism profile demonstrating that swapping organisms means shipping a profile, not editing the engine (see docs/ARCHITECTURE.md). It covers exactly three well-established genes from the primary literature (see catalogue.json's provenance notes) and is not a clinically validated M. abscessus resistance panel. whiB7 is a known upstream regulator of erm(41)/aminoglycoside-response genes (Hurst-Hess et al. 2017) but is deliberately NOT modelled here: unlike Rv0678 in the bundled MTB profile, loss of function in whiB7 plausibly DECREASES resistance (it is a positive regulator of the inducible-resistance response), which is the opposite direction from the efflux_regulatory lane's loss-of-function-implies-resistance assumption. Encoding it there would misrepresent the biology, so it is omitted rather than force-fit.",
+  "locus_length_note": "length_bp is null throughout, exactly as in the bundled MTB profile: no reference annotation is fabricated, and callable-fraction evidence must come from the input mask.",
+  "loci": {
+    "erm41": {"length_bp": null, "region": "coding"},
+    "rrl":   {"length_bp": null, "region": "rrna"},
+    "rrs":   {"length_bp": null, "region": "rrna"}
+  },
+  "drugs": {
+    "clarithromycin": {"tier1": ["erm41", "rrl"], "tier2": []},
+    "amikacin":        {"tier1": ["rrs"], "tier2": []}
+  },
+  "efflux_regulators": {},
+  "promoter_loci": {}
+}

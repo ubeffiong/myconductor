@@ -175,13 +175,15 @@ Being precise about this is the point of the project.
 | Catalogue-version-aware governance | **Implemented** (`federated/catalogue_governance.py`, `myconductor governance-report`). Every catalogue-lane and local-validation piece of evidence now carries `catalogue_version` and `rule_id`; cross-site reconciliation classifies disagreement as catalogue-version drift versus a same-version pipeline/rule bug, and never resolves either by vote |
 | Lineage-stratified continuous monitoring | **Implemented** in `mycobench` (`mycobench/monitoring.py`). Every `mycobench run` with paired phenotypes and lineage data folds into a persistent, per-drug/per-lineage accuracy state (`monitoring_state.json`), idempotent per cohort, with a `generalizable` flag (2+ independent lineages) distinct from the isolate-count power check. Rendered as a dashboard section in the existing offline HTML report — the closest thing this no-server tool has to a shared, cross-site view |
 | Mechanism research queue | **Implemented** (`AnalysisReport.mechanism_queue`, populated from `modules/efflux.py`). Every efflux/regulatory `INDETERMINATE` now carries a named mechanistic hypothesis, the specific evidence gaps, and the assay(s) that would resolve it — generalising the VUS workbench's "research queue, not a dead end" idea beyond sequence variants |
-| BAM → coverage-mask automation | **Implemented** (`io/bam_coverage.py`, `myconductor analyze --bam --bed`). Automates the README's own documented `mosdepth --by ... --thresholds ...` workflow; written from mosdepth's/samtools's documented output schema and **not run against real tool output** in this environment — same caveat as the engine adapters. It derives coverage only; it does not align reads or call variants |
+| BAM → coverage-mask automation | **Implemented** (`io/bam_coverage.py`, `myconductor analyze --bam --bed`). Automates the README's own documented `mosdepth --by ... --thresholds ...` workflow; written from mosdepth's/samtools's documented output schema and **not run against real tool output** in this environment — same caveat as the engine adapters |
+| FASTQ → VCF orchestration | **Implemented** (`io/read_calling.py`, `myconductor call-variants`). Thin orchestration over minimap2/bwa-mem2 + bcftools/GATK — not a new aligner or caller, and this project still does not pick these choices *for* a deployment: they are defaults, swappable per call, and **not run against real reads** in this environment. The resulting VCF is treated exactly like a VCF from anywhere else once it reaches `io/adapter.py` |
+| A second organism profile | **Implemented**: an illustrative M. abscessus profile (`catalogue/organisms/mabscessus/`, `myconductor analyze --organism mabscessus`) covering three literature-grounded genes (erm(41) T28/C28 sequevar, rrl 2058/2059, rrs 1408 — see the profile's own `sources` field for citations). `ships_validated = False`, exactly like the bundled MTBC profile; five hand-picked entries, not a systematic review. Selecting an organism never changes another organism's behaviour — `modules/vus_workbench.py`'s gene→drug context is now scoped to genes the active profile actually declares, closing a gap where MTBC-specific gene knowledge would otherwise leak into any other organism |
 | FHIR R4 output | **Structurally correct**, using real HL7 interpretation and data-absent-reason codes. **No LOINC or SNOMED codes**, because inventing them would be worse than omitting them — inject real ones via `TerminologyMap`. Not validated against any implementation guide. Deliberately does not carry the mechanism research queue — a laboratory work list, not a clinical observation |
-| Read-level analysis (FASTQ/BAM) | **Coverage only** (see BAM automation, above). Species confirmation, contamination, mapping quality, mixed infection, lineage typing, and **variant calling from reads** remain `not_performed` / out of scope: they need an aligner and variant caller chosen and validated per deployment, which this project will not pick on a user's behalf |
+| Read-level analysis (FASTQ/BAM) | Coverage and variant calling are now automated (see the two rows above). Species confirmation, contamination, mapping quality and mixed-infection detection are still `not_performed`: they are QC judgements about the alignment this project is not positioned to make correctly without its own validation data, unlike orchestrating an established aligner/caller with their own published accuracy |
 | Trained VUS model | **Not implemented.** The previous hash-derived scorer has been removed; a synthetic annotator remains but cannot reach a report unless `demo_mode=True`, which stamps every page |
-| Secure aggregation, differential privacy, federated model training | **Not implemented**, and documented as absent in `federated/transport.py`. Cross-site *governance* (catalogue-version reconciliation, above) is implemented; cryptographic secure aggregation still needs a cryptographer's review before any claim is made here |
+| Secure aggregation | `federated/transport.py` itself still sends a site's contribution to the coordinator in clear, exactly as before. A **reference implementation** of the pairwise-masking arithmetic (Bonawitz et al. 2017) now exists separately at `federated/secure_aggregation.py`, gated behind `acknowledged=True` — built at explicit user request to make the idea runnable and testable, **not reviewed by a cryptographer**, does not solve pairwise key agreement, and has no dropout tolerance. Nothing in the shipped transport uses it |
+| Differential privacy, federated model training | **Not implemented**, and documented as absent in `federated/transport.py`. Cross-site *governance* (catalogue-version reconciliation, above) is implemented and is a different, non-cryptographic problem |
 | Molecular docking | **No built-in scorer.** The previous fabricated values are gone; a real backend must be injected |
-| A second organism profile | **Not implemented.** Adding one means shipping its own drug/loci profile *and* its own evaluation cohort with published error rates — module swappability is architectural, not a biological claim (see Phase 6 in the Roadmap) |
 | Clinical evaluation of any component | **None** |
 
 ## Layout
@@ -189,8 +191,10 @@ Being precise about this is the point of the project.
 ```
 myconductor/
   core/        models (the call/tier/identity vocabulary), router, pipeline
-  io/          input adapter, callable-locus mask, QC, BAM->mask automation
-  catalogue/   organism profile, drug->loci map, illustrative catalogue
+  io/          input adapter, callable-locus mask, QC, BAM->mask automation,
+               FASTQ->VCF orchestration (read_calling)
+  catalogue/   organism profile, drug->loci map, illustrative catalogue;
+               organisms/ holds each additional bundled profile (mabscessus)
   modules/     catalogue, efflux (+ mechanism queue), heteroresistance (+
                calibrated posteriors), calibration, synthesis, vus_workbench,
                local_validation, discovery (cohort-level; NOT wired into the
@@ -199,7 +203,9 @@ myconductor/
   reporting/   text report, FHIR R4 bundle
   federated/   isolate-level learning, governance, signed transport,
                closed-loop VUS validation (vus_feedback), catalogue-version
-               governance (catalogue_governance)
+               governance (catalogue_governance), a secure-aggregation
+               reference implementation NOT wired into the shipped
+               transport (secure_aggregation)
 docs/ARCHITECTURE.md   design, layer split, extension points
 tests/                 unittest suite, including tests/test_safety_invariants.py
 examples/run_demo.py   with and without coverage, plus the federated contract
@@ -290,10 +296,11 @@ would be worse than the gap, so none was added.
   catalogue (`mycobench fetch-catalogue` ingests it; the bundled subset stays
   illustrative), and African-lineage isolates with paired phenotypes to
   actually populate the monitoring state and clear its pre-registered
-  thresholds. Read-level variant calling from FASTQ/BAM (as opposed to
-  deriving coverage from a BAM) remains out of scope: it needs an aligner and
-  caller chosen and validated per deployment, which this project will not pick
-  on a user's behalf.
+  thresholds. FASTQ->VCF orchestration is now also implemented
+  (`io/read_calling.py`, `myconductor call-variants`) as a swappable default
+  over minimap2/bwa-mem2 + bcftools/GATK — still not validated against real
+  reads in this environment, and still not a claim that these are the right
+  choices for any given deployment.
 - **Phase 4** — done in software: a validated VUS now feeds back as
   site-local, reversible evidence (`federated/vus_feedback.py`,
   `modules/local_validation.py`, `myconductor validate-vus`), closing the loop
@@ -303,14 +310,25 @@ would be worse than the gap, so none was added.
   explicitly local, not that promotion.
 - **Phase 5** — done in software: multi-site catalogue-version governance
   (`federated/catalogue_governance.py`, `myconductor governance-report`),
-  distinguishing catalogue-propagation gaps from pipeline/rule bugs. **Still
-  gated**: cryptographic review before secure aggregation can be claimed
-  (`federated/transport.py` still only authenticates and gates disclosure, and
-  says so), and a data-sharing agreement with benefit-sharing agreed up front.
-- **Phase 6** adds one organism profile at a time, each with its own evaluation
-  set and its own published error rates. Modules being swappable is an
-  architectural property, not a biological claim, and this rebuild adds no
-  second profile.
+  distinguishing catalogue-propagation gaps from pipeline/rule bugs; and a
+  reference implementation of pairwise-masking secure-aggregation arithmetic
+  (`federated/secure_aggregation.py`) exists to make the idea testable.
+  **Still gated**: cryptographic review before secure aggregation can be
+  *claimed* — the shipped transport (`federated/transport.py`) still sends
+  every submission to the coordinator in clear and says so; the reference
+  module does not solve pairwise key agreement or dropout tolerance, and is
+  not wired into the transport. Also still needed: a data-sharing agreement
+  with benefit-sharing agreed up front.
+- **Phase 6** — done in software, to the same illustrative standard as the
+  bundled MTBC profile: a second organism profile now ships
+  (`catalogue/organisms/mabscessus/`, `myconductor analyze --organism
+  mabscessus`), and the VUS workbench's gene->drug context is now scoped per
+  profile so organisms cannot leak knowledge into each other. **Still
+  gated**: this is five literature-grounded entries for interface
+  demonstration, not the systematic review and published error rates a real
+  M. abscessus deployment would need — `ships_validated = False`, same as
+  every profile here. Each further organism still needs its own evaluation
+  set.
 
 ## License
 

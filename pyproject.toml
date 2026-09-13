@@ -36,4 +36,4 @@ mycobench = "mycobench.cli:main"
 include = ["myconductor*", "mycobench*"]
 
 [tool.setuptools.package-data]
-myconductor = ["catalogue/*.json", "data/*"]
+myconductor = ["catalogue/*.json", "catalogue/organisms/*/*.json", "data/*"]

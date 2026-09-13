@@ -9,9 +9,16 @@ k-anonymity gate that refuses to release cells too small to be safe.
 What it does **not** provide, and must not be described as providing:
 
 * **Secure aggregation.** The coordinator sees each site's contribution in
-  clear. A real secure-aggregation protocol (pairwise masking, threshold
+  clear here. A real secure-aggregation protocol (pairwise masking, threshold
   homomorphic encryption) is a cryptographic design task requiring review by a
-  cryptographer and a vetted library — not something to hand-roll here.
+  cryptographer and a vetted library — not something to hand-roll and call
+  production-ready. A **reference implementation** of the pairwise-masking
+  arithmetic now exists at ``federated/secure_aggregation.py``, built at
+  explicit user request to make the idea runnable and testable — its own
+  module docstring is equally explicit that it is unreviewed, does not solve
+  pairwise key agreement, and has no dropout tolerance. Nothing in this
+  module (``transport.py``) uses it; a submission's payload still travels to
+  the coordinator in clear, as documented throughout this file.
 * **Differential privacy.** No noise is added and no privacy budget is
   tracked. Adding calibrated noise to counts this small would destroy the
   signal; the correct control at this scale is the k-anonymity gate below plus

@@ -64,22 +64,34 @@ class Myconductor:
         het_assessor: Optional[HeteroresistanceAssessor] = None,
         include_tier2_loci: bool = False,
         local_validation_store: Optional[LocalValidationStore] = None,
+        organism: Optional[str] = None,
     ):
-        self.profile = profile or load_profile()
+        """``organism`` selects a bundled organism profile + catalogue pair
+        (see ``catalogue/profile.py::BUNDLED_ORGANISMS`` and
+        ``modules/catalogue.py::BUNDLED_CATALOGUES``) — default ``None``
+        keeps the original MTBC profile. It is ignored wherever ``profile``
+        is passed explicitly, since an explicit profile already says which
+        organism this is. Only ``mtbc`` ships with any real-world track
+        record here; every other bundled organism (e.g. ``mabscessus``) is
+        illustrative in the same sense the bundled MTBC catalogue is —
+        ``OrganismProfile.ships_validated`` is ``False`` for all of them.
+        """
+        self.profile = profile or load_profile(organism=organism)
         self.depth_floor = depth_floor
         self.callable_fraction_floor = callable_fraction_floor
         self.platform = platform
         self.demo_mode = demo_mode
         self.local_validation_store = local_validation_store
 
-        catalogue = CatalogueModule()
+        catalogue = CatalogueModule(organism=organism)
         efflux = EffluxRegulatoryModule(self.profile)
         known = set(catalogue.labels)
         if local_validation_store is not None:
             # A variant this site has already validated has an answer; it
             # should stop being re-ranked as "needs laboratory validation".
             known |= local_validation_store.validated_labels()
-        self.workbench = VUSWorkbench(annotator=annotator, known=known)
+        self.workbench = VUSWorkbench(annotator=annotator, known=known,
+                                      profile=self.profile)
         if self.workbench.synthetic and not demo_mode:
             raise ValueError(
                 f"{self.workbench.model_name} produces synthetic, "

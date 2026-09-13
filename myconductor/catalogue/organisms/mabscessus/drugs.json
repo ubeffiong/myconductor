@@ -1,0 +1,11 @@
+{
+  "drugs": ["clarithromycin", "amikacin"],
+  "regimens": [
+    {
+      "name": "macrolide-aminoglycoside-core",
+      "drugs": ["clarithromycin", "amikacin"],
+      "min_effective": 2,
+      "note": "Illustrative only: a real M. abscessus regimen also depends on species/subspecies identification (abscessus vs massiliense vs bolletii), site of disease, and additional agents (e.g. tigecycline, cefoxitin, imipenem) this profile does not model."
+    }
+  ]
+}

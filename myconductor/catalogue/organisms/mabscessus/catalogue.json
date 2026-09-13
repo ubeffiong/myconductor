@@ -1,0 +1,21 @@
+{
+  "catalogue_version": "demo-0.1.0 (ILLUSTRATIVE — hand-picked from primary literature, NOT a curated/graded catalogue)",
+  "illustrative": true,
+  "note": "Five entries covering exactly the mechanisms confirmed against primary literature while building this profile (see below); not a systematic review of M. abscessus resistance genetics, and no call here has been independently graded the way the WHO Mycobacterium tuberculosis catalogue is. A real deployment needs its own curated review before this profile should inform any decision.",
+  "coordinate_note": "coordinate_key is absent throughout. erm(41)'s T28/C28 sequevar is encoded by its own gene-relative literature convention (nucleotide 28 of the erm(41) coding sequence), exactly as it is reported in the primary literature, not as a genome coordinate. rrl/rrs positions use the conventional E. coli 23S/16S rRNA numbering that the cited literature itself uses. None of these have been mapped to absolute NZ_CU458896 genome coordinates in this file.",
+  "efflux_genes": [],
+  "sources": [
+    "Nash KA, Brown-Elliott BA, Wallace RJ Jr. A novel gene, erm(41), confers inducible macrolide resistance to clinical isolates of Mycobacterium abscessus but is absent from Mycobacterium chelonae. Antimicrob Agents Chemother. 2009;53(4):1367-1376. doi:10.1128/AAC.01275-08",
+    "Prammananan T, et al. A single 16S ribosomal RNA substitution is responsible for resistance to amikacin and other 2-deoxystreptamine aminoglycosides in Mycobacterium abscessus and Mycobacterium chelonae. J Infect Dis. 1998;177(6):1573-1581.",
+    "Acquired 23S rRNA (rrl) mutations at positions homologous to E. coli A2058/A2059 are widely reported as conferring erm(41)-independent, high-level macrolide resistance in M. abscessus (e.g. Bastian S, et al. Antimicrob Agents Chemother. 2011;55(2):775-781.)"
+  ],
+  "variants": [
+    {"gene": "erm41", "change": "T28", "drugs": ["clarithromycin"], "call": "resistant", "who_grade": "illustrative — Nash et al. 2009", "confidence": 0.85,
+     "note": "Functional 23S rRNA methyltransferase sequevar: inducible macrolide resistance. This is a naturally circulating sequevar, not an acquired mutation from a single reference allele — see coordinate_note."},
+    {"gene": "erm41", "change": "C28", "drugs": ["clarithromycin"], "call": "not_associated", "who_grade": "illustrative — Nash et al. 2009", "confidence": 0.8,
+     "note": "Non-functional sequevar (Trp10Arg disrupts the methyltransferase): does not confer the inducible-resistance phenotype by itself. Does not by itself establish susceptibility -- other mechanisms (rrl mutation) can still confer resistance."},
+    {"gene": "rrl", "change": "2058A>C", "drugs": ["clarithromycin"], "call": "resistant", "who_grade": "illustrative", "confidence": 0.85},
+    {"gene": "rrl", "change": "2059A>G", "drugs": ["clarithromycin"], "call": "resistant", "who_grade": "illustrative", "confidence": 0.85},
+    {"gene": "rrs", "change": "1408A>G", "drugs": ["amikacin"], "call": "resistant", "who_grade": "illustrative — Prammananan et al. 1998", "confidence": 0.85}
+  ]
+}

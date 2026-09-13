@@ -30,7 +30,7 @@ validation and per-drug calibration — Phase 4's exit gate, not a code path.
 """
 from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from ..core.models import (
     Call,
@@ -44,6 +44,9 @@ from ..core.models import (
 )
 from .base import VariantModule
 from .features import AnnotatorProtocol, FeatureSet, NullAnnotator
+
+if TYPE_CHECKING:
+    from ..catalogue.profile import OrganismProfile
 
 #: Gene -> the drug whose resistance a variant there would most plausibly
 #: affect. Context for the reader and for experiment design; NOT a prediction.
@@ -106,11 +109,26 @@ class VUSWorkbench(VariantModule):
 
     def __init__(self, annotator: Optional[AnnotatorProtocol] = None,
                  known: Optional[set[str]] = None,
-                 min_dimensions: int = MIN_DIMENSIONS_FOR_SCORE):
+                 min_dimensions: int = MIN_DIMENSIONS_FOR_SCORE,
+                 profile: Optional["OrganismProfile"] = None):
         self.annotator: AnnotatorProtocol = annotator or NullAnnotator()
         self.known = known or set()
         self.min_dimensions = min_dimensions
         self.model_name = type(self.annotator).__name__
+        # GENE_DRUG_CONTEXT is written against the bundled MTBC gene set. A
+        # profile scopes it to genes that organism's own drug_loci actually
+        # declares, so a coincidentally-named gene from another organism's
+        # profile (e.g. M. abscessus's own rpoB) is never silently
+        # attributed to an MTBC drug it has no validated relationship to.
+        # Without a profile (e.g. constructing this lane standalone), every
+        # hardcoded gene applies, exactly as before this parameter existed —
+        # every gene GENE_DRUG_CONTEXT names is already declared in the
+        # bundled MTBC profile's own loci, so this is a no-op for the
+        # default pipeline.
+        self.applicable_genes = (
+            set(GENE_DRUG_CONTEXT) & set(profile.loci) if profile is not None
+            else set(GENE_DRUG_CONTEXT)
+        )
 
     @property
     def synthetic(self) -> bool:
@@ -122,7 +140,7 @@ class VUSWorkbench(VariantModule):
             return False
         if variant.label() in self.known:
             return False
-        return variant.gene in GENE_DRUG_CONTEXT
+        return variant.gene in self.applicable_genes
 
     def evaluate(self, variant: Variant) -> list[DrugEvidence]:
         """Withhold susceptibility for the affected drug. Never call resistance.

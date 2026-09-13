@@ -20,6 +20,18 @@ _HERE = Path(__file__).resolve().parent
 DRUG_LOCI_PATH = _HERE / "drug_loci.json"
 DRUGS_PATH = _HERE / "drugs.json"
 
+#: Bundled organism profiles, by name. Adding an organism means adding a
+#: directory of JSON here (or pointing ``load_profile`` at your own paths
+#: directly) — never editing the engine. Every bundled profile reports
+#: ``ships_validated = False``; see each directory's own provenance notes for
+#: exactly how illustrative it is.
+_ORGANISMS_DIR = _HERE / "organisms"
+BUNDLED_ORGANISMS: dict[str, tuple[Path, Path]] = {
+    "mtbc": (DRUG_LOCI_PATH, DRUGS_PATH),
+    "mabscessus": (_ORGANISMS_DIR / "mabscessus" / "drug_loci.json",
+                  _ORGANISMS_DIR / "mabscessus" / "drugs.json"),
+}
+
 
 @dataclass
 class RegimenDefinition:
@@ -91,7 +103,24 @@ class OrganismProfile:
 
 
 def load_profile(drug_loci_path: Optional[Path] = None,
-                 drugs_path: Optional[Path] = None) -> OrganismProfile:
+                 drugs_path: Optional[Path] = None,
+                 organism: Optional[str] = None) -> OrganismProfile:
+    """Load an organism profile.
+
+    Explicit ``drug_loci_path``/``drugs_path`` always win. Otherwise
+    ``organism`` selects a bundled profile by name (see
+    ``BUNDLED_ORGANISMS``); with neither, the default is the bundled MTBC
+    profile, unchanged from before this parameter existed.
+    """
+    if organism is not None and drug_loci_path is None and drugs_path is None:
+        if organism not in BUNDLED_ORGANISMS:
+            raise ValueError(
+                f"unknown organism {organism!r}; bundled profiles are "
+                f"{sorted(BUNDLED_ORGANISMS)}. Ship your own by passing "
+                f"drug_loci_path/drugs_path directly."
+            )
+        drug_loci_path, drugs_path = BUNDLED_ORGANISMS[organism]
+
     loci_data = json.loads(Path(drug_loci_path or DRUG_LOCI_PATH).read_text(encoding="utf-8"))
     drug_data = json.loads(Path(drugs_path or DRUGS_PATH).read_text(encoding="utf-8"))
 

@@ -33,6 +33,16 @@ from .base import VariantModule
 _CATALOGUE_PATH = (Path(__file__).resolve().parent.parent
                    / "catalogue" / "mtb_amr_catalogue.json")
 
+#: Bundled illustrative catalogues, by organism name. See
+#: ``catalogue/profile.py::BUNDLED_ORGANISMS`` for the matching drug/loci
+#: profile of each; the two registries are kept in step so
+#: ``organism="mabscessus"`` picks a consistent pair everywhere.
+BUNDLED_CATALOGUES: dict[str, Path] = {
+    "mtbc": _CATALOGUE_PATH,
+    "mabscessus": (Path(__file__).resolve().parent.parent / "catalogue"
+                  / "organisms" / "mabscessus" / "catalogue.json"),
+}
+
 _LABEL_MATCH_LIMITATION = (
     "matched on gene/label, not coordinates; annotator spellings differ, so "
     "this match is weaker than a coordinate match"
@@ -43,7 +53,17 @@ class CatalogueModule(VariantModule):
     name = "catalogue"
     lane = Lane.CATALOGUE
 
-    def __init__(self, path: Path = _CATALOGUE_PATH):
+    def __init__(self, path: Optional[Path] = None,
+                organism: Optional[str] = None):
+        if organism is not None and path is None:
+            if organism not in BUNDLED_CATALOGUES:
+                raise ValueError(
+                    f"unknown organism {organism!r}; bundled catalogues are "
+                    f"{sorted(BUNDLED_CATALOGUES)}. Ship your own by "
+                    f"passing path= directly."
+                )
+            path = BUNDLED_CATALOGUES[organism]
+        path = path or _CATALOGUE_PATH
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         self.version: str = data["catalogue_version"]
         self.is_illustrative: bool = bool(data.get("illustrative", True))

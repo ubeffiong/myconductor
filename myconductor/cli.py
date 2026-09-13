@@ -10,6 +10,7 @@
     myconductor validate-vus --store PATH --variant-key K --gene G --drug D
                         --isolate-id ID --site-id SITE --method M --result R
     myconductor governance-report --site-calls SITE=path.json [SITE=path.json ...]
+    myconductor call-variants --fastq1 R1 --fastq2 R2 --reference ref.fa --out out.vcf.gz
     myconductor version
 """
 from __future__ import annotations
@@ -20,6 +21,7 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .catalogue.profile import BUNDLED_ORGANISMS
 from .core.pipeline import Myconductor
 from .reporting.fhir import to_fhir_json
 from .reporting.render import render_text
@@ -68,6 +70,7 @@ def _run_analyze(args: argparse.Namespace) -> int:
         callable_fraction_floor=args.callable_floor,
         platform=args.platform,
         local_validation_store=local_validation_store,
+        organism=args.organism,
     )
     report = conductor.analyze(
         args.input,
@@ -157,6 +160,28 @@ def _run_validate_vus(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_call_variants(args: argparse.Namespace) -> int:
+    from .io.read_calling import align_reads, call_variants, reads_to_vcf
+
+    if args.bam_out:
+        bam = align_reads(args.fastq1, args.fastq2, args.reference,
+                          args.bam_out, aligner=args.aligner,
+                          threads=args.threads)
+        print(f"Wrote alignment: {bam}")
+        vcf = call_variants(bam, args.reference, args.out, caller=args.caller,
+                            region_bed=args.region_bed)
+    else:
+        vcf = reads_to_vcf(args.fastq1, args.fastq2, args.reference, args.out,
+                           aligner=args.aligner, caller=args.caller,
+                           threads=args.threads, region_bed=args.region_bed)
+    print(f"Wrote variants: {vcf}")
+    print("\nThis VCF was produced by an unvalidated orchestration of "
+         "external tools (see myconductor/io/read_calling.py) — treat it "
+         "the same as output from any variant caller you have not yet "
+         "benchmarked. Feed it to 'myconductor analyze' like any other VCF.")
+    return 0
+
+
 def _run_governance_report(args: argparse.Namespace) -> int:
     from .federated.catalogue_governance import SiteCallRecord, reconcile_sites
 
@@ -211,6 +236,11 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--local-validation-store", metavar="PATH",
                    help="A site-local VUS validation store (see "
                         "'validate-vus') to consult during this analysis.")
+    a.add_argument("--organism", choices=sorted(BUNDLED_ORGANISMS),
+                   help="Bundled organism profile + catalogue to use "
+                        "(default: mtbc). Every non-mtbc profile is "
+                        "illustrative in the same sense the bundled MTBC "
+                        "catalogue is -- see docs/ARCHITECTURE.md.")
     a.add_argument("--platform", help="Sequencing platform (illumina, "
                                       "nanopore, pacbio, targeted-amplicon); "
                                       "required for minority-allele limits of "
@@ -268,6 +298,29 @@ def build_parser() -> argparse.ArgumentParser:
     vv.add_argument("--submitted-by")
     vv.add_argument("--rationale")
     vv.set_defaults(func=_run_validate_vus)
+
+    cv = sub.add_parser(
+        "call-variants",
+        help="Align FASTQ reads and call variants (unvalidated orchestration "
+             "of external tools; see io/read_calling.py). Feed the resulting "
+             "VCF to 'analyze' like any other VCF.")
+    cv.add_argument("--fastq1", required=True, metavar="R1")
+    cv.add_argument("--fastq2", required=True, metavar="R2")
+    cv.add_argument("--reference", required=True, metavar="PATH",
+                    help="Reference FASTA.")
+    cv.add_argument("--out", required=True, metavar="VCF",
+                    help="Output VCF path.")
+    cv.add_argument("--bam-out", metavar="PATH",
+                    help="Also keep the intermediate BAM here (e.g. to "
+                         "derive a coverage mask with 'analyze --bam').")
+    cv.add_argument("--aligner", choices=("auto", "minimap2", "bwa-mem2"),
+                    default="auto")
+    cv.add_argument("--caller", choices=("auto", "bcftools", "gatk"),
+                    default="auto")
+    cv.add_argument("--region-bed", metavar="PATH",
+                    help="Restrict calling to these regions.")
+    cv.add_argument("--threads", type=int, default=4)
+    cv.set_defaults(func=_run_call_variants)
 
     gr = sub.add_parser(
         "governance-report",
