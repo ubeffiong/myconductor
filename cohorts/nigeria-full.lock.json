@@ -1,0 +1,4907 @@
+{
+  "schema_version": "1.0",
+  "sample_sheet": "nigeria-full.tsv",
+  "sample_sheet_sha256": "0cf0129f3a924f1fa82e734f287ccdc41396105a5c81bab2da07b1d0cc0b17bf",
+  "country_confirmed": "Nigeria",
+  "evidence": [
+    {
+      "sample_id": "ng_SRR35084527",
+      "run": {
+        "run": "SRR35084527",
+        "biosample": "SAMN50741094",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "100NGA_S216",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "156440213",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741094",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-20",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084688",
+      "run": {
+        "run": "SRR35084688",
+        "biosample": "SAMN50741126",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "105NGA_S276",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "168170517",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741126",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084694",
+      "run": {
+        "run": "SRR35084694",
+        "biosample": "SAMN50741121",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "113NGA_S157",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "155478611",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741121",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-09-12",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084693",
+      "run": {
+        "run": "SRR35084693",
+        "biosample": "SAMN50741122",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "123NGA_S158",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "132376591",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741122",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-10-12",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084526",
+      "run": {
+        "run": "SRR35084526",
+        "biosample": "SAMN50741095",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "156NGA_S137",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "111041754",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741095",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-30",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084536",
+      "run": {
+        "run": "SRR35084536",
+        "biosample": "SAMN50741086",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "158NGA_S161",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "152955202",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741086",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-04-25",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084534",
+      "run": {
+        "run": "SRR35084534",
+        "biosample": "SAMN50741088",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "160NGA_S185",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "157467193",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741088",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-07-20",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084523",
+      "run": {
+        "run": "SRR35084523",
+        "biosample": "SAMN50741098",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "161NGA_S102",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "160613128",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741098",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-02-03",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084531",
+      "run": {
+        "run": "SRR35084531",
+        "biosample": "SAMN50741091",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "173NGA_S127",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "183163030",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741091",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-31",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084690",
+      "run": {
+        "run": "SRR35084690",
+        "biosample": "SAMN50741124",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "174NGA_S139",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "142842676",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741124",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-31",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084535",
+      "run": {
+        "run": "SRR35084535",
+        "biosample": "SAMN50741087",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "175NGA_S151",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "166685555",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741087",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-07-18",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084540",
+      "run": {
+        "run": "SRR35084540",
+        "biosample": "SAMN50741083",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "268NGA_S90",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "151916956",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741083",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-24",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084532",
+      "run": {
+        "run": "SRR35084532",
+        "biosample": "SAMN50741090",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "271NGA_S19",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "115355936",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741090",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-14",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084545",
+      "run": {
+        "run": "SRR35084545",
+        "biosample": "SAMN50741078",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "275NGA_S55",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "158809036",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741078",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084547",
+      "run": {
+        "run": "SRR35084547",
+        "biosample": "SAMN50741076",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "301NGA_S331",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "97413814",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741076",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084544",
+      "run": {
+        "run": "SRR35084544",
+        "biosample": "SAMN50741079",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "302NGA_S343",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "117404351",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741079",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084553",
+      "run": {
+        "run": "SRR35084553",
+        "biosample": "SAMN50741071",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "50NGA_S210",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "159830821",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741071",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-04-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084552",
+      "run": {
+        "run": "SRR35084552",
+        "biosample": "SAMN50741072",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "54NGA_S258",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "163405090",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741072",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-05-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084551",
+      "run": {
+        "run": "SRR35084551",
+        "biosample": "SAMN50741073",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "55NGA_S270",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "180821105",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741073",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-05-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084549",
+      "run": {
+        "run": "SRR35084549",
+        "biosample": "SAMN50741074",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "56NGA_S282",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "130579413",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741074",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-05-22",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084543",
+      "run": {
+        "run": "SRR35084543",
+        "biosample": "SAMN50741080",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "62NGA_S247",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "150865512",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741080",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-09-26",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084533",
+      "run": {
+        "run": "SRR35084533",
+        "biosample": "SAMN50741089",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "63NGA_S259",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "162759358",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741089",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-06-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084548",
+      "run": {
+        "run": "SRR35084548",
+        "biosample": "SAMN50741075",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "64NGA_S271",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "156862141",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741075",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-06-13",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084530",
+      "run": {
+        "run": "SRR35084530",
+        "biosample": "SAMN50741092",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "67NGA_S200",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "148558703",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741092",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-11-20",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084546",
+      "run": {
+        "run": "SRR35084546",
+        "biosample": "SAMN50741077",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "73NGA_S272",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "128086832",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741077",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084522",
+      "run": {
+        "run": "SRR35084522",
+        "biosample": "SAMN50741099",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "78NGA_S237",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "145737358",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741099",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-10-02",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084525",
+      "run": {
+        "run": "SRR35084525",
+        "biosample": "SAMN50741096",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "82NGA_S273",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "138228484",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741096",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084537",
+      "run": {
+        "run": "SRR35084537",
+        "biosample": "SAMN50741085",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "85NGA_S202",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "139320539",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741085",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-02-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084538",
+      "run": {
+        "run": "SRR35084538",
+        "biosample": "SAMN50741084",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "86NGA_S214",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "156462979",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741084",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084541",
+      "run": {
+        "run": "SRR35084541",
+        "biosample": "SAMN50741082",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "90NGA_S250",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "181736048",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741082",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-23",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084529",
+      "run": {
+        "run": "SRR35084529",
+        "biosample": "SAMN50741093",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "91NGA_S262",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "152668646",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741093",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084542",
+      "run": {
+        "run": "SRR35084542",
+        "biosample": "SAMN50741081",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "92NGA_S274",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "164560048",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741081",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-06",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084524",
+      "run": {
+        "run": "SRR35084524",
+        "biosample": "SAMN50741097",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "93NGA_S286",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "159868635",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741097",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-03-02",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084686",
+      "run": {
+        "run": "SRR35084686",
+        "biosample": "SAMN50741127",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "96NGA_S263",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "161016466",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741127",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-02-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084692",
+      "run": {
+        "run": "SRR35084692",
+        "biosample": "SAMN50741123",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "98NGA_S287",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "153003425",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741123",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-01-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084689",
+      "run": {
+        "run": "SRR35084689",
+        "biosample": "SAMN50741125",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "99NGA_S204",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "148023131",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741125",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-02-14",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084832",
+      "run": {
+        "run": "SRR35084832",
+        "biosample": "SAMN50741032",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601098_S35",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "87153309",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741032",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-14",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084829",
+      "run": {
+        "run": "SRR35084829",
+        "biosample": "SAMN50741034",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601104_S38",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "112911401",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741034",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-30",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084828",
+      "run": {
+        "run": "SRR35084828",
+        "biosample": "SAMN50741035",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601105_S39",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "124326079",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741035",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-29",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084824",
+      "run": {
+        "run": "SRR35084824",
+        "biosample": "SAMN50741039",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601118_S31",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "158874479",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741039",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-04-04",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084724",
+      "run": {
+        "run": "SRR35084724",
+        "biosample": "SAMN50741065",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0602065_S36",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "78857511",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741065",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-23",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084717",
+      "run": {
+        "run": "SRR35084717",
+        "biosample": "SAMN50741101",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "103NGA_S252",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "143861241",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741101",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-03-12",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084699",
+      "run": {
+        "run": "SRR35084699",
+        "biosample": "SAMN50741116",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "104NGA_S264",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "170817300",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741116",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-12-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084695",
+      "run": {
+        "run": "SRR35084695",
+        "biosample": "SAMN50741120",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "106NGA_S288",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "151978841",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741120",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-03-15",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084730",
+      "run": {
+        "run": "SRR35084730",
+        "biosample": "SAMN50741060",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "110NGA_S133",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "155715940",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741060",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-08-15",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084709",
+      "run": {
+        "run": "SRR35084709",
+        "biosample": "SAMN50741108",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "115NGA_S181",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "182584197",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741108",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-09-18",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084698",
+      "run": {
+        "run": "SRR35084698",
+        "biosample": "SAMN50741117",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "121NGA_S134",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "138228049",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741117",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-10-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084697",
+      "run": {
+        "run": "SRR35084697",
+        "biosample": "SAMN50741118",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "134NGA_S123",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "183443856",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741118",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-22",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084696",
+      "run": {
+        "run": "SRR35084696",
+        "biosample": "SAMN50741119",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "135NGA_S135",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "148091365",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741119",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-12-20",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084727",
+      "run": {
+        "run": "SRR35084727",
+        "biosample": "SAMN50741063",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "136NGA_S147",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "130701171",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741063",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-12-21",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084725",
+      "run": {
+        "run": "SRR35084725",
+        "biosample": "SAMN50741064",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "138NGA_S171",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "140698795",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741064",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-12-21",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084831",
+      "run": {
+        "run": "SRR35084831",
+        "biosample": "SAMN50741033",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "139NGA_S183",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "162350836",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741033",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-11",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084723",
+      "run": {
+        "run": "SRR35084723",
+        "biosample": "SAMN50741066",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "142NGA_S100",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "149588226",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741066",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-23",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084741",
+      "run": {
+        "run": "SRR35084741",
+        "biosample": "SAMN50741050",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "146NGA_S124",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "136447903",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741050",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-04-03",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084735",
+      "run": {
+        "run": "SRR35084735",
+        "biosample": "SAMN50741055",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "147NGA_S136",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "217642790",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741055",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-06-24",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084718",
+      "run": {
+        "run": "SRR35084718",
+        "biosample": "SAMN50741100",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "153NGA_S101",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "156622811",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741100",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-02-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084739",
+      "run": {
+        "run": "SRR35084739",
+        "biosample": "SAMN50741052",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "162NGA_S114",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "182363474",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741052",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-29",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084715",
+      "run": {
+        "run": "SRR35084715",
+        "biosample": "SAMN50741103",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "167NGA_S162",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "154157620",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741103",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-07-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084744",
+      "run": {
+        "run": "SRR35084744",
+        "biosample": "SAMN50741047",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "168NGA_S174",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "184764540",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741047",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-02-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084736",
+      "run": {
+        "run": "SRR35084736",
+        "biosample": "SAMN50741054",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "170NGA_S103",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "146089629",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741054",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-06-26",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084740",
+      "run": {
+        "run": "SRR35084740",
+        "biosample": "SAMN50741051",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "172NGA_S115",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "202844736",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741051",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-04-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084738",
+      "run": {
+        "run": "SRR35084738",
+        "biosample": "SAMN50741053",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "177NGA_S175",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "172089663",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741053",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-06-19",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084716",
+      "run": {
+        "run": "SRR35084716",
+        "biosample": "SAMN50741102",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "180NGA_S116",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "158510346",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741102",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-06-03",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084732",
+      "run": {
+        "run": "SRR35084732",
+        "biosample": "SAMN50741058",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "182NGA_S140",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "180459383",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741058",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-10-06",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084711",
+      "run": {
+        "run": "SRR35084711",
+        "biosample": "SAMN50741106",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "183NGA_S152",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "147764901",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741106",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-10-14",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084713",
+      "run": {
+        "run": "SRR35084713",
+        "biosample": "SAMN50741104",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "187NGA_S105",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "126216159",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741104",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-08-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084712",
+      "run": {
+        "run": "SRR35084712",
+        "biosample": "SAMN50741105",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "188NGA_S117",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "159640933",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741105",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-09-17",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084731",
+      "run": {
+        "run": "SRR35084731",
+        "biosample": "SAMN50741059",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "191NGA_S153",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "164237321",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741059",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-11-02",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084733",
+      "run": {
+        "run": "SRR35084733",
+        "biosample": "SAMN50741057",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "192NGA_S165",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "144176871",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741057",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-09-18",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084734",
+      "run": {
+        "run": "SRR35084734",
+        "biosample": "SAMN50741056",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "193NGA_S177",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "201574688",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741056",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-08-14",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084729",
+      "run": {
+        "run": "SRR35084729",
+        "biosample": "SAMN50741061",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "194NGA_S189",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "123771952",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741061",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-08-15",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084728",
+      "run": {
+        "run": "SRR35084728",
+        "biosample": "SAMN50741062",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "197NGA_S118",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "144923738",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741062",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-21",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084700",
+      "run": {
+        "run": "SRR35084700",
+        "biosample": "SAMN50741115",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "266NGA_S66",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "131089509",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741115",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-31",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084746",
+      "run": {
+        "run": "SRR35084746",
+        "biosample": "SAMN50741045",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "272NGA_S31",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "133602467",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741045",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-29",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084706",
+      "run": {
+        "run": "SRR35084706",
+        "biosample": "SAMN50741111",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "274NGA_S43",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "139466374",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741111",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-20",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084707",
+      "run": {
+        "run": "SRR35084707",
+        "biosample": "SAMN50741110",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "276NGA_S67",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "133964542",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741110",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-15",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084710",
+      "run": {
+        "run": "SRR35084710",
+        "biosample": "SAMN50741107",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "314NGA_S297",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "149722132",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741107",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2021-01-26",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084705",
+      "run": {
+        "run": "SRR35084705",
+        "biosample": "SAMN50741112",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "320NGA_S369",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "105636632",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741112",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-08-29",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084701",
+      "run": {
+        "run": "SRR35084701",
+        "biosample": "SAMN50741114",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "322NGA_S298",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "128634926",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741114",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-21",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084827",
+      "run": {
+        "run": "SRR35084827",
+        "biosample": "SAMN50741036",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "40NGA_S197",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "131346078",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741036",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-30",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084722",
+      "run": {
+        "run": "SRR35084722",
+        "biosample": "SAMN50741067",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "41NGA_S209",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "142842571",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741067",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-02-07",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084721",
+      "run": {
+        "run": "SRR35084721",
+        "biosample": "SAMN50741068",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "44NGA_S245",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "162351546",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741068",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-03-26",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084825",
+      "run": {
+        "run": "SRR35084825",
+        "biosample": "SAMN50741038",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "46NGA_S269",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "163790428",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741038",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-04-17",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084719",
+      "run": {
+        "run": "SRR35084719",
+        "biosample": "SAMN50741070",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "49NGA_S198",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "113507638",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741070",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-04-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084823",
+      "run": {
+        "run": "SRR35084823",
+        "biosample": "SAMN50741040",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "51NGA_S222",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "144598804",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741040",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084822",
+      "run": {
+        "run": "SRR35084822",
+        "biosample": "SAMN50741041",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "52NGA_S234",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "125012969",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741041",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-04-23",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084750",
+      "run": {
+        "run": "SRR35084750",
+        "biosample": "SAMN50741042",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "53NGA_S246",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "132671914",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741042",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-05-17",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084826",
+      "run": {
+        "run": "SRR35084826",
+        "biosample": "SAMN50741037",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "59NGA_S223",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "155427182",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741037",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-01-03",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084720",
+      "run": {
+        "run": "SRR35084720",
+        "biosample": "SAMN50741069",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "61NGA_S235",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "167481865",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741069",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-03-26",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084747",
+      "run": {
+        "run": "SRR35084747",
+        "biosample": "SAMN50741044",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "71NGA_S248",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "150607779",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741044",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-04",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084708",
+      "run": {
+        "run": "SRR35084708",
+        "biosample": "SAMN50741109",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "74NGA_S284",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "132472107",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741109",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-06-26",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084704",
+      "run": {
+        "run": "SRR35084704",
+        "biosample": "SAMN50741113",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "75NGA_S201",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "145355357",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741113",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-10-09",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084749",
+      "run": {
+        "run": "SRR35084749",
+        "biosample": "SAMN50741043",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "76NGA_S213",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "151549748",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741043",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-06-03",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084743",
+      "run": {
+        "run": "SRR35084743",
+        "biosample": "SAMN50741048",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "84NGA_S285",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "143062543",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741048",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-03-09",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084742",
+      "run": {
+        "run": "SRR35084742",
+        "biosample": "SAMN50741049",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "94NGA_S203",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "128257802",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741049",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-03-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084745",
+      "run": {
+        "run": "SRR35084745",
+        "biosample": "SAMN50741046",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "97NGA_S275",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "144410795",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741046",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-07-02",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163969",
+      "run": {
+        "run": "SRR29163969",
+        "biosample": "SAMN41525216",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_09",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "243964358",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525216",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163958",
+      "run": {
+        "run": "SRR29163958",
+        "biosample": "SAMN41525217",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_10",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "152905016",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525217",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163951",
+      "run": {
+        "run": "SRR29163951",
+        "biosample": "SAMN41525218",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_11",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "73932318",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525218",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163950",
+      "run": {
+        "run": "SRR29163950",
+        "biosample": "SAMN41525219",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_16",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "309799150",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525219",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163949",
+      "run": {
+        "run": "SRR29163949",
+        "biosample": "SAMN41525220",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_16i",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "77807898",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525220",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163948",
+      "run": {
+        "run": "SRR29163948",
+        "biosample": "SAMN41525221",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_17",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "136305284",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525221",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163980",
+      "run": {
+        "run": "SRR29163980",
+        "biosample": "SAMN41525215",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_2a",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "158487184",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525215",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163988",
+      "run": {
+        "run": "SRR29163988",
+        "biosample": "SAMN41525234",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_60",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "281528024",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525234",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163987",
+      "run": {
+        "run": "SRR29163987",
+        "biosample": "SAMN41525235",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_61",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "304148428",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525235",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163986",
+      "run": {
+        "run": "SRR29163986",
+        "biosample": "SAMN41525236",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_62",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "319223664",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525236",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163985",
+      "run": {
+        "run": "SRR29163985",
+        "biosample": "SAMN41525237",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_63",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "366839098",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525237",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163984",
+      "run": {
+        "run": "SRR29163984",
+        "biosample": "SAMN41525238",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_64",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "187992584",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525238",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163983",
+      "run": {
+        "run": "SRR29163983",
+        "biosample": "SAMN41525239",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_66",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "411569526",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525239",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163982",
+      "run": {
+        "run": "SRR29163982",
+        "biosample": "SAMN41525240",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_68",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "401581480",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525240",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163981",
+      "run": {
+        "run": "SRR29163981",
+        "biosample": "SAMN41525241",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_69",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "331643716",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525241",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163979",
+      "run": {
+        "run": "SRR29163979",
+        "biosample": "SAMN41525242",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_70",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "335377946",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525242",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163978",
+      "run": {
+        "run": "SRR29163978",
+        "biosample": "SAMN41525243",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_71",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "214591234",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525243",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163977",
+      "run": {
+        "run": "SRR29163977",
+        "biosample": "SAMN41525244",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_72",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "274793424",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525244",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163976",
+      "run": {
+        "run": "SRR29163976",
+        "biosample": "SAMN41525245",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_73",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "336738456",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525245",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163975",
+      "run": {
+        "run": "SRR29163975",
+        "biosample": "SAMN41525246",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_74",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "303403998",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525246",
+        "geo_loc_name": "Nigeria:FCT",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163974",
+      "run": {
+        "run": "SRR29163974",
+        "biosample": "SAMN41525247",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_75",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "278312328",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525247",
+        "geo_loc_name": "Nigeria:PLATEAU",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163973",
+      "run": {
+        "run": "SRR29163973",
+        "biosample": "SAMN41525248",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_76",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "176029458",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525248",
+        "geo_loc_name": "Nigeria:KWARA",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163972",
+      "run": {
+        "run": "SRR29163972",
+        "biosample": "SAMN41525249",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_77",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "389729792",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525249",
+        "geo_loc_name": "Nigeria:KWARA",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163971",
+      "run": {
+        "run": "SRR29163971",
+        "biosample": "SAMN41525250",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_78",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "360300798",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525250",
+        "geo_loc_name": "Nigeria:KWARA",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163970",
+      "run": {
+        "run": "SRR29163970",
+        "biosample": "SAMN41525251",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_79",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "322604252",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525251",
+        "geo_loc_name": "Nigeria:NASARAWA",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163968",
+      "run": {
+        "run": "SRR29163968",
+        "biosample": "SAMN41525252",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_80",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "327314546",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525252",
+        "geo_loc_name": "Nigeria:NASARAWA",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163967",
+      "run": {
+        "run": "SRR29163967",
+        "biosample": "SAMN41525253",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_81",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "337632074",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525253",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163966",
+      "run": {
+        "run": "SRR29163966",
+        "biosample": "SAMN41525254",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_82",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "469132538",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525254",
+        "geo_loc_name": "Nigeria:PLATEAU",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163965",
+      "run": {
+        "run": "SRR29163965",
+        "biosample": "SAMN41525255",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_83",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "325411946",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525255",
+        "geo_loc_name": "Nigeria:PLATEAU",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163964",
+      "run": {
+        "run": "SRR29163964",
+        "biosample": "SAMN41525256",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_84",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "311940934",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525256",
+        "geo_loc_name": "Nigeria:PLATEAU",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163963",
+      "run": {
+        "run": "SRR29163963",
+        "biosample": "SAMN41525257",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_85",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "336106370",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525257",
+        "geo_loc_name": "Nigeria:PLATEAU",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163962",
+      "run": {
+        "run": "SRR29163962",
+        "biosample": "SAMN41525258",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_87",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "204373970",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525258",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163961",
+      "run": {
+        "run": "SRR29163961",
+        "biosample": "SAMN41525259",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_88",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "397802856",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525259",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163960",
+      "run": {
+        "run": "SRR29163960",
+        "biosample": "SAMN41525260",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_89",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "361971764",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525260",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163959",
+      "run": {
+        "run": "SRR29163959",
+        "biosample": "SAMN41525261",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_90",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "222758220",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525261",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163957",
+      "run": {
+        "run": "SRR29163957",
+        "biosample": "SAMN41525262",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_91",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "406442774",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525262",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163956",
+      "run": {
+        "run": "SRR29163956",
+        "biosample": "SAMN41525263",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_92",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "290636344",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525263",
+        "geo_loc_name": "Nigeria:KOGI",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163955",
+      "run": {
+        "run": "SRR29163955",
+        "biosample": "SAMN41525264",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_93",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "373880530",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525264",
+        "geo_loc_name": "Nigeria:KOGI",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163954",
+      "run": {
+        "run": "SRR29163954",
+        "biosample": "SAMN41525265",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_94",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "282624284",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525265",
+        "geo_loc_name": "Nigeria:KOGI",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163953",
+      "run": {
+        "run": "SRR29163953",
+        "biosample": "SAMN41525266",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_95",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "280226404",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525266",
+        "geo_loc_name": "Nigeria:KOGI",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163952",
+      "run": {
+        "run": "SRR29163952",
+        "biosample": "SAMN41525267",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_96",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "498637334",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525267",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29341580",
+      "run": {
+        "run": "SRR29341580",
+        "biosample": "SAMN41772237",
+        "bioproject": "PRJNA1122079",
+        "sample_name": "IT2747",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "702364565",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41772237",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2022",
+        "host": "Homo sapiens",
+        "isolation_source": "missing",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084838",
+      "run": {
+        "run": "SRR35084838",
+        "biosample": "SAMN50741026",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601089_S32",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "28421791",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741026",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-10-29",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084836",
+      "run": {
+        "run": "SRR35084836",
+        "biosample": "SAMN50741028",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601093_S33",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "94418753",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741028",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-08",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084834",
+      "run": {
+        "run": "SRR35084834",
+        "biosample": "SAMN50741030",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "0601095_S34",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "105661393",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741030",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-09",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084844",
+      "run": {
+        "run": "SRR35084844",
+        "biosample": "SAMN50741021",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "107NGA_S97",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "156007723",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741021",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-08-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084843",
+      "run": {
+        "run": "SRR35084843",
+        "biosample": "SAMN50741022",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "108NGA_S109",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "176537795",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741022",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-08-15",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084842",
+      "run": {
+        "run": "SRR35084842",
+        "biosample": "SAMN50741023",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "114NGA_S169",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "175732559",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741023",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-09-18",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084840",
+      "run": {
+        "run": "SRR35084840",
+        "biosample": "SAMN50741024",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "116NGA_S98",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "96272781",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741024",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-09-19",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084835",
+      "run": {
+        "run": "SRR35084835",
+        "biosample": "SAMN50741029",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "129NGA_S111",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "133901996",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741029",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-09",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084419",
+      "run": {
+        "run": "SRR35084419",
+        "biosample": "SAMN50741131",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "148NGA_S148",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "166265531",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741131",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-06-03",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084421",
+      "run": {
+        "run": "SRR35084421",
+        "biosample": "SAMN50741129",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "152NGA_S206",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "139738856",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741129",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-04-29",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084422",
+      "run": {
+        "run": "SRR35084422",
+        "biosample": "SAMN50741128",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "154NGA_S113",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "179990039",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741128",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-04-27",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084417",
+      "run": {
+        "run": "SRR35084417",
+        "biosample": "SAMN50741133",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "155NGA_S125",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "155058514",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741133",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-08-11",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084418",
+      "run": {
+        "run": "SRR35084418",
+        "biosample": "SAMN50741132",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "159NGA_S173",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "160325618",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741132",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-06-16",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084420",
+      "run": {
+        "run": "SRR35084420",
+        "biosample": "SAMN50741130",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "166NGA_S150",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "156679172",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741130",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2020-05-28",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084839",
+      "run": {
+        "run": "SRR35084839",
+        "biosample": "SAMN50741025",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "278NGA_S91",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "110033741",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741025",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-09-22",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084833",
+      "run": {
+        "run": "SRR35084833",
+        "biosample": "SAMN50741031",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "72NGA_S260",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "163392320",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741031",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-12",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR35084837",
+      "run": {
+        "run": "SRR35084837",
+        "biosample": "SAMN50741027",
+        "bioproject": "PRJNA1309160",
+        "sample_name": "77NGA_S225",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "152477879",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN50741027",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2018-11-04",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783287",
+      "run": {
+        "run": "SRR24783287",
+        "biosample": "SAMN35526094",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03031",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "266888153",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526094",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783286",
+      "run": {
+        "run": "SRR24783286",
+        "biosample": "SAMN35526095",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03032",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "493524972",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526095",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783285",
+      "run": {
+        "run": "SRR24783285",
+        "biosample": "SAMN35526096",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03034",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "319494433",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526096",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783284",
+      "run": {
+        "run": "SRR24783284",
+        "biosample": "SAMN35526097",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03035",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "345955140",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526097",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783283",
+      "run": {
+        "run": "SRR24783283",
+        "biosample": "SAMN35526098",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03036",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "298519159",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526098",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783282",
+      "run": {
+        "run": "SRR24783282",
+        "biosample": "SAMN35526099",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03037",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "414358234",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526099",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783280",
+      "run": {
+        "run": "SRR24783280",
+        "biosample": "SAMN35526101",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03039",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "598778064",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526101",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24783281",
+      "run": {
+        "run": "SRR24783281",
+        "biosample": "SAMN35526100",
+        "bioproject": "PRJNA905483",
+        "sample_name": "NGA03043",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "477738208",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN35526100",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2023-05-05",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24302114",
+      "run": {
+        "run": "SRR24302114",
+        "biosample": "SAMN34369189",
+        "bioproject": "PRJNA961800",
+        "sample_name": "27373",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "778609708",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN34369189",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2021",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24302113",
+      "run": {
+        "run": "SRR24302113",
+        "biosample": "SAMN34369190",
+        "bioproject": "PRJNA961800",
+        "sample_name": "67262",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "674652407",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN34369190",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2021",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR24302112",
+      "run": {
+        "run": "SRR24302112",
+        "biosample": "SAMN34369191",
+        "bioproject": "PRJNA961800",
+        "sample_name": "67264",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "831817097",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN34369191",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2021",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29056126",
+      "run": {
+        "run": "SRR29056126",
+        "biosample": "SAMN41421869",
+        "bioproject": "PRJNA1109295",
+        "sample_name": "7F975A_ACC0DD167799",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "333724496",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41421869",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2012",
+        "host": "Homo sapiens",
+        "isolation_source": "missing",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29164003",
+      "run": {
+        "run": "SRR29164003",
+        "biosample": "SAMN41525212",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_01",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "215778396",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525212",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163991",
+      "run": {
+        "run": "SRR29163991",
+        "biosample": "SAMN41525214",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_02",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "318676742",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525214",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29164001",
+      "run": {
+        "run": "SRR29164001",
+        "biosample": "SAMN41525222",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_18",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "192840590",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525222",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29164000",
+      "run": {
+        "run": "SRR29164000",
+        "biosample": "SAMN41525223",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_19",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "164514198",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525223",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29164002",
+      "run": {
+        "run": "SRR29164002",
+        "biosample": "SAMN41525213",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_1a",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "341157018",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525213",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163999",
+      "run": {
+        "run": "SRR29163999",
+        "biosample": "SAMN41525224",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_20",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "261949666",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525224",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163998",
+      "run": {
+        "run": "SRR29163998",
+        "biosample": "SAMN41525225",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_20i",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "260103130",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525225",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163997",
+      "run": {
+        "run": "SRR29163997",
+        "biosample": "SAMN41525226",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_21i",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "354214994",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525226",
+        "geo_loc_name": "Nigeria:NIGER",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163996",
+      "run": {
+        "run": "SRR29163996",
+        "biosample": "SAMN41525227",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_22",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "95210936",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525227",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163995",
+      "run": {
+        "run": "SRR29163995",
+        "biosample": "SAMN41525228",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_22i",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "438956728",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525228",
+        "geo_loc_name": "Nigeria:NASARAWA",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163994",
+      "run": {
+        "run": "SRR29163994",
+        "biosample": "SAMN41525229",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_24",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "179564066",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525229",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163993",
+      "run": {
+        "run": "SRR29163993",
+        "biosample": "SAMN41525230",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_26",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "160728326",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525230",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163992",
+      "run": {
+        "run": "SRR29163992",
+        "biosample": "SAMN41525231",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_32",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "58573504",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525231",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163990",
+      "run": {
+        "run": "SRR29163990",
+        "biosample": "SAMN41525232",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_33",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "164755798",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525232",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR29163989",
+      "run": {
+        "run": "SRR29163989",
+        "biosample": "SAMN41525233",
+        "bioproject": "PRJNA1116203",
+        "sample_name": "sample_34",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "136174820",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN41525233",
+        "geo_loc_name": "Nigeria:BENUE",
+        "collection_date": "2016-07/2017-02",
+        "host": "Homo sapiens",
+        "isolation_source": "Culture isolate",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR18715441",
+      "run": {
+        "run": "SRR18715441",
+        "biosample": "SAMN27520129",
+        "bioproject": "PRJNA825524",
+        "sample_name": "31311",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "969565769",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN27520129",
+        "geo_loc_name": "Nigeria:Ibadan_OyoState",
+        "collection_date": "2020",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR18714978",
+      "run": {
+        "run": "SRR18714978",
+        "biosample": "SAMN27520212",
+        "bioproject": "PRJNA825524",
+        "sample_name": "31325",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "798554126",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN27520212",
+        "geo_loc_name": "Nigeria:Ibadan_OyoState",
+        "collection_date": "2021",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR14334195",
+      "run": {
+        "run": "SRR14334195",
+        "biosample": "SAMN18880038",
+        "bioproject": "PRJNA725394",
+        "sample_name": "TB3",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "985881891",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN18880038",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-07-10",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR14334194",
+      "run": {
+        "run": "SRR14334194",
+        "biosample": "SAMN18880039",
+        "bioproject": "PRJNA725394",
+        "sample_name": "TB8",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "951068300",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN18880039",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "2019-07-25",
+        "host": "Homo sapiens",
+        "isolation_source": "",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535854",
+      "run": {
+        "run": "SRR5535854",
+        "biosample": "SAMN06251247",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07430",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "690040888",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251247",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535859",
+      "run": {
+        "run": "SRR5535859",
+        "biosample": "SAMN06251234",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07435",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1025834376",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251234",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535860",
+      "run": {
+        "run": "SRR5535860",
+        "biosample": "SAMN06251239",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07439",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1372072880",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251239",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535836",
+      "run": {
+        "run": "SRR5535836",
+        "biosample": "SAMN06251245",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07459",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "520561474",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251245",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535837",
+      "run": {
+        "run": "SRR5535837",
+        "biosample": "SAMN06251249",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07460",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "980783124",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251249",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535785",
+      "run": {
+        "run": "SRR5535785",
+        "biosample": "SAMN06251226",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07409",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "503201190",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251226",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535808",
+      "run": {
+        "run": "SRR5535808",
+        "biosample": "SAMN06251221",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07410",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "478956342",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251221",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535823",
+      "run": {
+        "run": "SRR5535823",
+        "biosample": "SAMN06251243",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07416",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1267368604",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251243",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535809",
+      "run": {
+        "run": "SRR5535809",
+        "biosample": "SAMN06251225",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07417",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "854037012",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251225",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535815",
+      "run": {
+        "run": "SRR5535815",
+        "biosample": "SAMN06251222",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07422",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1384893820",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251222",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535811",
+      "run": {
+        "run": "SRR5535811",
+        "biosample": "SAMN06251228",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07424",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "935219600",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251228",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535814",
+      "run": {
+        "run": "SRR5535814",
+        "biosample": "SAMN06251223",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07425",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "823948506",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251223",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535816",
+      "run": {
+        "run": "SRR5535816",
+        "biosample": "SAMN06251224",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07426",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "784250254",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251224",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535827",
+      "run": {
+        "run": "SRR5535827",
+        "biosample": "SAMN06251246",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07428",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "868511120",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251246",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535829",
+      "run": {
+        "run": "SRR5535829",
+        "biosample": "SAMN06251241",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07431",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "770435070",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251241",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535824",
+      "run": {
+        "run": "SRR5535824",
+        "biosample": "SAMN06251230",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07432",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1155038222",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251230",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535810",
+      "run": {
+        "run": "SRR5535810",
+        "biosample": "SAMN06251229",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07433",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "792668604",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251229",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535819",
+      "run": {
+        "run": "SRR5535819",
+        "biosample": "SAMN06251233",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07434",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "760061966",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251233",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535831",
+      "run": {
+        "run": "SRR5535831",
+        "biosample": "SAMN06251236",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07436",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "815909512",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251236",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535826",
+      "run": {
+        "run": "SRR5535826",
+        "biosample": "SAMN06251238",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07437",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "756344156",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251238",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535828",
+      "run": {
+        "run": "SRR5535828",
+        "biosample": "SAMN06251242",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07438",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "1154238302",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251242",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535830",
+      "run": {
+        "run": "SRR5535830",
+        "biosample": "SAMN06251244",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07440",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "667798870",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251244",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535822",
+      "run": {
+        "run": "SRR5535822",
+        "biosample": "SAMN06251227",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07442",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "972981076",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251227",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535833",
+      "run": {
+        "run": "SRR5535833",
+        "biosample": "SAMN06251235",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07457",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "685023814",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251235",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535834",
+      "run": {
+        "run": "SRR5535834",
+        "biosample": "SAMN06251240",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07491",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "985564868",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251240",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535825",
+      "run": {
+        "run": "SRR5535825",
+        "biosample": "SAMN06251248",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07492",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "691977462",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251248",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    },
+    {
+      "sample_id": "ng_SRR5535832",
+      "run": {
+        "run": "SRR5535832",
+        "biosample": "SAMN06251237",
+        "bioproject": "PRJNA300846",
+        "sample_name": "G07493",
+        "platform": "ILLUMINA",
+        "layout": "PAIRED",
+        "bases": "637195264",
+        "organism": "Mycobacterium tuberculosis"
+      },
+      "biosample": {
+        "accession": "SAMN06251237",
+        "geo_loc_name": "Nigeria",
+        "collection_date": "missing",
+        "host": "Homo sapiens",
+        "isolation_source": "sputum",
+        "phenotype_attributes": {}
+      },
+      "derived_tier": "B",
+      "errors": []
+    }
+  ]
+}
