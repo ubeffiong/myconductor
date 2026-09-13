@@ -265,6 +265,92 @@ reader can recompute rather than trust.
 
 Which parser produced a call is recorded in `engine_calls.tsv`.
 
+## The third track: conditional effect sizes for uncertain variants
+
+The two tracks above measure Myconductor. This one measures *variants* — the
+20,843 entries the WHO catalogue grades "Uncertain significance". They carry
+coordinates, so they can be genotyped; nobody knows what they do, so they are
+the gap worth attacking.
+
+```bash
+mycobench analyse \
+  --catalogue data/who/mtb_amr_catalogue.ingested.json \
+  --reuse-table data/cryptic/CRyPTIC_reuse_table_20240917.csv \
+  --cache-dir /var/cache/mycobench \
+  --out-dir results/analysis \
+  --limit 400 --sample-seed 20260914 --jobs 8
+```
+
+For each candidate variant and drug it compares carriers' MICs against
+non-carriers' **within each resistance background**, then pools those
+comparisons weighted by how many pairs were actually decidable under censoring.
+Holding the background fixed is what separates a determinant from a
+hitchhiker: a variant that only ever travels with `rpoB S450L` has no variation
+left to explain once that determinant is held constant.
+
+Outcomes are five distinct states — `evidence-of-effect`, `no-evidence`,
+`confounded`, `underpowered`, `not-estimable` — because collapsing the last
+three into `no-evidence` is what lets a structurally unevaluable variant look
+merely unproven.
+
+**Nothing this track produces is a resistance call.** An effect size is a
+discovery result. Promoting one to a clinical call requires curation and a
+catalogue update, which is the federated ledger's job, not this one's.
+
+### Sample deliberately, or the confounding checks do nothing
+
+`--limit N` alone takes the *first* N rows, and the reuse table is ordered by
+site and subject: the first forty isolates are all from `site.02`. Site then
+never varies, so the site check has nothing to compare, and the sample is drawn
+from one laboratory. `--sample-seed` draws at random instead and is
+reproducible. On this release, thirty sampled isolates yielded 186 distinct
+catalogued variants where forty sequential ones yielded 142.
+
+Lineage is a harder problem: **the CRyPTIC reuse table has no lineage column**,
+so every isolate loaded from it is untyped and the lineage check reports that
+it could not be assessed. It does not report a diversity of 1.0 — that would be
+indistinguishable from carriers genuinely confined to one lineage. Supply
+lineages through `--metadata` to make that check live.
+
+### What this costs, measured
+
+The release's re-genotyped VCFs are **~20 MB compressed and ~178 MB
+decompressed each**, about 1.27 million records, because every callable site in
+the genome is present including the `0/0` reference calls. Those reference
+calls are the point: a catalogued position called `0/0` is the positive
+evidence that the locus was examined and the variant absent, which is what lets
+a drug reach SUSCEPTIBLE rather than NOT_ASSESSED.
+
+| | |
+|---|---|
+| Per isolate | ~20 MB download, ~4 s to parse |
+| 400 isolates | ~7.4 GB, under an hour with `--jobs 8` |
+| All 12,287 | **~248 GB** |
+
+The full compendium is an infrastructure decision, not an incidental download.
+Caching is by release-relative path, so a re-run costs nothing and a partial
+run resumes.
+
+### What 400 isolates can and cannot answer
+
+Enough for common variants. Not enough for the drugs that matter most for new
+regimens: CRyPTIC holds 71 bedaquiline-resistant isolates in 8,535, so a
+400-isolate sample is expected to contain roughly three, and no stratified
+comparison survives that. Rare-resistance questions need the full compendium
+and the storage that implies.
+
+Four drugs cannot support a location statistic at all on this release, because
+more than half their observations sit below the lowest tested dilution —
+amikacin 69%, delamanid 77%, clofazimine 56%, rifabutin 65% — and the pipeline
+refuses them by name rather than reporting a median that is really the
+censoring bound.
+
+**Pretomanid has no reference standard on either side.** It is absent from the
+WHO catalogue's 15 drugs and from CRyPTIC's 13 MIC columns: nothing supplies a
+catalogued genotypic call for it, and nothing supplies a phenotype to score one
+against. Its target in `thresholds.py` is carried so a report can say this
+explicitly rather than omit the drug.
+
 ## What a run will not establish
 
 - **Clinical validity.** Nothing in Myconductor has been clinically evaluated.

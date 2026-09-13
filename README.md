@@ -243,6 +243,29 @@ on the controlled `geo_loc_name` field, not free text**: an SRA search for
 published files supply real genomic coordinates that the bundled illustrative
 profile refuses to invent.
 
+### Measuring variants, not just the tool
+
+`mycobench analyse` attacks the other side of the problem: the 20,843 catalogue
+entries graded **"Uncertain significance"**. It genotypes CRyPTIC isolates
+against the catalogue's own coordinates and estimates each uncertain variant's
+effect on MIC *within each resistance background*, which is what separates a
+determinant from a hitchhiker travelling with `rpoB S450L`.
+
+```bash
+mycobench analyse --catalogue data/who/mtb_amr_catalogue.ingested.json \
+  --reuse-table data/cryptic/CRyPTIC_reuse_table_20240917.csv \
+  --cache-dir /var/cache/mycobench --out-dir results/analysis \
+  --limit 400 --sample-seed 20260914 --jobs 8
+```
+
+Three things are worth knowing before starting it. The release's re-genotyped
+VCFs are **~20 MB each, ~178 MB decompressed** — the whole compendium is
+**~248 GB**, so scale is an infrastructure decision. Use `--sample-seed`:
+without it the reuse table's site ordering hands you one laboratory, and the
+site confounding check silently has nothing to compare. And the output is a
+**discovery result, never a resistance call** — promoting one requires curation
+through the federated ledger.
+
 ## Tests
 
 ```bash

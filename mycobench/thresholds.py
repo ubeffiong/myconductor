@@ -150,8 +150,14 @@ TARGETS: dict[str, DrugTarget] = {
         "pretomanid", min_sensitivity=0.75, min_specificity=0.90,
         min_call_rate=0.75, min_evaluable=20,
         rationale="shares the nitroimidazole activation pathway with "
-                  "delamanid; CRyPTIC does not measure it, so this target "
-                  "applies only where another phenotype source supplies it"),
+                  "delamanid, but has NO reference standard on either side: "
+                  "verified absent from the WHO catalogue's 15 drugs and from "
+                  "CRyPTIC's 13 MIC columns. Nothing supplies a catalogued "
+                  "genotypic call for it and nothing supplies a phenotype to "
+                  "score one against, so this target is unmeasurable here and "
+                  "is carried only so a report can say so explicitly rather "
+                  "than omit the drug. It applies only where a separate "
+                  "catalogue and a separate phenotype source both supply it"),
 }
 
 #: Phenotype qualities accepted into the accuracy track. CRyPTIC grades each
