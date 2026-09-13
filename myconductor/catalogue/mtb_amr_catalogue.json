@@ -1,0 +1,22 @@
+{
+  "catalogue_version": "demo-2024.2 (illustrative subset)",
+  "note": "A small, hand-picked subset for demonstration only. A production deployment loads the full WHO Mycobacterium tuberculosis mutation catalogue (2nd edition, ~11,390 graded variants). Do not use these calls clinically.",
+  "efflux_genes": ["Rv0678", "mmpR5", "pepQ", "Rv1979c"],
+  "regulatory_regions": ["inhA_promoter", "eis_promoter", "ahpC_promoter"],
+  "variants": [
+    {"gene": "katG", "change": "S315T", "drug": "isoniazid", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.98},
+    {"gene": "inhA", "change": "c.-15C>T", "drug": "isoniazid", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.9, "region": "promoter"},
+    {"gene": "rpoB", "change": "S450L", "drug": "rifampicin", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.98},
+    {"gene": "rpoB", "change": "D435V", "drug": "rifampicin", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.95},
+    {"gene": "pncA", "change": "H57D", "drug": "pyrazinamide", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.9},
+    {"gene": "embB", "change": "M306V", "drug": "ethambutol", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.88},
+    {"gene": "gyrA", "change": "D94G", "drug": "moxifloxacin", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.95},
+    {"gene": "gyrA", "change": "A90V", "drug": "moxifloxacin", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.9},
+    {"gene": "rrs", "change": "a1401g", "drug": "amikacin", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.95, "region": "rrna"},
+    {"gene": "atpE", "change": "D28V", "drug": "bedaquiline", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.85},
+    {"gene": "Rv0678", "change": "R94Q", "drug": "bedaquiline", "call": "resistant", "who_grade": "Assoc w R - interim", "confidence": 0.7},
+    {"gene": "ddn", "change": "W88stop", "drug": "pretomanid", "call": "resistant", "who_grade": "Assoc w R - interim", "confidence": 0.7},
+    {"gene": "rplC", "change": "C154R", "drug": "linezolid", "call": "resistant", "who_grade": "Assoc w R", "confidence": 0.85},
+    {"gene": "katG", "change": "R463L", "drug": "isoniazid", "call": "susceptible", "who_grade": "Not assoc w R", "confidence": 0.95}
+  ]
+}

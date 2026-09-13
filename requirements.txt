@@ -1,0 +1,7 @@
+# Myconductor core has ZERO runtime dependencies (Python 3.9+ standard library
+# only) -- deliberate, so the demo runs offline in low-resource settings.
+#
+# Optional backends for production models (install as needed):
+#   xgboost scikit-learn shap numpy   # trained VUS classifier
+#   vina                              # AutoDock Vina docking backend
+#   pytest                            # test runner (or use `python -m unittest`)

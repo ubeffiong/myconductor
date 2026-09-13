@@ -1,0 +1,27 @@
+{
+  "drugs": [
+    "isoniazid", "rifampicin", "pyrazinamide", "ethambutol",
+    "moxifloxacin", "amikacin", "bedaquiline", "pretomanid",
+    "linezolid", "clofazimine"
+  ],
+  "regimens": [
+    {
+      "name": "BPaLM",
+      "drugs": ["bedaquiline", "pretomanid", "linezolid", "moxifloxacin"],
+      "min_effective": 3,
+      "note": "6-month regimen for MDR/RR-TB and pre-XDR-TB (WHO 2022)."
+    },
+    {
+      "name": "BPaL",
+      "drugs": ["bedaquiline", "pretomanid", "linezolid"],
+      "min_effective": 3,
+      "note": "Fallback when a fluoroquinolone cannot be used."
+    },
+    {
+      "name": "first-line",
+      "drugs": ["isoniazid", "rifampicin", "pyrazinamide", "ethambutol"],
+      "min_effective": 4,
+      "note": "Standard drug-susceptible TB regimen."
+    }
+  ]
+}
