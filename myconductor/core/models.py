@@ -361,6 +361,14 @@ class DrugEvidence:
     who_grade: Optional[str] = None
     engine: Optional[EngineRef] = None
     limitations: tuple[str, ...] = ()
+    #: The exact catalogue version that produced this call, and the exact rule
+    #: (which entry, which grade) that fired. Needed so multi-site aggregation
+    #: can tell "different catalogue versions disagree" apart from "the same
+    #: catalogue version was applied differently" — two different governance
+    #: problems with two different fixes. ``None`` where a lane is not
+    #: catalogue-driven (efflux, VUS, minority-allele).
+    catalogue_version: Optional[str] = None
+    rule_id: Optional[str] = None
     #: Set only by an adapter whose engine performed its own callable-locus
     #: assessment and asserts the drug's loci were adequately covered (e.g.
     #: Mykrobe distinguishing "S" from "N"). It lets orchestration honour a
@@ -459,6 +467,36 @@ class HeteroresistanceFinding:
     alt_depth: Optional[int] = None
     limit_of_detection: Optional[float] = None
     platform: Optional[str] = None
+    #: Posterior probability that this minority allele reflects a true
+    #: resistance-conferring subpopulation, under an explicit measurement
+    #: model (see ``modules.calibration``). ``None`` — not zero, not omitted —
+    #: whenever a calibrated detection curve or a prior is not configured for
+    #: this platform/drug/lineage: an absent calibration is not evidence of
+    #: absence of resistance.
+    posterior_resistance_probability: Optional[float] = None
+    posterior_interval: Optional[tuple[float, float]] = None
+    calibration_source: str = "uncalibrated default"
+
+
+@dataclass
+class MechanismHypothesis:
+    """A named, testable hypothesis for why a call was withheld — not a call.
+
+    Generalises the VUS workbench's "research queue, not a dead end" idea to
+    every lane that reports ``INDETERMINATE`` without a graded mechanism (today:
+    the efflux/regulatory lane). ``evidence_gaps`` names what is missing;
+    ``resolving_experiments`` names what would resolve it. Neither field
+    upgrades the underlying call — only catalogued or phenotypic evidence may
+    do that (see ``Tier.may_establish_resistance``).
+    """
+
+    variant_label: str
+    variant_key: str
+    gene: str
+    drug: str
+    hypothesis: str
+    evidence_gaps: list[str] = field(default_factory=list)
+    resolving_experiments: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -561,6 +599,7 @@ class AnalysisReport:
     eligibility: EligibilityReport = field(default_factory=EligibilityReport)
     heteroresistance: list[HeteroresistanceFinding] = field(default_factory=list)
     vus_priorities: list[VUSPriority] = field(default_factory=list)
+    mechanism_queue: list[MechanismHypothesis] = field(default_factory=list)
     discordances: list[Discordance] = field(default_factory=list)
     qc: list[QCFinding] = field(default_factory=list)
     qc_warnings: list[str] = field(default_factory=list)

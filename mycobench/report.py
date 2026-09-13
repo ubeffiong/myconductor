@@ -94,6 +94,17 @@ GLOSSARY: dict[str, dict[str, str]] = {
                "measured it and found it wanting, so it gets its own state "
                "rather than being reported as a failure.",
     },
+    "Generalizability": {
+        "what": "Whether a drug's accuracy has been measured across at least "
+                "two independent lineages, cumulatively across every cohort "
+                "ever ingested into this monitoring state — not just this "
+                "run.",
+        "why": "A figure measured entirely within one lineage cannot be told "
+               "apart from a lineage-specific effect. This is the same "
+               "confounding check the federated catalogue-learning module "
+               "applies before crediting a variant with resistance, applied "
+               "here to accuracy instead.",
+    },
     "Species control": {
         "what": "A non-tuberculous mycobacterium the pipeline is required to "
                 "refuse.",
@@ -178,6 +189,8 @@ class ReportData:
     engine_calls: list[dict]
     my_calls: list[dict]
     stage_status: dict[str, list[dict]]
+    lineage_accuracy: list[dict]
+    monitoring: dict
 
     @property
     def accuracy_measured(self) -> bool:
@@ -205,7 +218,9 @@ def load(results_dir: Path, samples: Optional[Path]) -> ReportData:
         controls=read_tsv(results_dir / "species_control.tsv"),
         engine_calls=read_tsv(results_dir / "engine_calls.tsv"),
         my_calls=read_tsv(results_dir / "myconductor_calls.tsv"),
-        stage_status=stage_status)
+        stage_status=stage_status,
+        lineage_accuracy=read_tsv(results_dir / "lineage_accuracy.tsv"),
+        monitoring=read_json(results_dir / "monitoring_state.json"))
 
 
 # -- sections -------------------------------------------------------------
@@ -429,6 +444,61 @@ is deliberately distinct from failure. A drug below its minimum evaluable count
 makes no claim in either direction.</p></section>"""
 
 
+def lineage_section(data: ReportData) -> str:
+    """The continuous, lineage-stratified monitoring dashboard.
+
+    Unlike every other section, this is not scoped to the current run: the
+    underlying ``monitoring_state.json`` accumulates across every cohort ever
+    ingested with ``mycobench run`` at this results directory, which is the
+    point — lineage generalisability is a claim about the cumulative evidence
+    base, not about one panel.
+    """
+    if not data.lineage_accuracy:
+        return ""
+    cohorts = data.monitoring.get("ingested_cohort_ids", [])
+    by_drug: dict[str, list[dict]] = {}
+    for row in data.lineage_accuracy:
+        by_drug.setdefault(row["drug"], []).append(row)
+
+    blocks = []
+    for drug, rows in sorted(by_drug.items()):
+        n_lineages = rows[0].get("n_lineages_for_drug", "0") if rows else "0"
+        generalizable = rows[0].get("generalizable", "no") if rows else "no"
+        badge = (f"<span class='pill v-pass'>generalizable "
+                f"({n_lineages} lineages)</span>" if generalizable == "yes"
+                else f"<span class='pill v-under'>not yet generalizable "
+                     f"({n_lineages} lineage(s))</span>")
+        line_rows = "".join(
+            f"<tr><td><code>{esc(r['lineage'])}</code></td>"
+            f"<td class='n'>{esc(r.get('evaluable'))}</td>"
+            f"<td class='n'>{pct(r.get('call_rate'))}</td>"
+            f"<td class='n'>{num(r.get('sensitivity'))}</td>"
+            f"<td class='n'>{num(r.get('specificity'))}</td>"
+            f"<td class='n {band(r.get('vme_rate'), good_high=False)}'>"
+            f"{num(r.get('vme_rate'))}</td>"
+            f"<td>{esc(r.get('verdict'))}</td></tr>"
+            for r in sorted(rows, key=lambda r: r["lineage"]))
+        blocks.append(f"""
+<div class="stage"><h3>{esc(drug)} {badge}</h3>
+<div class="tw"><table><thead><tr><th>lineage</th>
+<th class="n">evaluable</th><th class="n">call rate</th>
+<th class="n">sens</th><th class="n">spec</th><th class="n">VME</th>
+<th>verdict</th></tr></thead><tbody>{line_rows}</tbody></table></div>
+</div>""")
+
+    return f"""
+<section id="lineage"><h2>Lineage-stratified accuracy (continuous monitoring)</h2>
+<div class="tiles">
+  <div class="tile"><span class="k">cohorts contributed</span><span class="v">{len(cohorts)}</span></div>
+  <div class="tile"><span class="k">drugs monitored</span><span class="v">{len(by_drug)}</span></div>
+</div>
+<p>Cumulative across every cohort ever ingested at this results directory —
+not just this run. See <span class="term" data-term="Generalizability">
+generalizability</span>.</p>
+<div class="stages">{''.join(blocks)}</div>
+</section>"""
+
+
 def controls_section(data: ReportData) -> str:
     if not data.controls:
         return ""
@@ -526,6 +596,7 @@ def provenance_section(data: ReportData) -> str:
 
 def artifacts_section(data: ReportData) -> str:
     names = ["run_manifest.json", "concordance.tsv", "accuracy.tsv",
+             "lineage_accuracy.tsv", "monitoring_state.json",
              "species_control.tsv", "engine_calls.tsv",
              "myconductor_calls.tsv", "download_status.tsv",
              "profile_status.tsv", "interpret_status.tsv"]
@@ -668,6 +739,7 @@ def build_report(results_dir: str | Path, samples: Optional[str | Path] = None,
         stages_section(data),
         concordance_section(data),
         accuracy_section(data),
+        lineage_section(data),
         controls_section(data),
         glossary_section(),
         boundaries_section(data),

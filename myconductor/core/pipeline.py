@@ -37,7 +37,9 @@ from ..io.callable_mask import CallableMask
 from ..modules.catalogue import CatalogueModule
 from ..modules.efflux import EffluxRegulatoryModule
 from ..modules.features import AnnotatorProtocol
-from ..modules.heteroresistance import HeteroresistanceAssessor
+from ..federated.vus_feedback import LocalValidationStore
+from ..modules.heteroresistance import HeteroresistanceAssessor, heteroresistance_evidence
+from ..modules.local_validation import LocalValidationModule
 from ..modules.synthesis import (
     EligibilityAssessor,
     EvidenceReconciler,
@@ -61,17 +63,23 @@ class Myconductor:
         assessor: Optional[EligibilityAssessor] = None,
         het_assessor: Optional[HeteroresistanceAssessor] = None,
         include_tier2_loci: bool = False,
+        local_validation_store: Optional[LocalValidationStore] = None,
     ):
         self.profile = profile or load_profile()
         self.depth_floor = depth_floor
         self.callable_fraction_floor = callable_fraction_floor
         self.platform = platform
         self.demo_mode = demo_mode
+        self.local_validation_store = local_validation_store
 
         catalogue = CatalogueModule()
         efflux = EffluxRegulatoryModule(self.profile)
-        self.workbench = VUSWorkbench(annotator=annotator,
-                                      known=catalogue.labels)
+        known = set(catalogue.labels)
+        if local_validation_store is not None:
+            # A variant this site has already validated has an answer; it
+            # should stop being re-ranked as "needs laboratory validation".
+            known |= local_validation_store.validated_labels()
+        self.workbench = VUSWorkbench(annotator=annotator, known=known)
         if self.workbench.synthetic and not demo_mode:
             raise ValueError(
                 f"{self.workbench.model_name} produces synthetic, "
@@ -80,8 +88,11 @@ class Myconductor:
                 f"stamped as synthetic."
             )
 
+        local_validation = (LocalValidationModule(local_validation_store)
+                           if local_validation_store is not None else None)
         self.router = router or TriageRouter(
-            catalogue=catalogue, efflux=efflux, extra_lanes=[self.workbench])
+            catalogue=catalogue, efflux=efflux, extra_lanes=[self.workbench],
+            local_validation=local_validation)
         self.catalogue = self.router.catalogue
         self.reconciler = reconciler or EvidenceReconciler(
             profile=self.profile, depth_floor=depth_floor,
@@ -140,10 +151,14 @@ class Myconductor:
         for report in engine_reports:
             all_variants.extend(report.variants)
 
-        het = self.het.assess(all_variants, evidence)
+        lineage = next((r.lineage for r in engine_reports if r.lineage), None)
+        het = self.het.assess(all_variants, evidence, lineage=lineage)
+        if self.het.calibration is not None and self.het.prior_source is not None:
+            evidence = evidence + heteroresistance_evidence(het, all_variants)
         results = self.reconciler.reconcile(evidence, mask)
         eligibility = self.assessor.assess(results)
         vus = self.workbench.priorities(adapted.variants)
+        mechanism_queue = self.router.efflux.mechanism_queue(adapted.variants)
 
         discordances = list(collect_discordances(results))
         if len(engine_reports) > 1:
@@ -184,6 +199,7 @@ class Myconductor:
             eligibility=eligibility,
             heteroresistance=het,
             vus_priorities=vus,
+            mechanism_queue=mechanism_queue,
             discordances=discordances,
             qc=qc,
             qc_warnings=warnings,

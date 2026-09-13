@@ -31,9 +31,13 @@ from typing import Optional
 from ..core.models import (
     Call,
     DrugEvidence,
+    EngineRef,
     HeteroresistanceFinding,
+    Lane,
+    Tier,
     Variant,
 )
+from .calibration import CalibrationTable, PriorSource, posterior_resistance_probability
 
 #: Approximate lower limits of reliable alternate-allele detection by platform.
 #: These are conservative defaults for triage, NOT validated limits of
@@ -63,6 +67,12 @@ class HeteroresistanceAssessor:
     majority_floor: float = MAJORITY_FLOOR
     default_platform: Optional[str] = None
     lod_table: Optional[dict[str, float]] = None
+    #: Calibrated per-platform/drug/lineage detection curves and a real prior
+    #: source. Both default to ``None``: without them, behaviour is identical
+    #: to a deployment with no calibration configured at all, and no posterior
+    #: is ever computed. See ``modules.calibration``.
+    calibration: Optional[CalibrationTable] = None
+    prior_source: Optional[PriorSource] = None
 
     def limit_of_detection(self, platform: Optional[str]) -> Optional[float]:
         if not platform:
@@ -74,11 +84,15 @@ class HeteroresistanceAssessor:
         self,
         variants: list[Variant],
         evidence: list[DrugEvidence],
+        lineage: Optional[str] = None,
     ) -> list[HeteroresistanceFinding]:
         """Assess every variant that carries resistance-relevant evidence.
 
         Runs across all lanes: a minority catalogued ``katG`` variant and a
-        minority efflux-regulator change are both worth surfacing.
+        minority efflux-regulator change are both worth surfacing. ``lineage``
+        is the sample's lineage, when known, and is used only to look up a
+        lineage-specific calibration entry; it never changes the
+        assessable/detected logic below.
         """
         by_key = {v.key(): v for v in variants}
         findings: list[HeteroresistanceFinding] = []
@@ -98,17 +112,19 @@ class HeteroresistanceAssessor:
             if dedupe_key in seen:
                 continue
             seen.add(dedupe_key)
-            findings.append(self._assess_one(variant, ev))
+            findings.append(self._assess_one(variant, ev, lineage))
 
         return findings
 
-    def _assess_one(self, variant: Variant,
-                    ev: DrugEvidence) -> HeteroresistanceFinding:
+    def _assess_one(self, variant: Variant, ev: DrugEvidence,
+                    lineage: Optional[str] = None) -> HeteroresistanceFinding:
         platform = variant.platform or self.default_platform
         lod = self.limit_of_detection(platform)
 
-        def finding(assessable: bool, detected: bool,
-                    note: str) -> HeteroresistanceFinding:
+        def finding(assessable: bool, detected: bool, note: str,
+                    posterior=None, interval=None,
+                    calibration_source: str = "uncalibrated default"
+                    ) -> HeteroresistanceFinding:
             return HeteroresistanceFinding(
                 variant_label=variant.label(),
                 variant_key=variant.key(),
@@ -121,6 +137,9 @@ class HeteroresistanceAssessor:
                 alt_depth=variant.alt_depth,
                 limit_of_detection=lod,
                 platform=platform,
+                posterior_resistance_probability=posterior,
+                posterior_interval=interval,
+                calibration_source=calibration_source,
             )
 
         # -- the conditions under which we decline to assess ---------------
@@ -162,13 +181,32 @@ class HeteroresistanceAssessor:
                            f"{platform} limit of detection ({lod:.0%}); "
                            f"indistinguishable from sequencing error")
 
-        return finding(
-            True, True,
+        posterior_estimate = None
+        if self.calibration is not None and self.prior_source is not None:
+            posterior_estimate = posterior_resistance_probability(
+                variant, ev.drug, self.calibration, self.prior_source, lineage)
+
+        note = (
             f"Minority allele at {variant.vaf:.0%} "
             f"({alt_reads}/{variant.depth} reads), above the {platform} limit "
             f"of detection ({lod:.0%}). A consensus-only caller may not report "
             f"this. Read-level confirmation (strand bias, mapping quality, "
             f"contamination check) is required before acting on it."
+        )
+        if posterior_estimate is not None:
+            note += (
+                f" Calibrated posterior probability of a true "
+                f"resistance-conferring subpopulation: "
+                f"{posterior_estimate.probability:.0%} "
+                f"(range {posterior_estimate.credible_interval[0]:.0%}-"
+                f"{posterior_estimate.credible_interval[1]:.0%})."
+            )
+        return finding(
+            True, True, note,
+            posterior=(posterior_estimate.probability if posterior_estimate else None),
+            interval=(posterior_estimate.credible_interval if posterior_estimate else None),
+            calibration_source=(posterior_estimate.basis if posterior_estimate
+                                else "uncalibrated default"),
         )
 
 
@@ -179,3 +217,58 @@ def assess(variants: list[Variant], evidence: list[DrugEvidence],
     return HeteroresistanceAssessor(
         depth_floor=depth_floor, default_platform=default_platform
     ).assess(variants, evidence)
+
+
+_CALIBRATION_ENGINE = EngineRef(
+    name="myconductor-heteroresistance-calibration", version="0.1.0")
+
+
+def heteroresistance_evidence(
+    findings: list[HeteroresistanceFinding],
+    variants: list[Variant],
+) -> list[DrugEvidence]:
+    """Turn a calibrated posterior into evidence — never a resistance call.
+
+    Only emitted for findings that actually carry a computed posterior (i.e.
+    both a calibration curve and a prior were configured and resolved); with
+    neither configured this returns an empty list and pipeline behaviour is
+    unchanged. ``Tier.PREDICTED`` structurally forbids ``Call.RESISTANT``
+    (``DrugEvidence.__post_init__``), so however high the posterior, the most
+    this can do is make ``INDETERMINATE`` — withholding susceptibility —
+    quantitatively better justified.
+    """
+    by_key = {v.key(): v for v in variants}
+    out: list[DrugEvidence] = []
+    for f in findings:
+        if f.posterior_resistance_probability is None:
+            continue
+        variant = by_key.get(f.variant_key)
+        interval = f.posterior_interval or (None, None)
+        out.append(DrugEvidence(
+            drug=f.drug,
+            call=Call.INDETERMINATE,
+            tier=Tier.PREDICTED,
+            lane=Lane.VUS,
+            confidence=f.posterior_resistance_probability,
+            variant=variant.identity if variant else None,
+            engine=_CALIBRATION_ENGINE,
+            limitations=(
+                "posterior probability from an explicit measurement model "
+                "(calibrated detection curve + isolate-level prior), not a "
+                "graded catalogue entry or a laboratory phenotype",
+                "cannot, and structurally does not, establish resistance on "
+                "its own",
+                f"basis: {f.calibration_source}",
+            ),
+            rationale=(
+                f"Minority allele {f.variant_label} at {f.vaf:.0%} VAF "
+                f"({f.platform}): calibrated posterior probability of a true "
+                f"resistance-conferring subpopulation is "
+                f"{f.posterior_resistance_probability:.0%}"
+                + (f" (range {interval[0]:.0%}-{interval[1]:.0%})"
+                   if interval[0] is not None else "")
+                + f". Susceptibility withheld for {f.drug}; resistance not "
+                  f"asserted."
+            ),
+        ))
+    return out

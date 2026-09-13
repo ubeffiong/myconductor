@@ -114,6 +114,13 @@ def render_text(report: AnalysisReport) -> str:
             for h in detected:
                 lines.append(f"     ! {h.drug} ({h.variant_label})")
                 lines.append(f"         {_wrap(h.note, 9)}")
+                if h.posterior_resistance_probability is not None:
+                    lo, hi = h.posterior_interval or (None, None)
+                    rng = f" [{lo:.0%}-{hi:.0%}]" if lo is not None else ""
+                    lines.append(
+                        f"         posterior P(true resistance-conferring "
+                        f"subpopulation) = {h.posterior_resistance_probability:.0%}"
+                        f"{rng}  ({h.calibration_source})")
         if assessed:
             lines.append("   Assessed, no minority population found:")
             for h in assessed:
@@ -165,6 +172,23 @@ def render_text(report: AnalysisReport) -> str:
             if v.data_gaps:
                 lines.append(f"       no data for {len(v.data_gaps)} dimension(s): "
                              f"{_wrap(', '.join(v.data_gaps), 19)}")
+
+    # -- mechanism research queue --------------------------------------------
+    if report.mechanism_queue:
+        lines += ["", " MECHANISM RESEARCH QUEUE", _THIN]
+        lines.append("   INDETERMINATE calls with a named hypothesis and the")
+        lines.append("   specific evidence gaps that would resolve them. Not a")
+        lines.append("   resistance call — a laboratory work list.")
+        lines.append("")
+        for m in report.mechanism_queue:
+            lines.append(f"   > {m.variant_label:<22} context: {m.drug}")
+            lines.append(f"       hypothesis: {_wrap(m.hypothesis, 19)}")
+            if m.evidence_gaps:
+                lines.append(f"       evidence gaps: "
+                             f"{_wrap('; '.join(m.evidence_gaps), 23)}")
+            if m.resolving_experiments:
+                lines.append(f"       would resolve it: "
+                             f"{_wrap('; '.join(m.resolving_experiments), 26)}")
 
     # -- QC ----------------------------------------------------------------
     if report.qc:

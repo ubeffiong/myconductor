@@ -199,6 +199,28 @@ are this project's declared targets, informed by WHO target product profile
 expectations — **not WHO-endorsed thresholds**, and clearing one is not
 regulatory acceptance.
 
+### Continuous, lineage-stratified monitoring
+
+A single run's accuracy figure says nothing about whether it holds across
+lineages — a panel dominated by lineage 4 cannot speak to lineage 1. So every
+`mycobench run` that supplies paired phenotypes *and* lineage data (TB-Profiler's
+`main_lineage`/`sub_lineage`) folds its isolates into a persistent,
+per-drug/per-lineage confusion-matrix state (`mycobench/monitoring.py`),
+written to `results/monitoring_state.json`. Re-running the same cohort is a
+no-op — it is keyed by cohort path, so isolates are never double-counted — but
+a *new* cohort accumulates on top of everything ingested before it.
+
+The state reports two things per drug: the usual `AccuracyResult` bounds
+(sensitivity/specificity/VME/ME, Wilson intervals) **within each lineage**,
+and whether the drug has been measured in enough independent lineages
+(`MIN_LINEAGES_FOR_GENERALIZABILITY = 2`, mirroring the federated
+catalogue-learning module's own confounding bar) to call the figure
+`generalizable` at all. Both render as a dedicated section
+(`lineage_accuracy.tsv` + the report's "Lineage-stratified accuracy" section)
+in the same offline HTML report every run already produces — the closest
+thing this no-server tool has to a dashboard every participating site can
+regenerate and compare.
+
 ## Species controls
 
 The NTM panel exists to be refused. TB-Profiler targets MTBC only and the
@@ -220,6 +242,10 @@ results/
   myconductor_calls.tsv    Myconductor's per-drug verdict, tier and reason
   concordance.tsv          per-drug agreement
   accuracy.tsv             per-drug errors and verdict (only with phenotypes)
+  lineage_accuracy.tsv     per-drug, per-lineage errors and generalizability
+  monitoring_state.json    cumulative confusion counts across every cohort
+                           ever ingested (see "Continuous, lineage-stratified
+                           monitoring" above)
   species_control.tsv      NTM refusals
   mycobench_report.html    the report
   <sample>/                per-isolate TB-Profiler output and Myconductor report

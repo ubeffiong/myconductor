@@ -233,7 +233,10 @@ class EndToEndTests(unittest.TestCase):
         payload = json.loads((out / "analysis_manifest.json")
                              .read_text(encoding="utf-8"))
         self.assertEqual(payload["n_tested"], 1)
-        self.assertIn("not a resistance call", payload["caveat"])
+        self.assertIn("Nothing here is a resistance call", payload["caveat"])
+        self.assertIn("not promoted to a predictive call",
+                      payload["caveat"].replace("no variant is promoted",
+                                                "not promoted"))
 
     def test_effect_rows_carry_the_interval_and_reasons(self):
         rows = self.result.effect_rows()

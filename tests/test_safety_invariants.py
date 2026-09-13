@@ -216,5 +216,79 @@ class NoLaneMayInventCoverage(unittest.TestCase):
             )
 
 
+class ConflictingLocalValidationNeverPicksASide(unittest.TestCase):
+    """The defect this guards against: a lane resolving a conflicting local
+    laboratory result by choosing the more recent or more frequent answer,
+    instead of reporting the conflict itself."""
+
+    def test_conflicting_verdict_is_indeterminate_not_a_choice(self):
+        from myconductor.core.models import Call as _Call
+        from myconductor.federated.vus_feedback import (
+            LocalValidationStore,
+            ValidationMethod,
+            VUSValidationRecord,
+        )
+        from myconductor.modules.local_validation import LocalValidationModule
+
+        v = Variant.of("Rv0678", "L114R")
+        store = LocalValidationStore()
+        for i, result in enumerate([_Call.RESISTANT, _Call.SUSCEPTIBLE,
+                                    _Call.RESISTANT, _Call.RESISTANT]):
+            store.ingest(VUSValidationRecord(
+                variant_key=v.key(), variant_label=v.label(), gene=v.gene,
+                drug="bedaquiline", isolate_id=f"iso{i}", site_id="site-A",
+                method=ValidationMethod.MIC, result=result))
+        evidence = LocalValidationModule(store).evaluate(v)
+        self.assertEqual(len(evidence), 1)
+        # 3 of 4 records say RESISTANT; a majority-vote lane would report
+        # that. This lane must not, because disagreement is a finding.
+        self.assertEqual(evidence[0].call, _Call.INDETERMINATE)
+
+
+class CalibratedPosteriorCannotBecomeAResistanceCall(unittest.TestCase):
+    """The defect this guards against: a statistical posterior, however
+    close to 1.0, being treated as strong enough evidence to assert
+    RESISTANT. Only Tier.CATALOGUED/PHENOTYPIC may do that
+    (DrugEvidence.__post_init__), and this lane is structurally Tier.PREDICTED."""
+
+    def test_near_certain_posterior_still_yields_indeterminate_predicted(self):
+        from myconductor.modules.calibration import (
+            CalibrationTable,
+            DetectionCalibration,
+            FederatedPriorSource,
+        )
+        from myconductor.modules.heteroresistance import (
+            HeteroresistanceAssessor,
+            heteroresistance_evidence,
+        )
+
+        v = Variant.of("gyrA", "D94G", vaf=0.5, depth=200, alt_depth=100,
+                       platform="illumina")
+        table = CalibrationTable()
+        table.add(DetectionCalibration(
+            platform="illumina", drug="moxifloxacin", lineage="*",
+            lod50=0.02, width=0.01, background_fp_rate=0.001,
+            n_replicates=200, source="test"))
+
+        class _AlmostCertain:
+            n_isolates = 500
+            resistant_fraction = 0.999
+
+        prior_source = FederatedPriorSource(
+            associations={(v.key(), "moxifloxacin"): _AlmostCertain()})
+        assessor = HeteroresistanceAssessor(
+            depth_floor=10, calibration=table, prior_source=prior_source)
+        ev = DrugEvidence(drug="moxifloxacin", call=Call.RESISTANT,
+                          tier=Tier.CATALOGUED, lane=Lane.CATALOGUE,
+                          variant=v.identity, rationale="catalogued")
+        findings = assessor.assess([v], [ev])
+        self.assertGreater(findings[0].posterior_resistance_probability, 0.9)
+
+        evidence = heteroresistance_evidence(findings, [v])
+        self.assertEqual(len(evidence), 1)
+        self.assertEqual(evidence[0].tier, Tier.PREDICTED)
+        self.assertEqual(evidence[0].call, Call.INDETERMINATE)
+
+
 if __name__ == "__main__":
     unittest.main()

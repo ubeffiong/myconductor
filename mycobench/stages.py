@@ -45,7 +45,13 @@ from .metrics import (
     score_concordance,
     score_species_control,
 )
-from .thresholds import TARGETS, describe as describe_thresholds, registration_hash
+from .monitoring import MonitoringState, generalizability, ingest_cohort, lineage_summary
+from .thresholds import (
+    MIN_LINEAGES_FOR_GENERALIZABILITY,
+    TARGETS,
+    describe as describe_thresholds,
+    registration_hash,
+)
 
 STATUS_COLUMNS = ("sample_id", "status", "reason")
 ENGINE_CALL_COLUMNS = ("sample_id", "drug", "engine_call", "variants",
@@ -59,6 +65,10 @@ ACCURACY_COLUMNS = ("drug", "evaluable", "called", "call_rate", "abstained",
                     "tp", "fp", "tn", "fn", "sensitivity", "specificity",
                     "ppv", "npv", "vme_rate", "me_rate", "verdict", "reasons")
 CONTROL_COLUMNS = ("sample_id", "organism", "refused", "passed", "detail")
+LINEAGE_ACCURACY_COLUMNS = ("drug", "lineage", "evaluable", "called",
+                           "call_rate", "abstained", "tp", "fp", "tn", "fn",
+                           "sensitivity", "specificity", "vme_rate", "me_rate",
+                           "verdict", "n_lineages_for_drug", "generalizable")
 
 
 class StageError(RuntimeError):
@@ -385,11 +395,28 @@ def _load_calls(path: Path, call_field: str) -> dict[tuple[str, str], str]:
     return {(r["sample_id"], r["drug"]): r.get(call_field, "") for r in rows}
 
 
+def _load_lineages(path: Path) -> dict[str, str]:
+    """Per-sample lineage, from ``engine_calls.tsv``'s ``lineage`` column
+    (already resolved in ``stage_interpret`` as
+    ``sub_lineage or main_lineage``). First non-empty value wins."""
+    if not path.is_file():
+        return {}
+    rows, _ = read_rows(path)
+    out: dict[str, str] = {}
+    for r in rows:
+        lineage = (r.get("lineage") or "").strip()
+        if lineage and r["sample_id"] not in out:
+            out[r["sample_id"]] = lineage
+    return out
+
+
 @dataclass
 class ValidationOutcome:
     concordance: list[ConcordanceResult] = field(default_factory=list)
     accuracy: list[AccuracyResult] = field(default_factory=list)
     controls: list[SpeciesControlResult] = field(default_factory=list)
+    lineage_accuracy: dict = field(default_factory=dict)   # drug -> [LineageAccuracy]
+    generalizability: dict = field(default_factory=dict)   # drug -> DrugGeneralizability
     notes: list[str] = field(default_factory=list)
 
     def summary(self) -> str:
@@ -410,14 +437,24 @@ class ValidationOutcome:
             passed = sum(1 for c in self.controls if c.passed)
             lines.append(f"species controls: {passed}/{len(self.controls)} refused "
                          f"as required")
+        if self.generalizability:
+            not_yet = sorted(d for d, g in self.generalizability.items()
+                             if not g.generalizable)
+            lines.append(
+                f"lineage generalizability: {len(self.generalizability) - len(not_yet)}/"
+                f"{len(self.generalizability)} drug(s) measured across "
+                f"≥{MIN_LINEAGES_FOR_GENERALIZABILITY} lineages"
+                + (f" (not yet: {', '.join(not_yet)})" if not_yet else ""))
         return "\n".join(lines)
 
 
 def stage_validate(context: RunContext,
-                   phenotypes_path: Optional[Path] = None) -> ValidationOutcome:
+                   phenotypes_path: Optional[Path] = None,
+                   monitoring_state_path: Optional[Path] = None) -> ValidationOutcome:
     outcome = ValidationOutcome()
     mine = _load_calls(context.results_dir / "myconductor_calls.tsv", "call")
     theirs = _load_calls(context.results_dir / "engine_calls.tsv", "engine_call")
+    lineages = _load_lineages(context.results_dir / "engine_calls.tsv")
 
     benchmark_ids = {r["sample_id"] for r in context.benchmark_rows}
     drugs = sorted({drug for (sample, drug) in mine if sample in benchmark_ids})
@@ -465,6 +502,42 @@ def stage_validate(context: RunContext,
         write_rows(context.results_dir / "accuracy.tsv",
                    [_accuracy_row(a) for a in outcome.accuracy],
                    ACCURACY_COLUMNS)
+
+        # -- lineage-stratified, continuously-monitored accuracy ----------
+        if any(lineages.values()):
+            state_path = monitoring_state_path or (
+                context.results_dir / "monitoring_state.json")
+            state = MonitoringState.load(state_path)
+            rows = [
+                (phenotype_drug, lineages.get(sample_id, "unknown"),
+                 mine.get((sample_id, phenotype_drug), ""), phenotype)
+                for (sample_id, phenotype_drug), phenotype in by_pair.items()
+                if sample_id in benchmark_ids
+            ]
+            state, notes = ingest_cohort(state, str(context.cohort_path), rows)
+            outcome.notes.extend(notes)
+            state.save(state_path)
+
+            outcome.lineage_accuracy = lineage_summary(state)
+            outcome.generalizability = generalizability(state)
+            lineage_rows = []
+            for drug, entries in sorted(outcome.lineage_accuracy.items()):
+                gen = outcome.generalizability.get(drug)
+                for la in entries:
+                    row = _accuracy_row(la.accuracy)
+                    row["lineage"] = la.lineage
+                    row["n_lineages_for_drug"] = gen.n_lineages if gen else 0
+                    row["generalizable"] = ("yes" if gen and gen.generalizable
+                                            else "no")
+                    lineage_rows.append(row)
+            write_rows(context.results_dir / "lineage_accuracy.tsv",
+                       lineage_rows, LINEAGE_ACCURACY_COLUMNS)
+        else:
+            outcome.notes.append(
+                "No isolate carried a resolved lineage, so lineage-stratified "
+                "accuracy was not computed. TB-Profiler's per-sample output "
+                "supplies main_lineage/sub_lineage; without it, generalizability "
+                "across lineages cannot be assessed.")
     else:
         outcome.notes.append(
             "No paired phenotypes supplied, so NO accuracy figure was "

@@ -123,15 +123,72 @@ def _pooled_delta(effects: Sequence[StratumEffect]) -> Optional[float]:
     return sum(e.shift.delta * e.weight for e in usable) / total
 
 
+#: Above this many carrier x non-carrier pairs in one stratum, the groups are
+#: subsampled for the interval. The point estimate still uses every isolate;
+#: only the resampling is bounded, because a bootstrap that never finishes
+#: yields no interval at all — which is strictly worse than a slightly wider one.
+MAX_BOOTSTRAP_PAIRS = 40_000
+#: Total pairwise comparisons budgeted across the whole resampling.
+BOOTSTRAP_PAIR_BUDGET = 8_000_000
+MIN_BOOTSTRAP_ITERATIONS = 200
+MAX_BOOTSTRAP_ITERATIONS = 1000
+
+
+def _comparison_matrix(group_a: Sequence[mic.Observation],
+                       group_b: Sequence[mic.Observation]
+                       ) -> list[tuple[int, ...]]:
+    """Pairwise order, computed once. ``None`` becomes 0 and is not counted.
+
+    Building this up front is what makes the bootstrap affordable: the
+    censoring rules are evaluated ``n_a x n_b`` times in total rather than once
+    per resample, and each iteration then does integer lookups.
+    """
+    matrix = []
+    for a in group_a:
+        row = []
+        for b in group_b:
+            order = mic.compare(a, b)
+            # 2 marks "undecidable" so it can be excluded from the denominator
+            # without confusing it with a genuine tie at 0.
+            row.append(2 if order is None else order)
+        matrix.append(tuple(row))
+    return matrix
+
+
+def _delta_from_matrix(matrix: Sequence[Sequence[int]],
+                       rows: Sequence[int],
+                       cols: Sequence[int]) -> Optional[float]:
+    greater = lesser = decisive = 0
+    for i in rows:
+        row = matrix[i]
+        for j in cols:
+            order = row[j]
+            if order == 2:
+                continue
+            decisive += 1
+            if order > 0:
+                greater += 1
+            elif order < 0:
+                lesser += 1
+    if decisive == 0:
+        return None
+    return (greater - lesser) / decisive
+
+
 def _stratified_bootstrap(stratification: Stratification,
                           panel: mic.DrugPanel,
-                          iterations: int = 1000,
                           seed: int = stats.BOOTSTRAP_SEED
                           ) -> Optional[tuple[float, float]]:
     """Resample within strata, preserving the stratification.
 
     Resampling across strata would break exactly the conditioning the estimate
-    depends on.
+    depends on, so each stratum is resampled independently and the per-stratum
+    deltas are recombined by their decidable-pair weight.
+
+    The iteration count adapts to the size of the comparison, because the
+    statistic is quadratic in group size: a fixed 1000 iterations over a
+    200-by-200 stratum is 40 million censoring decisions per variant, which on
+    a real cohort does not terminate in useful time.
     """
     informative = [s for s in stratification.informative_strata
                    if len(s.carriers) >= MIN_PER_SIDE
@@ -140,22 +197,44 @@ def _stratified_bootstrap(stratification: Stratification,
         return None
 
     rng = random.Random(seed)
+    prepared = []
+    total_pairs = 0
+    for stratum in informative:
+        carriers = [i.isolate_id for i in stratum.carriers]
+        non_carriers = [i.isolate_id for i in stratum.non_carriers]
+        a_obs = panel.subset(carriers)
+        b_obs = panel.subset(non_carriers)
+        if len(a_obs) < MIN_PER_SIDE or len(b_obs) < MIN_PER_SIDE:
+            continue
+        # Bound the resampling cost without touching the point estimate.
+        if len(a_obs) * len(b_obs) > MAX_BOOTSTRAP_PAIRS:
+            cap = max(MIN_PER_SIDE, int(MAX_BOOTSTRAP_PAIRS ** 0.5))
+            a_obs = rng.sample(a_obs, min(len(a_obs), cap))
+            b_obs = rng.sample(b_obs, min(len(b_obs), cap))
+        prepared.append((_comparison_matrix(a_obs, b_obs),
+                         len(a_obs), len(b_obs)))
+        total_pairs += len(a_obs) * len(b_obs)
+
+    if not prepared or total_pairs == 0:
+        return None
+
+    iterations = max(MIN_BOOTSTRAP_ITERATIONS,
+                     min(MAX_BOOTSTRAP_ITERATIONS,
+                         BOOTSTRAP_PAIR_BUDGET // total_pairs))
+
     draws: list[float] = []
     for _ in range(iterations):
         weighted_sum = 0.0
         weight_total = 0
-        for stratum in informative:
-            carriers = [i.isolate_id for i in
-                        rng.choices(stratum.carriers, k=len(stratum.carriers))]
-            non_carriers = [i.isolate_id for i in
-                            rng.choices(stratum.non_carriers,
-                                        k=len(stratum.non_carriers))]
-            shift = mic.stochastic_shift(panel.subset(carriers),
-                                         panel.subset(non_carriers),
-                                         min_per_group=MIN_PER_SIDE)
-            if shift.available and shift.n_decisive > 0:
-                weighted_sum += shift.delta * shift.n_decisive
-                weight_total += shift.n_decisive
+        for matrix, n_a, n_b in prepared:
+            rows = [rng.randrange(n_a) for _ in range(n_a)]
+            cols = [rng.randrange(n_b) for _ in range(n_b)]
+            delta = _delta_from_matrix(matrix, rows, cols)
+            if delta is None:
+                continue
+            weight = n_a * n_b
+            weighted_sum += delta * weight
+            weight_total += weight
         if weight_total > 0:
             draws.append(weighted_sum / weight_total)
 

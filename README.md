@@ -167,14 +167,21 @@ Being precise about this is the point of the project.
 | Signed submissions, replay protection, k-anonymity gate | **Implemented and tested** |
 | Append-only audit ledger, review queue, rollback | **Implemented and tested** |
 | Platform-specific minority-allele assessment | **Implemented** — the limits of detection are conservative defaults for triage, not measured limits |
+| Calibrated heteroresistance posteriors | **Implemented** (`modules/calibration.py`) as an explicit Bayesian measurement model (a dilution-series detection curve + an isolate-level prior), returning a posterior probability instead of a fixed rule. Ships with **no bundled calibration data or prior** — a deployment supplies its own dilution series and, optionally, a `FederatedPriorSource` built from its own federated evidence. Structurally capped at `Tier.PREDICTED`/`INDETERMINATE`; it can never assert `RESISTANT` |
 | Engine adapters (TB-Profiler, Mykrobe, AMRFinderPlus) | **Written from published schemas, never run against real output.** They fail loudly on unrecognised schemas rather than mis-parsing. Add a golden-file test against your own pinned version before relying on one |
 | WHO catalogue ingester | **Implemented**; the catalogue data is not redistributed here and must be obtained from WHO |
 | VUS prioritisation | **Implemented** as ranking with explicit data gaps. With no annotator configured every dimension reports unavailable, which is the honest output |
-| FHIR R4 output | **Structurally correct**, using real HL7 interpretation and data-absent-reason codes. **No LOINC or SNOMED codes**, because inventing them would be worse than omitting them — inject real ones via `TerminologyMap`. Not validated against any implementation guide |
-| Read-level analysis (FASTQ/BAM) | **Not implemented.** Species confirmation, contamination, mapping quality, mixed infection and lineage are reported as `not_performed`, with what each would require |
+| Closed-loop VUS validation | **Implemented** (`federated/vus_feedback.py`, `modules/local_validation.py`, `myconductor validate-vus`). A laboratory's validation of a VUS is ingested, linked to its isolate/lineage/site, and read back as site-local `Tier.PHENOTYPIC` evidence on future reports — reversibly, via a hash-chained ledger (`retract`). This is deliberately **not** the global catalogue: `federated/catalogue_update.py`'s confounding checks and expert-review queue are unchanged and unbypassed |
+| Catalogue-version-aware governance | **Implemented** (`federated/catalogue_governance.py`, `myconductor governance-report`). Every catalogue-lane and local-validation piece of evidence now carries `catalogue_version` and `rule_id`; cross-site reconciliation classifies disagreement as catalogue-version drift versus a same-version pipeline/rule bug, and never resolves either by vote |
+| Lineage-stratified continuous monitoring | **Implemented** in `mycobench` (`mycobench/monitoring.py`). Every `mycobench run` with paired phenotypes and lineage data folds into a persistent, per-drug/per-lineage accuracy state (`monitoring_state.json`), idempotent per cohort, with a `generalizable` flag (2+ independent lineages) distinct from the isolate-count power check. Rendered as a dashboard section in the existing offline HTML report — the closest thing this no-server tool has to a shared, cross-site view |
+| Mechanism research queue | **Implemented** (`AnalysisReport.mechanism_queue`, populated from `modules/efflux.py`). Every efflux/regulatory `INDETERMINATE` now carries a named mechanistic hypothesis, the specific evidence gaps, and the assay(s) that would resolve it — generalising the VUS workbench's "research queue, not a dead end" idea beyond sequence variants |
+| BAM → coverage-mask automation | **Implemented** (`io/bam_coverage.py`, `myconductor analyze --bam --bed`). Automates the README's own documented `mosdepth --by ... --thresholds ...` workflow; written from mosdepth's/samtools's documented output schema and **not run against real tool output** in this environment — same caveat as the engine adapters. It derives coverage only; it does not align reads or call variants |
+| FHIR R4 output | **Structurally correct**, using real HL7 interpretation and data-absent-reason codes. **No LOINC or SNOMED codes**, because inventing them would be worse than omitting them — inject real ones via `TerminologyMap`. Not validated against any implementation guide. Deliberately does not carry the mechanism research queue — a laboratory work list, not a clinical observation |
+| Read-level analysis (FASTQ/BAM) | **Coverage only** (see BAM automation, above). Species confirmation, contamination, mapping quality, mixed infection, lineage typing, and **variant calling from reads** remain `not_performed` / out of scope: they need an aligner and variant caller chosen and validated per deployment, which this project will not pick on a user's behalf |
 | Trained VUS model | **Not implemented.** The previous hash-derived scorer has been removed; a synthetic annotator remains but cannot reach a report unless `demo_mode=True`, which stamps every page |
-| Secure aggregation, differential privacy, federated model training | **Not implemented**, and documented as absent in `federated/transport.py` |
+| Secure aggregation, differential privacy, federated model training | **Not implemented**, and documented as absent in `federated/transport.py`. Cross-site *governance* (catalogue-version reconciliation, above) is implemented; cryptographic secure aggregation still needs a cryptographer's review before any claim is made here |
 | Molecular docking | **No built-in scorer.** The previous fabricated values are gone; a real backend must be injected |
+| A second organism profile | **Not implemented.** Adding one means shipping its own drug/loci profile *and* its own evaluation cohort with published error rates — module swappability is architectural, not a biological claim (see Phase 6 in the Roadmap) |
 | Clinical evaluation of any component | **None** |
 
 ## Layout
@@ -182,13 +189,17 @@ Being precise about this is the point of the project.
 ```
 myconductor/
   core/        models (the call/tier/identity vocabulary), router, pipeline
-  io/          input adapter, callable-locus mask, QC
+  io/          input adapter, callable-locus mask, QC, BAM->mask automation
   catalogue/   organism profile, drug->loci map, illustrative catalogue
-  modules/     catalogue, efflux, heteroresistance, synthesis, vus_workbench,
-               discovery (cohort-level; NOT wired into the pipeline)
+  modules/     catalogue, efflux (+ mechanism queue), heteroresistance (+
+               calibrated posteriors), calibration, synthesis, vus_workbench,
+               local_validation, discovery (cohort-level; NOT wired into the
+               pipeline)
   adapters/    TB-Profiler, Mykrobe, AMRFinderPlus, WHO catalogue ingester
   reporting/   text report, FHIR R4 bundle
-  federated/   isolate-level learning, governance, signed transport
+  federated/   isolate-level learning, governance, signed transport,
+               closed-loop VUS validation (vus_feedback), catalogue-version
+               governance (catalogue_governance)
 docs/ARCHITECTURE.md   design, layer split, extension points
 tests/                 unittest suite, including tests/test_safety_invariants.py
 examples/run_demo.py   with and without coverage, plus the federated contract
@@ -262,20 +273,44 @@ not import `modules/discovery.py` — CI enforces this.
 
 ## Roadmap
 
-Phases 0–5 of the rebuild are in place; phases 3–6 are gated on data and
-external evaluation rather than on code:
+Every part of phases 3–6 that was a software/architecture problem has now been
+built; what remains gated is exactly what was always gated — real
+measurements, external review and evaluation cohorts that only exist outside
+this repository. Building a plausible-looking placeholder for any of those
+would be worse than the gap, so none was added.
 
-- **Phase 3** needs FASTQ/BAM ingestion, the real catalogue, measured
-  per-platform limits of detection, and per-drug error rates against
-  pre-registered thresholds on independent isolates — with African lineages
-  represented, where published tools are weakest.
-- **Phase 4** needs real annotation sources before any VUS may be promoted to a
-  predictive call.
-- **Phase 5** needs cryptographic review before secure aggregation can be
-  claimed, and a data-sharing agreement with benefit-sharing agreed up front.
+- **Phase 3** — done in software: coverage can now be derived directly from a
+  BAM (`io/bam_coverage.py`), minority-allele calls carry a calibrated,
+  explicit Bayesian posterior instead of a fixed rule
+  (`modules/calibration.py`), and per-drug/per-lineage error rates are now
+  continuously monitored across every cohort ingested, not measured once
+  (`mycobench/monitoring.py`, see the HTML report's lineage-accuracy section).
+  **Still gated on real data**: measured per-platform/per-drug/per-lineage
+  limits of detection (the calibration table ships empty), the real WHO
+  catalogue (`mycobench fetch-catalogue` ingests it; the bundled subset stays
+  illustrative), and African-lineage isolates with paired phenotypes to
+  actually populate the monitoring state and clear its pre-registered
+  thresholds. Read-level variant calling from FASTQ/BAM (as opposed to
+  deriving coverage from a BAM) remains out of scope: it needs an aligner and
+  caller chosen and validated per deployment, which this project will not pick
+  on a user's behalf.
+- **Phase 4** — done in software: a validated VUS now feeds back as
+  site-local, reversible evidence (`federated/vus_feedback.py`,
+  `modules/local_validation.py`, `myconductor validate-vus`), closing the loop
+  the workbench was missing. **Still gated**: real annotation sources
+  (conservation, structure, population prevalence) before any VUS may be
+  promoted to a *predictive* call across sites — this closed loop is
+  explicitly local, not that promotion.
+- **Phase 5** — done in software: multi-site catalogue-version governance
+  (`federated/catalogue_governance.py`, `myconductor governance-report`),
+  distinguishing catalogue-propagation gaps from pipeline/rule bugs. **Still
+  gated**: cryptographic review before secure aggregation can be claimed
+  (`federated/transport.py` still only authenticates and gates disclosure, and
+  says so), and a data-sharing agreement with benefit-sharing agreed up front.
 - **Phase 6** adds one organism profile at a time, each with its own evaluation
   set and its own published error rates. Modules being swappable is an
-  architectural property, not a biological claim.
+  architectural property, not a biological claim, and this rebuild adds no
+  second profile.
 
 ## License
 

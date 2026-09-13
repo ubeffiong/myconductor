@@ -114,16 +114,18 @@ not independent evidence.
 | Coverage | `io/callable_mask.py` | Independent evidence that loci were sequenced — the module that breaks the circularity | mosdepth, GATK CallableLoci, gVCF |
 | QC | `io/qc.py` | What was checked, and every control that was **not** | upstream pipeline integration |
 | Profile | `catalogue/profile.py` | Versioned organism bundle: assembly, drug→loci, regulators, regimens | one profile per organism |
-| Catalogue lane | `modules/catalogue.py` | Graded lookup; may establish resistance | full WHO catalogue via the ingester |
-| Efflux lane | `modules/efflux.py` | Flags de-repression and promoter effects as `INDETERMINATE`, per affected drug | expression-inference model, RNA evidence |
+| Catalogue lane | `modules/catalogue.py` | Graded lookup; may establish resistance; stamps `catalogue_version`/`rule_id` on every piece of evidence | full WHO catalogue via the ingester |
+| Efflux lane | `modules/efflux.py` | Flags de-repression and promoter effects as `INDETERMINATE`, per affected drug; `mechanism_queue()` turns each into a named hypothesis with evidence gaps and resolving experiments | expression-inference model, RNA evidence |
 | VUS workbench | `modules/vus_workbench.py` | Ranks for validation; withholds susceptibility; never predicts resistance | real annotation sources, then a calibrated model |
+| Local validation lane | `modules/local_validation.py` + `federated/vus_feedback.py` | Reads a site's own laboratory-validated VUS results back as site-local `Tier.PHENOTYPIC` evidence, reversibly (hash-chained ledger); deliberately not the global catalogue | a deployment's own DST/MIC/efflux-assay results |
 | Annotation | `modules/features.py` | Dimension contract with availability attached; default annotator reports unavailable | SIFT/PolyPhen, AlphaFold, population DB |
-| Minority alleles | `modules/heteroresistance.py` | Per-platform assessment; separates "not assessable" from "nothing found" | read-level caller with error modelling |
+| Minority alleles | `modules/heteroresistance.py` + `modules/calibration.py` | Per-platform assessment; separates "not assessable" from "nothing found"; when a calibration curve and a prior are configured, attaches a Bayesian posterior (still capped at `Tier.PREDICTED`/`INDETERMINATE`) | read-level caller with error modelling; a deployment's own dilution-series calibration |
 | Reconciliation | `modules/synthesis.py` | Coverage-gated calls, discordance, guideline eligibility | external, versioned clinical decision rules |
 | Router | `core/router.py` | Runs **all** applicable lanes | — |
 | Engine adapters | `adapters/` | Normalise external tools into one evidence schema | the tools themselves |
+| BAM coverage | `io/bam_coverage.py` | Automates deriving a `CallableMask` from a BAM via mosdepth/samtools; coverage only, no alignment or variant calling | mosdepth or samtools on PATH |
 | Reporting | `reporting/` | Text + FHIR R4 | LIMS / EHR |
-| Federated | `federated/` | Isolate-level learning, governance, signed transport | secure-aggregation transport |
+| Federated | `federated/` | Isolate-level learning, governance, signed transport, closed-loop VUS validation, catalogue-version reconciliation across sites | secure-aggregation transport |
 | Discovery | `modules/discovery.py` | Cohort-level prioritisation brief | DEG, BLASTP, a real docking backend |
 
 ## Extension points
@@ -169,6 +171,12 @@ more dangerous than a gap:
 - **No claim of secure aggregation or differential privacy.** The federated
   transport authenticates sites and gates disclosure. It does not hide a site's
   contribution from the coordinator, and it says so.
+- **No bundled minority-allele calibration or resistance prior.**
+  `modules/calibration.py::CalibrationTable` ships empty and
+  `NullPriorSource` is the default; a deployment supplies its own
+  dilution-series curve and, optionally, a prior built from its own federated
+  evidence. Without both, no posterior is computed — the flat, conservative
+  `PLATFORM_LOD` floors remain the fallback, exactly as before.
 
 ## Federated learning: the statistical core
 
@@ -202,6 +210,28 @@ Clearing that bar produces a *candidate*, not a catalogue entry. Candidates ente
 a review queue for expert curation; every transition is written to an
 append-only hash-chained ledger, and approvals can be rolled back. There is no
 automatic promotion path.
+
+## Two more federated concerns: local validation and catalogue-version drift
+
+`federated/vus_feedback.py` is a *smaller, local* counterpart to the module
+above — not a replacement for it. A laboratory's validation of one VUS
+(a DST, an MIC shift, an efflux-inhibitor assay) is ingested as a
+`VUSValidationRecord`, linked to its isolate, lineage and site, and read back
+through `modules/local_validation.py` as `Tier.PHENOTYPIC` evidence *at that
+site only*. It reuses `EvidenceLedger` for its own audit trail and never
+writes to, or bypasses, the review queue above; promoting a variant into the
+shared catalogue still requires the full confounding-check and
+expert-curation path. A conflicting set of local results is reported
+`INDETERMINATE`, never resolved by majority.
+
+`federated/catalogue_governance.py` addresses a different failure mode:
+catalogue heterogeneity, not confounding. Every catalogue-lane and
+local-validation piece of `DrugEvidence` now carries `catalogue_version` and
+`rule_id`. When sites disagree on the same variant/drug, `reconcile_sites`
+classifies the disagreement as catalogue-version drift (different sites
+running different catalogue versions — the fix is propagation) or a
+same-version rule discordance (the fix is in the pipeline). Neither category
+is resolved by outvoting the minority site.
 
 ## Reproducibility
 

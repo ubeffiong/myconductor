@@ -32,6 +32,7 @@ from ..core.models import (
     DrugEvidence,
     EngineRef,
     Lane,
+    MechanismHypothesis,
     Region,
     Tier,
     Variant,
@@ -150,6 +151,102 @@ class EffluxRegulatoryModule(VariantModule):
                 ))
 
         return _dedupe(evidence)
+
+    # -- mechanism research queue ------------------------------------------
+    def mechanism_queue(self, variants: list[Variant]) -> list[MechanismHypothesis]:
+        """Turn every ``INDETERMINATE`` this lane emits into a named,
+        testable hypothesis with the specific evidence gaps and experiments
+        that would resolve it.
+
+        Generalises ``modules.vus_workbench``'s "research queue, not a dead
+        end" idea to this lane. It never upgrades a call: the hypothesis text
+        is drawn from exactly the same rationale the lane already reports as
+        ``INDETERMINATE`` evidence, just organised for a laboratory work list
+        instead of a per-drug table.
+        """
+        out: list[MechanismHypothesis] = []
+        for variant in variants:
+            if not self.applies_to(variant):
+                continue
+            out.extend(self._hypotheses_for(variant))
+        return out
+
+    def _hypotheses_for(self, variant: Variant) -> list[MechanismHypothesis]:
+        out: list[MechanismHypothesis] = []
+        seen_drugs: set[str] = set()
+
+        drugs = self.profile.drugs_for_efflux_regulator(variant.gene)
+        if drugs:
+            truncating = variant.consequence.is_truncating
+            gaps, experiments = (_EFFLUX_LOF_GAPS if truncating
+                                else _EFFLUX_MISSENSE_GAPS,
+                                _EFFLUX_LOF_EXPERIMENTS if truncating
+                                else _EFFLUX_MISSENSE_EXPERIMENTS)
+            hypothesis = (
+                f"Efflux-pump de-repression via {'loss of function' if truncating else 'a missense change'} "
+                f"in {variant.gene} (MmpS5-MmpL5), raising the MIC of the "
+                f"drug(s) below, is plausible but unmeasured."
+            )
+            for drug in drugs:
+                if drug in seen_drugs:
+                    continue
+                seen_drugs.add(drug)
+                out.append(MechanismHypothesis(
+                    variant_label=variant.label(), variant_key=variant.key(),
+                    gene=variant.gene, drug=drug, hypothesis=hypothesis,
+                    evidence_gaps=list(gaps),
+                    resolving_experiments=[e.format(gene=variant.gene, drug=drug)
+                                          for e in experiments],
+                ))
+
+        if variant.region in (Region.PROMOTER, Region.INTERGENIC):
+            for drug in self.profile.drugs_for_promoter(variant.gene):
+                if drug in seen_drugs:
+                    continue
+                seen_drugs.add(drug)
+                out.append(MechanismHypothesis(
+                    variant_label=variant.label(), variant_key=variant.key(),
+                    gene=variant.gene, drug=drug,
+                    hypothesis=(
+                        f"Regulatory variant {variant.change} upstream of "
+                        f"{variant.gene} may alter its expression, shifting "
+                        f"the MIC of {drug}, but the effect size is "
+                        f"unmeasured."),
+                    evidence_gaps=list(_PROMOTER_GAPS),
+                    resolving_experiments=[
+                        e.format(gene=variant.gene, drug=drug)
+                        for e in _PROMOTER_EXPERIMENTS],
+                ))
+        return out
+
+
+_EFFLUX_LOF_GAPS = (
+    "no efflux-pump expression assay (RT-qPCR/RNA-seq of mmpS5-mmpL5 vs a "
+    "wild-type control)",
+    "no MIC shift assay with an efflux-pump inhibitor (e.g. verapamil)",
+)
+_EFFLUX_LOF_EXPERIMENTS = (
+    "RT-qPCR or RNA-seq of mmpS5-mmpL5 expression in {gene} mutant vs "
+    "wild-type background",
+    "MIC of {drug} with and without an efflux-pump inhibitor "
+    "(e.g. verapamil), to test whether the shift is efflux-mediated",
+)
+_EFFLUX_MISSENSE_GAPS = _EFFLUX_LOF_GAPS + (
+    "no allelic-exchange or CRISPRi knockdown of the specific missense "
+    "allele to isolate its effect from background variation",
+)
+_EFFLUX_MISSENSE_EXPERIMENTS = _EFFLUX_LOF_EXPERIMENTS + (
+    "Site-directed mutagenesis of {gene} in a susceptible background, then "
+    "MIC against {drug} with and without an efflux-pump inhibitor",
+)
+_PROMOTER_GAPS = (
+    "no reporter-fusion or RT-qPCR measurement of the expression change this "
+    "variant causes",
+)
+_PROMOTER_EXPERIMENTS = (
+    "Reporter-gene fusion or RT-qPCR to quantify {gene} expression change, "
+    "then MIC against {drug}",
+)
 
 
 def _dedupe(evidence: list[DrugEvidence]) -> list[DrugEvidence]:

@@ -79,12 +79,22 @@ class TriageRouter:
         catalogue: Optional[CatalogueModule] = None,
         efflux: Optional[EffluxRegulatoryModule] = None,
         extra_lanes: Sequence[VariantModule] = (),
+        local_validation: Optional[VariantModule] = None,
     ):
         self.catalogue = catalogue or CatalogueModule()
         self.efflux = efflux or EffluxRegulatoryModule()
+        self.local_validation = local_validation
         #: Ordered for reporting stability only; all applicable lanes run.
-        self.lanes: list[VariantModule] = [self.catalogue, self.efflux,
-                                           *extra_lanes]
+        #: Local validation sits right after the catalogue lane: a site's own
+        #: confirmed result is the next-strongest evidence after a graded
+        #: catalogue entry, ahead of the rule-based efflux lane and the VUS
+        #: workbench.
+        lanes: list[VariantModule] = [self.catalogue]
+        if self.local_validation is not None:
+            lanes.append(self.local_validation)
+        lanes.append(self.efflux)
+        lanes.extend(extra_lanes)
+        self.lanes: list[VariantModule] = lanes
 
     def applicable_lanes(self, variant: Variant) -> list[VariantModule]:
         """Every lane that has something to say about this variant.

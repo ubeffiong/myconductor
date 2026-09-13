@@ -228,6 +228,32 @@ def score_accuracy(observations: Iterable[tuple[str, str]], drug: str,
     return result
 
 
+def score_accuracy_stratified(
+    observations: Iterable[tuple[str, str, str]], drug: str,
+) -> dict[str, AccuracyResult]:
+    """``score_accuracy``, grouped by lineage.
+
+    ``observations`` is ``(predicted_call, phenotype, lineage)`` triples — the
+    same pairs ``score_accuracy`` takes, with a per-isolate lineage attached.
+    An isolate with no known lineage is grouped under ``"unknown"`` rather
+    than dropped, so it is visible as a gap in lineage coverage instead of
+    silently vanishing from the denominator.
+
+    This does not replace ``score_accuracy``: the pooled, whole-cohort figure
+    it returns is still the one checked against the pre-registered target.
+    This is the complementary question — does the pooled figure hold up
+    within each lineage, or is it carried by one — and its own
+    ``AccuracyResult.target``-based power check applies independently within
+    each lineage bucket.
+    """
+    by_lineage: dict[str, list[tuple[str, str]]] = {}
+    for predicted, phenotype, lineage in observations:
+        key = (lineage or "unknown").strip() or "unknown"
+        by_lineage.setdefault(key, []).append((predicted, phenotype))
+    return {lineage: score_accuracy(pairs, drug)
+            for lineage, pairs in by_lineage.items()}
+
+
 @dataclass
 class ConcordanceResult:
     """Agreement between two engines on one drug. Not an accuracy measure."""

@@ -128,6 +128,14 @@ class CatalogueModule(VariantModule):
                     f"Catalogued {call.value} for {drug} "
                     f"(grade: {grade or 'ungraded'})."
                 ),
+                # Traceability for multi-site governance (see
+                # federated/catalogue_governance.py): exactly which catalogue
+                # version and which entry produced this call, so two sites
+                # disagreeing because they run different catalogue versions
+                # can be told apart from two sites disagreeing despite
+                # running the same one.
+                catalogue_version=self.version,
+                rule_id=f"{self.version}:{variant.label()}:{drug}:{call.value}",
             )
             for drug in drugs
         ]

@@ -163,6 +163,15 @@ ACCEPTED_PHENOTYPE_QUALITY = ("HIGH",)
 #: Listed so a report can say "not compared" rather than omitting them.
 UNCOMPARED_CRYPTIC_DRUGS = ("rifabutin", "kanamycin")
 
+#: Below this many independently-represented lineages, a drug's accuracy
+#: figure is not treated as generalisable — it may hold only for the lineage
+#: composition of the cohort measured so far. Mirrors the federated
+#: catalogue-learning module's own bar (`min_lineages=2` in
+#: `myconductor/federated/catalogue_update.py`), for the same reason: an
+#: association (or, here, an accuracy figure) that has only ever been seen in
+#: one lineage cannot be distinguished from a lineage-specific effect.
+MIN_LINEAGES_FOR_GENERALIZABILITY = 2
+
 
 def registration_hash() -> str:
     """Content hash of every target, so a silent edit is visible in a report."""
