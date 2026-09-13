@@ -33,11 +33,21 @@ def investigate(report) -> list[dict]:
         })
 
     failures = [q.check for q in report.qc if q.status == "fail" and q.check != "callable_mask"]
+    for finding in report.quantitative_findings:
+        if finding["conflict"]:
+            add(finding["drug"], "mic_prediction_disagreement", "observed",
+                "Supplied MIC prediction and genomic interpretation differ; the model is not a measured phenotype.",
+                ["review_phenotype", "confirm_phenotype"], priority=1)
     if failures:
         add("*", "analytical_failure", "observed", "; ".join(failures),
             ["review_sample_and_qc"], priority=0)
     for result in report.drug_results:
         evs = result.evidence
+        if any(e.tier is Tier.PHENOTYPIC and e.metadata.get("mic_comparison")
+               and e.metadata["mic_comparison"] != e.metadata.get("result") for e in evs):
+            add(result.drug, "mic_category_mismatch", "observed",
+                "Measured MIC comparison differs from the laboratory category; verify units, method and breakpoint convention.",
+                ["review_phenotype"], evs, 0)
         if result.discordance:
             phenotypes = [e for e in evs if e.tier is Tier.PHENOTYPIC]
             if phenotypes:

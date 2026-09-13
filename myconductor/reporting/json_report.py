@@ -18,6 +18,8 @@ def primitive(value):
         return {str(k): primitive(v) for k, v in value.items()}
     if isinstance(value, (tuple, list)):
         return [primitive(v) for v in value]
+    if isinstance(value, (set, frozenset)):
+        return [primitive(v) for v in sorted(value)]
     if hasattr(value, "_loci") and hasattr(value, "source"):
         return {"source": value.source, "loci": primitive(value._loci)}
     return value

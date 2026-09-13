@@ -33,6 +33,8 @@ class PhenotypeObservation:
     critical_concentration: Optional[float] = None
     incubation_days: Optional[float] = None
     replicate_id: Optional[str] = None
+    mic_interval: Optional[tuple[float, float]] = None
+    susceptible_inclusive: Optional[bool] = None
 
     def __post_init__(self) -> None:
         for key in ("observation_id", "sample_id", "isolate_id", "site_id", "organism",
@@ -54,6 +56,8 @@ class PhenotypeObservation:
             raise ValueError("MIC requires an explicit unit")
         if self.critical_concentration is not None and not self.mic_unit:
             raise ValueError("critical concentration requires an explicit unit")
+        if self.censoring == "interval" and self.mic_interval is None:
+            raise ValueError("interval-censored MIC requires mic_interval")
 
     def evidence(self, context: SampleContext) -> DrugEvidence:
         for key in ("sample_id", "isolate_id", "site_id", "organism"):
@@ -61,6 +65,15 @@ class PhenotypeObservation:
                 raise ValueError(f"phenotype {self.observation_id}: {key} does not match context")
         call = Call(self.result)
         limitations = []
+        mic_comparison = None
+        if self.mic is not None and self.critical_concentration is not None:
+            from ..modules.mic_evidence import mic_call
+            mic_comparison = mic_call(self.mic, self.mic_unit, self.critical_concentration,
+                                      self.censoring, self.mic_interval, self.susceptible_inclusive)
+            if mic_comparison is not None and mic_comparison != call:
+                limitations.append("MIC versus reported category mismatch; review method and breakpoint convention. Laboratory category retained.")
+            elif mic_comparison is None:
+                limitations.append("MIC bounds or boundary convention do not establish a categorical comparison.")
         if self.quality != "pass":
             call = Call.INDETERMINATE
             limitations.append("phenotype quality has not passed laboratory review")
@@ -79,7 +92,8 @@ class PhenotypeObservation:
             drug=self.drug, call=call, tier=Tier.PHENOTYPIC, lane=Lane.PHENOTYPE,
             sample_id=self.sample_id, observation_id=self.observation_id,
             rationale=f"Laboratory reports {self.result}: {self.method}, {self.measured_at}.",
-            limitations=tuple(limitations), metadata=asdict(self),
+            limitations=tuple(limitations), metadata=dict(asdict(self),
+                mic_comparison=mic_comparison.value if mic_comparison else None),
         )
 
 

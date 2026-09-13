@@ -149,7 +149,15 @@ class Myconductor:
         phenotypes: Sequence[PhenotypeObservation] = (),
         test_menu: Sequence[dict] = (),
         follow_up_budget: Optional[float] = None,
+        include_population_structure: bool = False,
+        population_tolerance: float = 0.05,
+        population_lineage_hints: Sequence[dict] = (),
+        epistasis_table=None,
+        mic_predictions=(),
+        structural_annotations=None,
     ) -> AnalysisReport:
+        if population_lineage_hints and not include_population_structure:
+            raise ValueError("population lineage hints require population-structure analysis")
         adapted = load(
             input_path, depth_floor=self.depth_floor, sample=sample,
             platform=platform or self.platform,
@@ -257,9 +265,16 @@ class Myconductor:
             catalogue_sha256=self.catalogue.sha256,
             illustrative=self.catalogue.is_illustrative)
         results = reconciler.reconcile(evidence, mask)
+        from ..modules.mic_evidence import reconcile_predictions
+        quantitative_findings = reconcile_predictions(results, mic_predictions, context)
         eligibility = self.assessor.assess(results)
         vus = self.workbench.priorities(list(variants_by_key.values()))
         mechanism_queue = self.router.efflux.mechanism_queue(adapted.variants)
+        structural_records = []
+        if structural_annotations is not None:
+            structural_records, structural_hypotheses = structural_annotations.attach(
+                vus, self.profile.name, self.profile.reference_assembly)
+            mechanism_queue.extend(structural_hypotheses)
 
         discordances = list(collect_discordances(results))
         if len(engine_reports) > 1:
@@ -300,6 +315,12 @@ class Myconductor:
                     "tool_version": __version__, "demo_mode": self.demo_mode,
                     "include_tier2_loci": self.reconciler.include_tier2_loci,
                     "test_menu": test_menu, "follow_up_budget": follow_up_budget}
+        manifest["population_options"] = {"enabled": include_population_structure,
+                                          "tolerance": population_tolerance,
+                                          "lineage_hints": list(population_lineage_hints)}
+        manifest["epistasis_table"] = epistasis_table.to_dict() if epistasis_table else None
+        manifest["mic_predictions"] = [asdict(p) for p in mic_predictions]
+        manifest["structural_annotations"] = structural_annotations.to_dict() if structural_annotations is not None else []
         fingerprint = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
         provenance = Provenance(
             input_sha256=source_hashes["variants"], analysis_fingerprint=fingerprint,
@@ -319,6 +340,9 @@ class Myconductor:
         )
 
         report = AnalysisReport(
+            structural_annotations=structural_records,
+            mic_predictions=[asdict(p) for p in mic_predictions],
+            quantitative_findings=quantitative_findings,
             analysis_manifest=manifest,
             sample_id=adapted.sample_id,
             context=context.to_dict(),
@@ -334,6 +358,16 @@ class Myconductor:
             lane_counts=outcome.lane_counts(),
             demo_mode=self.demo_mode,
         )
+
+        if include_population_structure:
+            from ..modules.population_structure import population_structure
+            report.population_structure = population_structure(
+                report.sample_id, list(variants_by_key.values()), het,
+                population_tolerance, population_lineage_hints)
+        if epistasis_table:
+            report.epistasis_notes = epistasis_table.annotate(
+                report.drug_results, list(variants_by_key.values()),
+                self.profile.name, self.profile.reference_assembly)
 
         from ..modules.investigation import investigate, plan_follow_up
         report.investigations = investigate(report)

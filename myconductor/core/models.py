@@ -640,6 +640,11 @@ class AnalysisReport:
     follow_up: list[dict[str, Any]] = field(default_factory=list)
     report_schema: str = "myconductor.report.v1"
     analysis_manifest: dict = field(default_factory=dict)
+    population_structure: Optional["PopulationStructure"] = None
+    epistasis_notes: list[dict] = field(default_factory=list)
+    mic_predictions: list[dict] = field(default_factory=list)
+    quantitative_findings: list[dict] = field(default_factory=list)
+    structural_annotations: list[dict] = field(default_factory=list)
 
     @property
     def resistant_drugs(self) -> list[str]:
@@ -662,3 +667,39 @@ class AnalysisReport:
             if r.drug == drug:
                 return r
         return None
+
+
+@dataclass(frozen=True)
+class Subpopulation:
+    """A frequency group unless independent linkage evidence is supplied.
+
+    estimated_fraction is a median VAF, not a mixture proportion. Groups may
+    overlap biologically; their fractions must never be normalized to sum to 1.
+    """
+    variant_keys: frozenset[str]
+    estimated_fraction: float
+    lineage: Optional[str] = None
+    lineage_source: str = "none"
+    note: str = ""
+    linkage_source: Optional[str] = None
+
+    def __post_init__(self):
+        if not self.variant_keys or not all(isinstance(k, str) and k for k in self.variant_keys):
+            raise ValueError("frequency group requires nonempty variant keys")
+        object.__setattr__(self, "variant_keys", frozenset(self.variant_keys))
+        if not math.isfinite(self.estimated_fraction) or not 0 <= self.estimated_fraction <= 1:
+            raise ValueError("estimated fraction must be finite and in [0,1]")
+        if self.lineage and (not self.lineage_source or self.lineage_source == "none"):
+            raise ValueError("lineage assignment requires a source")
+
+
+@dataclass
+class PopulationStructure:
+    sample_id: str
+    subpopulations: list[Subpopulation] = field(default_factory=list)
+    unclustered_variant_keys: list[str] = field(default_factory=list)
+    classification: str = "indeterminate"
+    classification_basis: str = ""
+    data_gaps: list[str] = field(default_factory=list)
+    method: str = "bounded-span VAF grouping; no haplotype inference"
+    tolerance: float = 0.05
