@@ -128,7 +128,7 @@ def permutation_pvalue(group_a: Sequence[float], group_b: Sequence[float],
     values and the test loses nearly all resolution: on a perfectly separated
     eight-versus-eight comparison it returns p near 0.6, because any split
     placing most high values on one side reproduces the observed difference
-    exactly. ``analysis.effects._permutation_delta_pvalue`` permutes the
+    exactly. ``analysis.effects._stratified_permutation`` permutes the
     censoring-aware effect size instead, which varies continuously with the
     split. This function remains for continuous statistics.
     """

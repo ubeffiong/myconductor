@@ -175,81 +175,6 @@ def _delta_from_matrix(matrix: Sequence[Sequence[int]],
     return (greater - lesser) / decisive
 
 
-#: Cap on the pooled group size used for the permutation test. The matrix is
-#: quadratic in it, and beyond this the p-value is already far more precise
-#: than the biology warrants.
-MAX_PERMUTATION_N = 400
-PERMUTATION_ITERATIONS = 2000
-
-
-def _pooled_matrix(observations: Sequence[mic.Observation]
-                   ) -> list[tuple[int, ...]]:
-    """All-against-all order for a pooled group, computed once."""
-    matrix = []
-    for a in observations:
-        row = []
-        for b in observations:
-            order = mic.compare(a, b)
-            row.append(2 if order is None else order)
-        matrix.append(tuple(row))
-    return matrix
-
-
-def _permutation_delta_pvalue(a_obs: Sequence[mic.Observation],
-                              b_obs: Sequence[mic.Observation],
-                              min_per_group: int = MIN_PER_SIDE,
-                              iterations: int = PERMUTATION_ITERATIONS,
-                              seed: int = stats.PERMUTATION_SEED
-                              ) -> Optional[float]:
-    """Label-permutation p-value on the effect size itself.
-
-    The statistic permuted here is the same censoring-aware delta reported as
-    the effect, rather than a difference in medians. That is not a stylistic
-    choice: MIC values lie on a discrete doubling-dilution series, so a median
-    takes only a handful of distinct values and a median-difference permutation
-    test loses almost all resolution. On a perfectly separated 8-versus-8
-    comparison it returns p around 0.6, because any split placing most high
-    values on one side reproduces the observed difference exactly.
-
-    Delta varies continuously with the split, so it discriminates. The pooled
-    comparison matrix is built once and each permutation is integer lookups.
-    """
-    a_obs, b_obs = list(a_obs), list(b_obs)
-    if len(a_obs) < min_per_group or len(b_obs) < min_per_group:
-        return None
-
-    rng = random.Random(seed)
-    if len(a_obs) + len(b_obs) > MAX_PERMUTATION_N:
-        share = MAX_PERMUTATION_N / (len(a_obs) + len(b_obs))
-        a_obs = rng.sample(a_obs, max(min_per_group, int(len(a_obs) * share)))
-        b_obs = rng.sample(b_obs, max(min_per_group, int(len(b_obs) * share)))
-
-    pooled = a_obs + b_obs
-    matrix = _pooled_matrix(pooled)
-    n_a, total = len(a_obs), len(pooled)
-    indices = list(range(total))
-
-    observed = _delta_from_matrix(matrix, indices[:n_a], indices[n_a:])
-    if observed is None:
-        return None
-    observed = abs(observed)
-
-    extreme = 0
-    counted = 0
-    for _ in range(iterations):
-        rng.shuffle(indices)
-        delta = _delta_from_matrix(matrix, indices[:n_a], indices[n_a:])
-        if delta is None:
-            continue
-        counted += 1
-        extreme += abs(delta) >= observed
-    if counted == 0:
-        return None
-    # Add-one: a p-value of exactly zero states the resampling did not go far
-    # enough, not that the effect is certain.
-    return (extreme + 1) / (counted + 1)
-
-
 def _stratified_bootstrap(stratification: Stratification,
                           panel: mic.DrugPanel,
                           seed: int = stats.BOOTSTRAP_SEED
@@ -321,6 +246,21 @@ def _stratified_bootstrap(stratification: Stratification,
 
 
 def _stratified_permutation(stratification, panel, observed, min_per_side=MIN_PER_SIDE):
+    """Label-permutation p-value on the pooled effect size itself.
+
+    The statistic permuted here is the same censoring-aware delta reported as
+    the effect, not a difference in medians. That is not a stylistic choice.
+    MIC values lie on a discrete doubling-dilution series, so a median takes
+    only a handful of distinct values and a median-difference permutation test
+    loses almost all of its resolution: on a perfectly separated 8-versus-8
+    comparison it returns p near 0.6, because any split placing most of the
+    high values on one side reproduces the observed difference exactly. Delta
+    varies continuously with the split, so it discriminates.
+
+    Labels are permuted only within a stratum, which is what keeps the null
+    conditional on background, site and lineage rather than destroying the
+    stratification the point estimate depends on.
+    """
     prepared = []
     pairs = 0
     for stratum in stratification.informative_strata:

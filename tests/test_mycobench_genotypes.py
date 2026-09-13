@@ -140,8 +140,28 @@ class ParseVCFTests(unittest.TestCase):
         self.assertIn("rpoB_p.Ser450Leu", result.variants)
         self.assertEqual(result.contigs, frozenset({"Chromosome"}))
 
-    def test_uncatalogued_variant_is_counted_but_not_reported(self):
+    def test_variant_at_an_uncatalogued_position_is_read_but_not_counted(self):
+        """``n_records`` counts catalogued coordinates, ``n_sites`` counts all.
+
+        A record nowhere near a catalogued coordinate is still read — it
+        appears in ``n_sites`` — but it is not part of the match-rate
+        denominator. That denominator exists to detect a coordinate-system or
+        reference mismatch, which looks like alleles landing on catalogued
+        positions without matching catalogued alleles. Counting genome-wide
+        would bury that signal under the uninteresting fact that most variation
+        falls outside resistance loci.
+        """
         path = write_vcf("NC_000962.3\t5\t.\tA\tG\t60\tPASS\t.\tGT\t1\n")
+        result = genotypes.parse_vcf(path, self.index)
+        self.assertEqual(result.variants, frozenset())
+        self.assertEqual(result.n_sites, 1)
+        self.assertEqual(result.n_records, 0)
+        self.assertEqual(result.n_matched, 0)
+
+    def test_allele_at_a_catalogued_position_counts_toward_the_rate(self):
+        # Right position, wrong allele: exactly the coordinate-mismatch shape
+        # the match rate is meant to expose.
+        path = write_vcf("NC_000962.3\t761155\t.\tC\tA\t60\tPASS\t.\tGT\t1\n")
         result = genotypes.parse_vcf(path, self.index)
         self.assertEqual(result.variants, frozenset())
         self.assertEqual(result.n_records, 1)
@@ -196,6 +216,112 @@ class ParseVCFTests(unittest.TestCase):
         path.write_bytes(b"not gzip at all")
         with self.assertRaises(genotypes.GenotypeError):
             genotypes.parse_vcf(path, self.index)
+
+
+class PrefilterExactnessTests(unittest.TestCase):
+    """The position prefilter must never discard a real match.
+
+    A re-genotyped CRyPTIC VCF is ~1.27 million records and ~178 MB
+    decompressed, almost all of them reference calls at positions the catalogue
+    never mentions. ``parse_vcf`` skips those without splitting them, which is
+    the difference between four seconds per isolate and twenty-four. The
+    optimisation is only safe because of two exact properties, and a regression
+    in either would silently *lose variant calls* rather than fail loudly —
+    the worst failure mode this codebase has. Hence these tests.
+    """
+
+    def setUp(self):
+        self.index = genotypes.CoordinateIndex.from_catalogue(catalogue_file())
+
+    def test_a_hand_built_index_still_matches(self):
+        """An index assembled directly must not need the position set supplied.
+
+        ``positions`` exists only to make the skip test cheap. A caller that
+        builds ``by_allele`` by hand — every test here, and any future caller
+        assembling an index from something other than an ingested catalogue —
+        would otherwise get an index that matches nothing whatsoever, with no
+        error raised and an empty genotype returned as though the isolate
+        genuinely carried no catalogued variant.
+        """
+        index = genotypes.CoordinateIndex(
+            by_allele={(10, "A", "C"): {"v1"}, (10, "A", "G"): {"v2"}})
+        self.assertEqual(index.positions, {10})
+        path = write_vcf("NC_000962.3\t10\t.\tA\tC,G\t60\tPASS\t.\tGT\t2\n")
+        result = genotypes.parse_vcf(path, index)
+        self.assertEqual(result.variants, frozenset({"v2"}))
+        self.assertEqual(result.assessed_variants, frozenset({"v1", "v2"}))
+
+    def test_single_base_ref_at_a_catalogued_position_is_kept(self):
+        path = write_vcf("NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n")
+        result = genotypes.parse_vcf(path, self.index)
+        self.assertIn("rpoB_p.Ser450Leu", result.variants)
+
+    def test_an_indel_trimming_onto_a_catalogued_position_is_kept(self):
+        """The case a naive ``position in positions`` filter would drop.
+
+        The catalogue holds 761155 C>T. This record starts at 761154 with a
+        multi-base REF, and only *after* left-trimming does it land on 761155.
+        A filter testing the record's own position would discard it and the
+        variant would vanish from the genotype with no error anywhere.
+        """
+        path = write_vcf("NC_000962.3\t761154\t.\tAC\tAT\t60\tPASS\t.\tGT\t1\n")
+        result = genotypes.parse_vcf(path, self.index)
+        self.assertIn("rpoB_p.Ser450Leu", result.variants)
+        self.assertEqual(result.n_matched, 1)
+
+    def test_a_far_indel_is_still_skipped(self):
+        # Multi-base REF, but its whole trim range is uncatalogued.
+        path = write_vcf("NC_000962.3\t500\t.\tAC\tAT\t60\tPASS\t.\tGT\t1\n")
+        result = genotypes.parse_vcf(path, self.index)
+        self.assertEqual(result.variants, frozenset())
+        self.assertEqual(result.n_records, 0)
+        self.assertEqual(result.n_sites, 1)
+
+    def test_a_reference_call_still_marks_the_locus_assessed(self):
+        """Coverage evidence must survive the prefilter.
+
+        A ``0/0`` call at a catalogued coordinate is the positive evidence that
+        the locus was examined and the variant was absent. If the prefilter
+        dropped these, ``assessed_variants`` would empty out and every drug
+        would lose its route to SUSCEPTIBLE.
+        """
+        path = write_vcf("NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t0\n")
+        result = genotypes.parse_vcf(path, self.index)
+        self.assertEqual(result.variants, frozenset())
+        self.assertIn("rpoB_p.Ser450Leu", result.assessed_variants)
+
+    def test_skipping_never_changes_the_result(self):
+        """Differential test against the same parser with the filter disabled.
+
+        An index whose position set contains everything forces every record
+        through the full path. The two must agree on every field that carries
+        meaning.
+        """
+        class Everything(set):
+            def __contains__(self, item):
+                return True
+
+        # Non-empty so __post_init__ treats it as supplied, not derived.
+        unfiltered = genotypes.CoordinateIndex(
+            by_allele=self.index.by_allele, positions=Everything({0}),
+            catalogue_version=self.index.catalogue_version,
+            n_variants=self.index.n_variants, n_keys=self.index.n_keys)
+
+        path = write_vcf(
+            "NC_000962.3\t5\t.\tA\tG\t60\tPASS\t.\tGT\t1\n"
+            "NC_000962.3\t761154\t.\tAC\tAT\t60\tPASS\t.\tGT\t1\n"
+            "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n"
+            "NC_000962.3\t779010\t.\tG\tA\t60\tPASS\t.\tGT\t0\n"
+            "NC_000962.3\t900000\t.\tGATC\tG\t60\tPASS\t.\tGT\t1\n")
+        fast = genotypes.parse_vcf(path, self.index)
+        slow = genotypes.parse_vcf(path, unfiltered)
+        self.assertEqual(fast.variants, slow.variants)
+        self.assertEqual(fast.assessed_variants, slow.assessed_variants)
+        self.assertEqual(fast.n_matched, slow.n_matched)
+        self.assertEqual(fast.n_sites, slow.n_sites)
+        self.assertEqual(fast.contigs, slow.contigs)
+        # n_records is deliberately the narrower count, never the larger one.
+        self.assertLessEqual(fast.n_records, slow.n_records)
 
 
 class LoadGenotypesTests(unittest.TestCase):

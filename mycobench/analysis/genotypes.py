@@ -74,9 +74,29 @@ class CoordinateIndex:
     """
 
     by_allele: dict[tuple[int, str, str], set[str]] = field(default_factory=dict)
+    #: Every position any catalogued key occupies. Used to skip the ~98% of
+    #: records in a re-genotyped VCF that cannot match anything, without
+    #: parsing them. See ``parse_vcf`` for why this is exact rather than
+    #: approximate.
+    positions: set[int] = field(default_factory=set)
     catalogue_version: str = ""
     n_variants: int = 0
     n_keys: int = 0
+
+    def __post_init__(self) -> None:
+        """Derive ``positions`` from ``by_allele`` when it was not supplied.
+
+        ``parse_vcf`` skips records whose position is absent from this set, so
+        an index carrying allele keys but an empty position set would match
+        **nothing at all** — silently, with no error and an empty genotype.
+        Callers that assemble ``by_allele`` directly rather than through
+        ``from_catalogue`` must not have to know that a second structure exists
+        to keep in step. ``from_catalogue`` fills ``by_allele`` after
+        construction and maintains both as it goes, so nothing is derived here.
+        """
+        if self.by_allele and not self.positions:
+            self.positions = {position for (position, _ref, _alt)
+                              in self.by_allele}
 
     @classmethod
     def from_catalogue(cls, path: str | Path) -> "CoordinateIndex":
@@ -96,11 +116,13 @@ class CoordinateIndex:
                 if parsed is None:
                     continue
                 index.by_allele.setdefault(parsed, set()).add(label)
+                index.positions.add(parsed[0])
                 # Also index the trimmed spelling, so an MNV in the catalogue
                 # still matches an isolate's minimal representation.
                 trimmed = _trim(*parsed)
                 if trimmed != parsed:
                     index.by_allele.setdefault(trimmed, set()).add(label)
+                    index.positions.add(trimmed[0])
         index.n_keys = len(index.by_allele)
         return index
 
@@ -115,12 +137,27 @@ class CoordinateIndex:
             return None
 
     def lookup(self, position: int, ref: str, alt: str) -> set[str]:
+        """Catalogued labels for one allele, under either spelling.
+
+        Called once per alternate allele, and a re-genotyped record carries a
+        median of thirteen, so this is the hottest path in the whole load. Two
+        shortcuts keep it honest and cheap:
+
+        ``_trim`` cannot change anything unless **both** sides are multi-base —
+        each of its loops requires ``len(ref) > 1 and len(alt) > 1`` — so an
+        ordinary SNV skips it outright rather than paying for a call that is
+        guaranteed to return its argument. And a miss returns without building
+        a set, because the overwhelming majority of alleles match nothing.
+        """
         ref, alt = ref.upper(), alt.upper()
-        found = set(self.by_allele.get((position, ref, alt), ()))
-        trimmed = _trim(position, ref, alt)
-        if trimmed != (position, ref, alt):
-            found |= set(self.by_allele.get(trimmed, ()))
-        return found
+        found = self.by_allele.get((position, ref, alt))
+        if len(ref) > 1 and len(alt) > 1:
+            trimmed = _trim(position, ref, alt)
+            if trimmed != (position, ref, alt):
+                shifted = self.by_allele.get(trimmed)
+                if shifted:
+                    return set(shifted) | found if found else set(shifted)
+        return set(found) if found else set()
 
     def describe(self) -> str:
         return (f"{self.n_variants} catalogued variant(s) with coordinates, "
@@ -175,9 +212,18 @@ def fetch_vcf(relative_path: str, cache_dir: str | Path,
 @dataclass
 class VCFGenotype:
     variants: frozenset[str] = frozenset()
+    #: Alternate alleles carried **at coordinates the catalogue could match**,
+    #: not genome-wide. The genome-wide count is in ``n_sites``. This is the
+    #: denominator that makes ``match_rate`` diagnostic: a low rate here means
+    #: the right positions carried alleles the catalogue does not list, which is
+    #: what a coordinate-system or reference mismatch looks like. A genome-wide
+    #: denominator would bury that under the trivial fact that most variation
+    #: falls outside resistance loci.
     n_records: int = 0
     n_matched: int = 0
     n_filtered_out: int = 0
+    #: Every data record in the file, including reference calls.
+    n_sites: int = 0
     contigs: frozenset[str] = frozenset()
     assessed_variants: frozenset[str] = frozenset()
 
@@ -187,28 +233,84 @@ class VCFGenotype:
 
 
 def parse_vcf(path: str | Path, index: CoordinateIndex) -> VCFGenotype:
-    """Read a (gzipped) VCF and report which catalogued variants it carries."""
+    """Read a (gzipped) VCF and report which catalogued variants it carries.
+
+    These are re-genotyped VCFs: every callable site in the genome appears,
+    including the ``0/0`` reference calls, so one file is ~1.27 million records
+    and ~178 MB decompressed. Those reference calls are the point — a catalogued
+    position called ``0/0`` is positive evidence that the locus was examined and
+    the variant was absent, which is what ``assessed_variants`` carries and what
+    lets a drug reach SUSCEPTIBLE at all. They are not skipped.
+
+    What is skipped is the ~98% of records that cannot match the catalogue
+    under any spelling. The test is exact, not heuristic: ``_trim`` only moves a
+    record's position while ``len(ref) > 1``, so a **single-base REF cannot
+    shift**, and for those an exact position match is provably sufficient. Any
+    record with a multi-base REF is parsed in full regardless of position,
+    because trimming could carry it onto a catalogued coordinate. Dropping the
+    position test entirely would be correct too — just twelve times slower.
+    """
     path = Path(path)
     opener = gzip.open if path.suffix == ".gz" else open
     variants: set[str] = set()
     assessed: set[str] = set()
     contigs: set[str] = set()
-    records = matched = filtered = 0
+    sites = records = matched = filtered = 0
+    positions = index.positions
+    # Contig is read by comparing a prefix rather than slicing every line: a
+    # VCF is sorted by contig, so this allocates once per contig instead of
+    # 1.27 million times, while still noticing a second contig if one appears.
+    seen_prefix = "\x00"
 
     try:
         with opener(path, "rt", encoding="utf-8", errors="replace") as handle:
             for line in handle:
-                if not line or line.startswith("#"):
+                if not line or line[0] == "#":
                     continue
+                # Locate the first four tabs without allocating substrings.
+                # Only records that survive the position test below are worth
+                # the cost of splitting into fields.
+                tab1 = line.find("\t")
+                if tab1 < 0:
+                    continue
+                if not line.startswith(seen_prefix):
+                    chrom = line[:tab1]
+                    seen_prefix = chrom + "\t"
+                    contigs.add(chrom)
+                tab2 = line.find("\t", tab1 + 1)
+                tab3 = line.find("\t", tab2 + 1)
+                tab4 = line.find("\t", tab3 + 1)
+                if tab2 < 0 or tab3 < 0 or tab4 < 0:
+                    continue
+                sites += 1
+
+                # Reject what cannot possibly match, before paying for a split
+                # and a median of thirteen per-allele lookups.
+                #
+                # A single-base REF cannot be shifted by _trim at all, so an
+                # exact position match decides it. A multi-base REF can be
+                # left-trimmed forward by at most len(REF) - 1, so it can only
+                # reach positions in [P, P + len(REF) - 1]; if the catalogue
+                # holds none of those, no spelling of this record matches.
+                # Both tests are exact: neither can discard a real match.
+                position = line[tab1 + 1:tab2]
+                if not position.isdigit():
+                    continue
+                start = int(position)
+                if tab4 - tab3 == 2:
+                    if start not in positions:
+                        continue
+                elif not any(p in positions
+                             for p in range(start, start + tab4 - tab3 - 1)):
+                    continue
+
                 fields = line.rstrip("\n").split("\t")
                 if len(fields) < 5:
                     continue
-                chrom, position, _id, ref, alt_field = fields[:5]
-                filter_value = fields[6] if len(fields) > 6 else ""
-                contigs.add(chrom)
-
+                _chrom, position, _id, ref, alt_field = fields[:5]
                 if not position.isdigit():
                     continue
+                filter_value = fields[6] if len(fields) > 6 else ""
                 filters = {f for f in filter_value.split(";") if f}
                 if filters and not filters <= ACCEPTED_FILTERS:
                     filtered += 1
@@ -245,6 +347,7 @@ def parse_vcf(path: str | Path, index: CoordinateIndex) -> VCFGenotype:
 
     return VCFGenotype(variants=frozenset(variants), n_records=records,
                        n_matched=matched, n_filtered_out=filtered,
+                       n_sites=sites,
                        contigs=frozenset(contigs), assessed_variants=frozenset(assessed))
 
 
@@ -256,6 +359,7 @@ class GenotypeLoad:
     n_requested: int = 0
     n_records: int = 0
     n_matched: int = 0
+    n_sites: int = 0
     contigs: set[str] = field(default_factory=set)
 
     @property
@@ -278,8 +382,9 @@ class GenotypeLoad:
         lines = [
             f"{self.n_loaded}/{self.n_requested} isolate(s) genotyped, "
             f"{len(self.failures)} failure(s)",
-            f"{self.n_matched}/{self.n_records} alternate allele(s) matched a "
-            f"catalogued coordinate ({self.match_rate:.1%})",
+            f"{self.n_matched}/{self.n_records} alternate allele(s) at "
+            f"catalogued coordinates matched a catalogued allele "
+            f"({self.match_rate:.1%}); {self.n_sites} site(s) read",
         ]
         counts = self.carriers_per_variant
         if counts:
@@ -327,6 +432,7 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
 
         result.n_records += genotype.n_records
         result.n_matched += genotype.n_matched
+        result.n_sites += genotype.n_sites
         result.contigs |= set(genotype.contigs)
         result.isolates[run] = Isolate(
             isolate_id=f"cr_{run}", genotype=genotype.variants,

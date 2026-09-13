@@ -389,6 +389,64 @@ class VariantEffectTests(unittest.TestCase):
         self.assertTrue(any("lineage" in w for w in effect.warnings))
 
 
+class PermutationResolutionTests(unittest.TestCase):
+    """The permutation statistic must be the effect size, not a median.
+
+    This is a regression guard, not a general test of significance. An earlier
+    version permuted the difference in medians. On MIC data that is degenerate:
+    values lie on a discrete doubling-dilution series, so the median takes only
+    a handful of distinct values and almost every relabelling reproduces the
+    observed difference exactly. A perfectly separated twelve-versus-twelve
+    comparison — every carrier above every non-carrier, delta +1.0, bootstrap
+    interval (1.0, 1.0) — came back with p = 0.62 and was demoted to
+    ``no-evidence``. A test that cannot detect complete separation would have
+    silently suppressed every real finding in the scan.
+    """
+
+    def setUp(self):
+        self.index = DeterminantIndex(
+            by_drug_label={"rifampicin": {"rpoB_S450L"}})
+        self.isolates = (
+            [Isolate(f"c{i}", frozenset({"V_1"}), lineage=("l2", "l4")[i % 2])
+             for i in range(12)]
+            + [Isolate(f"n{i}", frozenset(), lineage=("l2", "l4")[i % 2])
+               for i in range(12)])
+
+    def _effect(self, carrier_values, other_values):
+        panel = mic.DrugPanel("rifampicin")
+        for i in range(12):
+            panel.add(f"c{i}", carrier_values[i % len(carrier_values)])
+            panel.add(f"n{i}", other_values[i % len(other_values)])
+        stratification = stratify("V_1", "rifampicin", self.isolates,
+                                  self.index)
+        return effects.variant_effect(stratification, panel)
+
+    def test_complete_separation_is_significant(self):
+        effect = self._effect(("8.0", "16.0"), ("0.25", "0.5"))
+        self.assertEqual(effect.delta, 1.0)
+        self.assertIsNotNone(effect.pvalue)
+        # The degenerate median statistic returned 0.62 on exactly this input.
+        self.assertLess(effect.pvalue, 0.05)
+        self.assertEqual(effect.verdict, "evidence-of-effect")
+
+    def test_no_separation_is_not_significant(self):
+        # Same values on both sides: the test must not manufacture a finding.
+        effect = self._effect(("1.0", "2.0"), ("1.0", "2.0"))
+        self.assertIsNotNone(effect.pvalue)
+        self.assertGreater(effect.pvalue, 0.05)
+        self.assertNotEqual(effect.verdict, "evidence-of-effect")
+
+    def test_pvalue_is_reproducible(self):
+        first = self._effect(("8.0", "16.0"), ("0.25", "0.5")).pvalue
+        second = self._effect(("8.0", "16.0"), ("0.25", "0.5")).pvalue
+        self.assertEqual(first, second)
+
+    def test_pvalue_never_reaches_zero(self):
+        """Add-one correction: p = 0 would claim more than resampling shows."""
+        effect = self._effect(("8.0", "16.0"), ("0.25", "0.5"))
+        self.assertGreater(effect.pvalue, 0.0)
+
+
 class EffectScanTests(unittest.TestCase):
     def _effect(self, name, verdict, delta, pvalue):
         return effects.VariantEffect(variant=name, drug="rifampicin",
