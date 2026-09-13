@@ -1,9 +1,18 @@
-"""Known-variant module: the wrapped, catalogue-based lookup.
+"""Catalogue lane — graded, known resistance mutations.
 
-This is the lane that stands in for TB-Profiler / Mykrobe / MAST -- a static,
-graded catalogue of known resistance mutations. In a real deployment you would
-back this with the full WHO catalogue (or delegate to one of those tools and
-parse its output); here we load a small illustrative JSON.
+This is the only lane (alongside laboratory phenotype) permitted to establish
+``RESISTANT``, because it is the only one backed by graded evidence.
+
+The bundled JSON is a small illustrative subset. It is not the WHO catalogue,
+and the module says so in its provenance rather than leaving the reader to
+assume otherwise: ``EngineRef.database_version`` carries the demo tag through
+to the report and the FHIR bundle. ``adapters/who_catalogue.py`` is the
+ingester for the real thing.
+
+Lookup is by ``VariantIdentity``: coordinate key first, falling back to the
+gene/label pair for catalogue entries and inputs that carry no coordinates.
+Matching on labels alone is recorded as a limitation on the evidence, because
+annotator spellings differ and a label match is weaker than a coordinate match.
 """
 from __future__ import annotations
 
@@ -11,37 +20,126 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from ..core.models import Call, DrugEvidence, Route, Variant
+from ..core.models import (
+    Call,
+    DrugEvidence,
+    EngineRef,
+    Lane,
+    Tier,
+    Variant,
+)
 from .base import VariantModule
 
-_CATALOGUE_PATH = Path(__file__).resolve().parent.parent / "catalogue" / "mtb_amr_catalogue.json"
+_CATALOGUE_PATH = (Path(__file__).resolve().parent.parent
+                   / "catalogue" / "mtb_amr_catalogue.json")
+
+_LABEL_MATCH_LIMITATION = (
+    "matched on gene/label, not coordinates; annotator spellings differ, so "
+    "this match is weaker than a coordinate match"
+)
 
 
 class CatalogueModule(VariantModule):
     name = "catalogue"
+    lane = Lane.CATALOGUE
 
     def __init__(self, path: Path = _CATALOGUE_PATH):
-        data = json.loads(Path(path).read_text())
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         self.version: str = data["catalogue_version"]
+        self.is_illustrative: bool = bool(data.get("illustrative", True))
         self.efflux_genes: set[str] = set(data.get("efflux_genes", []))
-        self.regulatory_regions: set[str] = set(data.get("regulatory_regions", []))
-        self._by_key: dict[str, dict] = {
-            f"{v['gene']}_{v['change']}": v for v in data["variants"]
-        }
+
+        self.engine = EngineRef(
+            name="myconductor-bundled-catalogue",
+            version="0.2.0",
+            database="mtb_amr_catalogue.json",
+            database_version=self.version,
+        )
+
+        self._by_coord: dict[str, dict] = {}
+        self._by_label: dict[str, dict] = {}
+        for entry in data["variants"]:
+            label = f"{entry['gene']}_{entry['change']}"
+            self._by_label[label] = entry
+            coord = entry.get("coordinate_key")
+            if coord:
+                self._by_coord[coord] = entry
+
+    # -- lookup -----------------------------------------------------------
+    def _lookup(self, variant: Variant) -> tuple[Optional[dict], bool]:
+        """Return ``(entry, matched_on_coordinates)``."""
+        key = variant.identity.key()
+        if key in self._by_coord:
+            return self._by_coord[key], True
+        return self._by_label.get(variant.label()), False
+
+    @property
+    def labels(self) -> set[str]:
+        """Every gene/label the catalogue knows.
+
+        Used to stop the VUS workbench re-examining variants the catalogue has
+        already graded.
+        """
+        return set(self._by_label)
 
     def knows(self, variant: Variant) -> bool:
-        return variant.key() in self._by_key
+        entry, _ = self._lookup(variant)
+        return entry is not None
 
-    def evaluate(self, variant: Variant) -> Optional[DrugEvidence]:
-        entry = self._by_key.get(variant.key())
+    def applies_to(self, variant: Variant) -> bool:
+        return self.knows(variant)
+
+    # -- evaluation -------------------------------------------------------
+    def evaluate(self, variant: Variant) -> list[DrugEvidence]:
+        entry, by_coord = self._lookup(variant)
         if entry is None:
-            return None
-        return DrugEvidence(
-            drug=entry["drug"],
-            call=Call(entry["call"]),
-            confidence=float(entry["confidence"]),
-            route=Route.CATALOGUE,
-            variant_key=variant.key(),
-            who_grade=entry.get("who_grade"),
-            rationale=f"Catalogued mutation ({entry.get('who_grade', 'graded')}).",
-        )
+            return []
+
+        call = _CALL_MAP.get(entry["call"])
+        if call is None:
+            raise ValueError(
+                f"catalogue entry {variant.label()!r} has unrecognised call "
+                f"{entry['call']!r}"
+            )
+
+        limitations: list[str] = []
+        if not by_coord:
+            limitations.append(_LABEL_MATCH_LIMITATION)
+        if self.is_illustrative:
+            limitations.append(
+                "from the bundled illustrative catalogue, not the WHO catalogue"
+            )
+
+        # Catalogue entries may name several drugs.
+        drugs = entry.get("drugs") or [entry["drug"]]
+        grade = entry.get("who_grade")
+        return [
+            DrugEvidence(
+                drug=drug,
+                call=call,
+                tier=Tier.CATALOGUED,
+                lane=Lane.CATALOGUE,
+                confidence=float(entry["confidence"]),
+                variant=variant.identity,
+                who_grade=grade,
+                engine=self.engine,
+                limitations=tuple(limitations),
+                rationale=(
+                    f"Catalogued {call.value} for {drug} "
+                    f"(grade: {grade or 'ungraded'})."
+                ),
+            )
+            for drug in drugs
+        ]
+
+
+_CALL_MAP = {
+    "resistant": Call.RESISTANT,
+    "susceptible": Call.SUSCEPTIBLE,
+    "indeterminate": Call.INDETERMINATE,
+    # "Not assoc w R" entries are evidence that a variant does not confer
+    # resistance. They do not by themselves make the drug usable -- coverage
+    # still has to be shown -- but they are a susceptible-leaning catalogue
+    # statement about this variant.
+    "not_associated": Call.SUSCEPTIBLE,
+}

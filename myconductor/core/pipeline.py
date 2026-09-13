@@ -1,70 +1,192 @@
 """The conductor: wires every stage into one end-to-end analysis.
 
-    adapter -> router -> heteroresistance -> synthesis -> (discovery) -> report
+    input + callable mask + engine reports
+        -> QC
+        -> multi-lane routing
+        -> minority-allele assessment
+        -> coverage-gated reconciliation
+        -> guideline eligibility
+        -> VUS prioritisation
+        -> report
 
-This is the object a caller instantiates. Each collaborator is injectable, so a
-deployment can swap in a real catalogue, a trained VUS model, or a live docking
-backend without touching this orchestration code.
+Two structural changes from the original pipeline
+-------------------------------------------------
+**The discovery loop is gone from this file.** It used to fire whenever one
+patient had no adequate regimen, putting candidate compounds in a clinical
+report. Target discovery is a cohort-level research activity and now lives in
+``modules.discovery``, which this module does not import. There is no code path
+from a patient's report to a drug-discovery run.
+
+**Synthetic annotators cannot reach a report.** If the VUS annotator reports
+itself synthetic, the constructor refuses unless ``demo_mode=True`` — and
+``demo_mode`` stamps every rendered report and FHIR bundle.
 """
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Iterable, Optional, Sequence
 
 from .. import __version__
+from ..adapters.base import EngineReport, concordance, merge as merge_evidence
+from ..catalogue.profile import OrganismProfile, load_profile
+from ..core.models import AnalysisReport, EngineRef, Provenance
+from ..io import qc as qc_module
 from ..io.adapter import load
-from ..modules import discovery, heteroresistance
-from ..modules.synthesis import RegimenSynthesiser, reconcile
-from .models import AnalysisReport, Provenance
+from ..io.callable_mask import CallableMask
+from ..modules.catalogue import CatalogueModule
+from ..modules.efflux import EffluxRegulatoryModule
+from ..modules.features import AnnotatorProtocol
+from ..modules.heteroresistance import HeteroresistanceAssessor
+from ..modules.synthesis import (
+    EligibilityAssessor,
+    EvidenceReconciler,
+    collect_discordances,
+)
+from ..modules.vus_workbench import VUSWorkbench
 from .router import TriageRouter
 
 
 class Myconductor:
     def __init__(
         self,
-        router: Optional[TriageRouter] = None,
-        synthesiser: Optional[RegimenSynthesiser] = None,
+        profile: Optional[OrganismProfile] = None,
         depth_floor: int = 10,
-        het_vaf_floor: float = 0.03,
+        callable_fraction_floor: float = 0.95,
+        platform: Optional[str] = None,
+        demo_mode: bool = False,
+        annotator: Optional[AnnotatorProtocol] = None,
+        router: Optional[TriageRouter] = None,
+        reconciler: Optional[EvidenceReconciler] = None,
+        assessor: Optional[EligibilityAssessor] = None,
+        het_assessor: Optional[HeteroresistanceAssessor] = None,
+        include_tier2_loci: bool = False,
     ):
-        self.router = router or TriageRouter()
-        self.synthesiser = synthesiser or RegimenSynthesiser()
+        self.profile = profile or load_profile()
         self.depth_floor = depth_floor
-        self.het_vaf_floor = het_vaf_floor
+        self.callable_fraction_floor = callable_fraction_floor
+        self.platform = platform
+        self.demo_mode = demo_mode
 
-    def analyze(self, input_path: str | Path) -> AnalysisReport:
-        adapted = load(input_path, depth_floor=self.depth_floor)
+        catalogue = CatalogueModule()
+        efflux = EffluxRegulatoryModule(self.profile)
+        self.workbench = VUSWorkbench(annotator=annotator,
+                                      known=catalogue.labels)
+        if self.workbench.synthetic and not demo_mode:
+            raise ValueError(
+                f"{self.workbench.model_name} produces synthetic, "
+                f"hash-derived values with no biological meaning. Pass "
+                f"demo_mode=True to permit it; every report will then be "
+                f"stamped as synthetic."
+            )
 
+        self.router = router or TriageRouter(
+            catalogue=catalogue, efflux=efflux, extra_lanes=[self.workbench])
+        self.catalogue = self.router.catalogue
+        self.reconciler = reconciler or EvidenceReconciler(
+            profile=self.profile, depth_floor=depth_floor,
+            callable_fraction_floor=callable_fraction_floor,
+            include_tier2_loci=include_tier2_loci)
+        self.assessor = assessor or EligibilityAssessor(self.profile)
+        self.het = het_assessor or HeteroresistanceAssessor(
+            depth_floor=depth_floor, default_platform=platform)
+
+    # -- mask construction ------------------------------------------------
+    def _mask_from_path(self, mask_path: str | Path) -> CallableMask:
+        path = Path(mask_path)
+        suffix = path.suffix.lower()
+        if suffix == ".bed":
+            return CallableMask.from_bed(
+                path, locus_lengths=self.profile.locus_lengths())
+        if suffix in (".tsv", ".txt", ".csv"):
+            return CallableMask.from_tsv(path)
+        if suffix in (".gvcf", ".g.vcf", ".vcf"):
+            raise ValueError(
+                "gVCF masks need locus spans from the reference annotation; "
+                "build the mask with CallableMask.from_gvcf(path, locus_spans) "
+                "and pass it via mask=, or supply a depth table instead."
+            )
+        raise ValueError(f"unsupported mask format {suffix!r}")
+
+    # -- the analysis -----------------------------------------------------
+    def analyze(
+        self,
+        input_path: str | Path,
+        mask: Optional[CallableMask] = None,
+        mask_path: Optional[str | Path] = None,
+        sample: Optional[str] = None,
+        platform: Optional[str] = None,
+        engine_reports: Sequence[EngineReport] = (),
+    ) -> AnalysisReport:
+        adapted = load(
+            input_path, depth_floor=self.depth_floor, sample=sample,
+            platform=platform or self.platform,
+        )
+
+        if mask is None and mask_path is not None:
+            mask = self._mask_from_path(mask_path)
+        mask = mask or CallableMask.absent()
+
+        engine_reports = list(engine_reports)
+        engine_masks = [r.mask for r in engine_reports if r.mask is not None]
+        if engine_masks:
+            mask = CallableMask.merge(mask, *engine_masks)
+
+        # -- evidence ------------------------------------------------------
         outcome = self.router.route(adapted.variants)
-        evidence = outcome.evidence
+        evidence = list(outcome.evidence) + merge_evidence(engine_reports)
 
-        het = heteroresistance.detect(
-            adapted.variants, evidence, noise_floor=self.het_vaf_floor
-        )
+        all_variants = list(adapted.variants)
+        for report in engine_reports:
+            all_variants.extend(report.variants)
 
-        drug_results = reconcile(evidence)
-        regimen = self.synthesiser.propose(drug_results)
+        het = self.het.assess(all_variants, evidence)
+        results = self.reconciler.reconcile(evidence, mask)
+        eligibility = self.assessor.assess(results)
+        vus = self.workbench.priorities(adapted.variants)
 
-        disc = discovery.run(
-            reason=regimen.rationale, triggered=not regimen.adequate
-        )
+        discordances = list(collect_discordances(results))
+        if len(engine_reports) > 1:
+            discordances.extend(concordance(engine_reports).disagreed)
+
+        # -- QC ------------------------------------------------------------
+        qc = qc_module.assess(adapted, mask, self.profile, self.depth_floor)
+        for report in engine_reports:
+            qc.extend(report.qc)
+        warnings = list(adapted.warnings)
+        for report in engine_reports:
+            warnings.extend(report.warnings)
+        for v in outcome.unexamined:
+            warnings.append(
+                f"{v.label()}: no lane could interpret this variant "
+                f"({v.consequence.value} in {v.gene}); reported, not dropped."
+            )
 
         provenance = Provenance(
             tool="Myconductor",
             version=__version__,
-            catalogue_version=self.router.catalogue.version,
-            vus_model=self.router.vus.model_name,
-            coverage_min=self.depth_floor,
-            het_vaf_floor=self.het_vaf_floor,
+            organism_profile=self.profile.name,
+            profile_version=self.profile.version,
+            reference_assembly=adapted.assembly,
+            depth_floor=self.depth_floor,
+            callable_fraction_floor=self.callable_fraction_floor,
+            catalogue=self.catalogue.engine,
+            engines=[r.engine for r in engine_reports],
+            coverage_source=mask.source,
+            demo_mode=self.demo_mode,
+            generated_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         )
 
         return AnalysisReport(
             sample_id=adapted.sample_id,
-            drug_results=drug_results,
-            heteroresistance=het,
-            regimen=regimen,
-            discovery=disc,
+            drug_results=results,
             provenance=provenance,
-            qc_warnings=adapted.warnings,
-            routed_counts=outcome.counts(),
+            eligibility=eligibility,
+            heteroresistance=het,
+            vus_priorities=vus,
+            discordances=discordances,
+            qc=qc,
+            qc_warnings=warnings,
+            lane_counts=outcome.lane_counts(),
+            demo_mode=self.demo_mode,
         )

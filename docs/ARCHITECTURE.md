@@ -1,77 +1,221 @@
 # Myconductor architecture
 
-Myconductor is not another variant profiler. It is the **orchestration-and-reasoning
-layer** that sits above the existing tools and makes them behave as one adaptive
-system. Today's tools (TB-Profiler, Mykrobe, MAST, tNGS pipelines) are static,
-version-locked catalogue lookups: sequence in, per-drug S/R/indeterminate out, and
-when a strain throws a variant of unknown significance (VUS) or defeats the whole
-arsenal, the pipeline stops. Myconductor fills the gaps *between* those tools.
+Myconductor is an **evidence-orchestration layer**: it runs validated AMR
+engines, normalises what they produce into one schema, reconciles their
+disagreements, keeps uncertainty explicit, and governs how new evidence changes
+an interpretation.
+
+It is not another profiler, and the case for it does not rest on existing tools
+being weak. TB-Profiler, Mykrobe, GenTB, Deeplex Myc-TB, SAM-TB, MTBseq,
+Pathogenwatch, AMRFinderPlus and CARD/RGI collectively cover read processing,
+graph genotyping, machine learning, minority-variant detection, mixture and
+lineage analysis, transmission analysis, surveillance and curated determinant
+detection. Their capabilities are strong but uneven, and few expose a unified,
+auditable framework for reconciling different evidence types, incorporating
+phenotypic feedback, and governing catalogue updates across sovereign sites.
+Myconductor sits in that gap.
+
+## Three layers
+
+```
+┌─ Layer 1: Core ───────────┐
+│ adapters, normalisation,  │
+│ QC, coverage evidence     │
+└────────────┬──────────────┘
+             ▼
+┌─ Shared spine ────────────┐
+│ evidence graph:           │
+│ multi-lane evidence with  │
+│ conflicts retained        │
+└──────┬─────────────┬──────┘
+       ▼             ▼
+┌─ Layer 2 ────┐ ┌─ Layer 3 ──────────┐
+│ Interpret    │ │ Discover           │
+│ coverage-    │ │ cohort-level only  │
+│ aware calls  │ │                    │
+└──────┬───────┘ └────────┬───────────┘
+       ▼                  ▼
+ clinician report   laboratory queue
+                          │
+            governed catalogue feedback
+            (MIC / DST, expert curation)
+                          │
+                          └──► back to the evidence graph
+```
+
+The feedback path is the only route by which new evidence changes an
+interpretation, and it passes through expert review. Nothing promotes itself.
+
+Layers 2 and 3 are separated because they have different audiences and different
+evidence bars. A clinician reading a susceptibility table should not encounter
+candidate compounds beside it, and a discovery run motivated by one patient is a
+sample size of one. `core/pipeline.py` does not import `modules/discovery.py`,
+and CI enforces that.
 
 ## Data flow
 
 ```
- adapter → known-variant → triage router →  ┬ VUS classifier  ┐
- (any input)  (catalogue)   (the brain)     └ efflux/regulatory┘
-                                               │
-                                     heteroresistance scan
-                                               │
-                                       regimen synthesis
-                                               │
-                                   effective regimen?
-                                        │            │
-                                    yes │            │ no
-                                        ▼            ▼
-                                clinical report   discovery loop
-                                   + FHIR         (subtractive
-                                        │          genomics + docking)
-                                        └──────┬──────┘
-                                               ▼
-                                  federated living catalogue ↻
-                                   (retrains the router)
+input (.vcf/.tsv/.json)        callable mask            engine reports
+  multiallelic split           (TSV / BED / gVCF)       (TB-Profiler,
+  indel normalisation                 │                  Mykrobe,
+  FILTER + depth gating               │                  AMRFinderPlus)
+  consequence derivation              │                        │
+         └──────────────┬─────────────┴────────────────────────┘
+                        ▼
+                  QC (including
+                  not-performed
+                  controls)
+                        ▼
+              multi-lane router  ──► catalogue lane
+                        │            efflux/regulatory lane
+                        │            VUS workbench lane
+                        ▼
+              minority-allele assessment
+              (per-platform limits of detection)
+                        ▼
+              coverage-gated reconciliation
+              (discordance retained, not voted away)
+                        ▼
+              guideline eligibility  +  VUS priorities
+                        ▼
+              text report  /  FHIR R4 bundle
 ```
+
+## The domain vocabulary
+
+Everything hinges on `core/models.py`, which encodes four commitments.
+
+**1. Absence of evidence is not susceptibility.** `Call` has six states, four of
+which mean "no verdict was reached", each carrying its own reason.
+`DrugResult.permits_use` is True for exactly one state.
+
+**2. The verdict and its basis are separate axes.** `Call` says *what*; `Tier`
+says *how we know* — phenotypic, catalogued, inferred, predicted, or none. Only
+`PHENOTYPIC` and `CATALOGUED` may establish resistance, and
+`DrugEvidence.__post_init__` raises otherwise. A rule-based lane can withhold
+susceptibility without claiming an unvalidated mechanism.
+
+**3. A variant's identity is its coordinates, not its label.** Two engines
+cannot be joined on `"katG_S315T"` — that spelling varies by annotator.
+`VariantIdentity.key()` uses assembly, coordinate and alleles; `label()` is for
+display. They are separate methods so that joining on a label is a visible
+choice rather than an accident.
+
+**4. Disagreement is a finding.** `DrugResult` retains every piece of evidence
+it received and carries a `Discordance` rather than collapsing to a winner.
+Conflicts are never resolved by vote, because engines sharing a catalogue are
+not independent evidence.
 
 ## Modules
 
-| Stage | File | What it does | Real-world backend to plug in |
+| Stage | File | What it does | Real backend to plug in |
 |---|---|---|---|
-| Adapter | `io/adapter.py` | Normalises VCF/TSV/JSON to canonical `Variant`s; coverage-gated QC | any variant caller |
-| Known-variant | `modules/catalogue.py` | Catalogue lookup with WHO grades | full WHO catalogue / TB-Profiler output |
-| **Triage router** | `core/router.py` | Dispatches each variant to the right lane | — (this is the novel core) |
-| VUS classifier | `modules/vus_classifier.py` | Predicts resistance for unknown coding variants, with SHAP-style explanation | trained XGBoost / HANN |
-| Feature engineering | `modules/features.py` | Turns a variant into biological features | SIFT/PolyPhen + AlphaFold |
-| Efflux / regulatory | `modules/efflux.py` | Flags efflux overexpression and promoter effects | expression-inference model |
-| Heteroresistance | `modules/heteroresistance.py` | Surfaces minority resistant subpopulations from VAF | low-frequency variant caller |
-| Synthesis | `modules/synthesis.py` | Reconciles evidence, proposes a regimen | clinical guideline engine |
-| Discovery | `modules/discovery.py` | Subtractive-genomics + docking when no regimen works | BLASTP + DEG + AutoDock Vina |
-| Reporting | `reporting/` | Human-readable text + FHIR bundle | LIMS/EHR |
-| Federated | `federated/catalogue_update.py` | Privacy-preserving learning + drift monitor | secure aggregation transport |
+| Adapter | `io/adapter.py` | Normalises input; splits multiallelic records, trims indels, honours FILTER, derives consequence; rejects records the model cannot express | any variant caller |
+| Coverage | `io/callable_mask.py` | Independent evidence that loci were sequenced — the module that breaks the circularity | mosdepth, GATK CallableLoci, gVCF |
+| QC | `io/qc.py` | What was checked, and every control that was **not** | upstream pipeline integration |
+| Profile | `catalogue/profile.py` | Versioned organism bundle: assembly, drug→loci, regulators, regimens | one profile per organism |
+| Catalogue lane | `modules/catalogue.py` | Graded lookup; may establish resistance | full WHO catalogue via the ingester |
+| Efflux lane | `modules/efflux.py` | Flags de-repression and promoter effects as `INDETERMINATE`, per affected drug | expression-inference model, RNA evidence |
+| VUS workbench | `modules/vus_workbench.py` | Ranks for validation; withholds susceptibility; never predicts resistance | real annotation sources, then a calibrated model |
+| Annotation | `modules/features.py` | Dimension contract with availability attached; default annotator reports unavailable | SIFT/PolyPhen, AlphaFold, population DB |
+| Minority alleles | `modules/heteroresistance.py` | Per-platform assessment; separates "not assessable" from "nothing found" | read-level caller with error modelling |
+| Reconciliation | `modules/synthesis.py` | Coverage-gated calls, discordance, guideline eligibility | external, versioned clinical decision rules |
+| Router | `core/router.py` | Runs **all** applicable lanes | — |
+| Engine adapters | `adapters/` | Normalise external tools into one evidence schema | the tools themselves |
+| Reporting | `reporting/` | Text + FHIR R4 | LIMS / EHR |
+| Federated | `federated/` | Isolate-level learning, governance, signed transport | secure-aggregation transport |
+| Discovery | `modules/discovery.py` | Cohort-level prioritisation brief | DEG, BLASTP, a real docking backend |
 
-## Three design commitments
+## Extension points
 
-1. **Catalogued ≠ predicted.** The `Call` enum keeps graded catalogue calls and
-   model predictions in separate states, marked `R`/`S` vs `R*`/`S*` everywhere,
-   and FHIR observations from predictions are `preliminary`. Human-in-the-loop by
-   construction.
-2. **Closed diagnosis→discovery loop.** A failed regimen automatically seeds the
-   discovery pipeline against *that strain's* targets. Diagnosis and discovery are
-   one workflow.
-3. **Learn without moving genomes.** Sites share only aggregated, de-identified
-   variant→phenotype tallies. Enough concordant evidence promotes a variant into
-   the catalogue; a drift monitor guards against silent model decay.
+A lane implements `modules/base.py::VariantModule`: `applies_to(variant) -> bool`
+and `evaluate(variant) -> list[DrugEvidence]`. Returning a list is required
+because one variant can affect several drugs. An empty list means abstention —
+it must never mean susceptibility.
 
-## Extending
+An engine adapter implements `adapters/base.py::EngineAdapter`:
+`parse(path) -> EngineReport`. An adapter may set `asserts_coverage=True` on
+susceptible evidence when its engine performed its own callable-locus assessment
+(Mykrobe's `S` versus `N`); that assertion is attributed to the engine in the
+report. No lane that merely inspects a variant list may set it, and a test
+enforces this.
 
-Every lane implements the `VariantModule` interface (`modules/base.py`): accept a
-`Variant`, return a `DrugEvidence` or `None`. Swapping the demo scorer for a
-trained model, or the mini catalogue for the full WHO catalogue, touches nothing
-else. The pipeline collaborators are all constructor-injected.
+An organism profile is JSON: `catalogue/drug_loci.json` plus
+`catalogue/drugs.json`. Adding an organism means shipping a profile, not editing
+the engine — but a profile is only as good as its own evaluation data, and every
+bundled profile reports `ships_validated = False`.
 
-## Scope / honesty
+Everything in the pipeline is constructor-injected.
 
-This is a **research and decision-support scaffold**, not a clinical device. The
-bundled catalogue is a tiny illustrative subset; the VUS scorer and docking scores
-are transparent deterministic placeholders exercising the interfaces, not trained
-or validated predictors. The hard part of turning this into a product is not the
-code — it is training-data breadth (especially for bedaquiline/pretomanid),
-clinical validation, and regulatory approval.
-```
+## What is deliberately absent
+
+Each of these was removed or withheld because a plausible-looking placeholder is
+more dangerous than a gap:
+
+- **No presumed-usable fallback.** Missing evidence yields `NOT_ASSESSED`.
+- **No hash-derived feature scores.** The previous conservation and structural
+  "scores" were SHA-256 digests of the variant name. A synthetic annotator
+  remains for interface demonstration, but the pipeline refuses it unless
+  `demo_mode=True`, which stamps every report.
+- **No docking scores.** There is no built-in scorer; a real backend must be
+  injected. A binding affinity establishes none of inhibition, permeability,
+  whole-cell activity, selectivity, toxicity, or resistance barrier.
+- **No invented terminology codes.** The FHIR bundle carries real HL7
+  interpretation and data-absent-reason codes and omits LOINC and SNOMED
+  entirely, with the gap listed in the bundle itself.
+- **No fabricated reference annotation.** Locus lengths are `null` throughout the
+  bundled profile; where a length is unknown, the input must supply an explicit
+  callable fraction.
+- **No claim of secure aggregation or differential privacy.** The federated
+  transport authenticates sites and gates disclosure. It does not hide a site's
+  contribution from the coordinator, and it says so.
+
+## Federated learning: the statistical core
+
+The previous implementation counted variants and promoted one at 20 observations
+with 75% resistance. Resistance belongs to an **isolate–drug observation**, not
+to a variant: a resistant isolate carries the causal variant, lineage markers it
+inherited, and hitchhikers in linkage. Counting per variant credits all of them,
+so lineage markers become "resistance determinants" and are then distributed to
+other sites in a signed catalogue — costing patients usable drugs.
+
+`federated/catalogue_update.py` therefore counts each isolate once per drug and
+blocks promotion unless the association survives:
+
+- **lineage stratification** — it must hold within at least two lineages;
+- **co-occurrence** — a variant that almost always appears with a known
+  determinant cannot be credited with the phenotype;
+- **site diversity** — single-site evidence is one laboratory's systematic error;
+- **susceptible controls** — without susceptible isolates in the drug's tested
+  cohort, specificity is unknown;
+- **a variant-absent comparison group** — if every isolate tested for the drug
+  carries the variant, a 100% association says nothing, because it cannot be
+  separated from the cohort's baseline resistance.
+
+The last two are why `aggregate` runs two passes and tracks each drug's whole
+tested cohort, not only the isolates carrying the variant. Requiring susceptible
+isolates that *carry* the variant would be the wrong control, and would penalise
+precisely the strongest determinants — which are rarely seen in susceptible
+isolates.
+
+Clearing that bar produces a *candidate*, not a catalogue entry. Candidates enter
+a review queue for expert curation; every transition is written to an
+append-only hash-chained ledger, and approvals can be rolled back. There is no
+automatic promotion path.
+
+## Reproducibility
+
+CI runs the suite on Python 3.9–3.13, executes the demo and the example
+end to end, and greps for the specific defects this codebase was rebuilt to
+remove. Still outstanding: containerised environments, a workflow language
+(Nextflow/WDL/CWL), version-pinned external databases, model cards, golden
+benchmark datasets with expected outputs, SBOM and dependency scanning, signed
+releases, and an archival DOI.
+
+## Scope
+
+A research and decision-support scaffold, not a clinical device. Nothing here
+has been clinically evaluated. The hard part of turning it into a product is not
+the code — it is data breadth, external evaluation against phenotypic results
+(especially for bedaquiline and pretomanid, and especially on under-represented
+lineages), and regulatory approval.

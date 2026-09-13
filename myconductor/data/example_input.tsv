@@ -1,4 +1,4 @@
-gene	change	vaf	depth	region	silent
-katG	R463L	1.0	80	coding	false
-rpoB	V170F	1.0	72	coding	false
-gyrA	E21Q	1.0	65	coding	false
+gene	change	vaf	depth	region	consequence	platform
+katG	R463L	1.0	80	coding	missense	illumina
+rpoB	V170F	1.0	72	coding	missense	illumina
+gyrA	E21Q	1.0	65	coding	missense	illumina

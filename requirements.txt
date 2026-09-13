@@ -1,7 +1,12 @@
-# Myconductor core has ZERO runtime dependencies (Python 3.9+ standard library
-# only) -- deliberate, so the demo runs offline in low-resource settings.
+# Myconductor's core has ZERO runtime dependencies (Python 3.9+ standard
+# library only) -- deliberate, so it runs offline in low-resource settings.
 #
-# Optional backends for production models (install as needed):
-#   xgboost scikit-learn shap numpy   # trained VUS classifier
-#   vina                              # AutoDock Vina docking backend
-#   pytest                            # test runner (or use `python -m unittest`)
+# Optional:
+#   openpyxl>=3.1     # read the WHO catalogue's published .xlsx
+#                     # (a CSV/TSV export needs nothing at all)
+#   pytest>=7         # alternative test runner to `python -m unittest`
+#
+# NOT dependencies, by design: the external AMR engines. Myconductor's adapters
+# parse TB-Profiler, Mykrobe and AMRFinderPlus *output files*, so those tools
+# are installed and run separately, on whatever schedule and hardware suits the
+# deployment. Nothing here needs to shell out to them.

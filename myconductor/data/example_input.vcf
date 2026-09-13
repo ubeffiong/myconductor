@@ -1,19 +1,23 @@
 ##fileformat=VCFv4.2
 ##sampleID=MTB-DEMO-001
-##source=myconductor-example
+##reference=NC_000962.3
+##platform=illumina
+##source=myconductor-example (ILLUSTRATIVE, SYNTHETIC)
+##note=Synthetic example input. Coordinates are illustrative and are NOT asserted to be correct H37Rv positions.
 ##INFO=<ID=GENE,Number=1,Type=String,Description="Affected gene">
 ##INFO=<ID=AACHANGE,Number=1,Type=String,Description="Amino-acid or nucleotide change">
 ##INFO=<ID=REGION,Number=1,Type=String,Description="coding|promoter|intergenic|rrna">
 ##INFO=<ID=EFFECT,Number=1,Type=String,Description="variant effect">
-##FORMAT=<ID=AF,Number=1,Type=Float,Description="Allele frequency">
+##FORMAT=<ID=AF,Number=A,Type=Float,Description="Allele frequency">
 ##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read depth">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths for ref and alt">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	MTB-DEMO-001
-NC_000962.3	2155168	.	G	C	60	PASS	GENE=katG;AACHANGE=S315T;REGION=coding;EFFECT=missense	AF:DP	1.0:82
-NC_000962.3	761155	.	C	T	60	PASS	GENE=rpoB;AACHANGE=S450L;REGION=coding;EFFECT=missense	AF:DP	0.98:75
-NC_000962.3	7570	.	A	G	55	PASS	GENE=gyrA;AACHANGE=D94G;REGION=coding;EFFECT=missense	AF:DP	0.15:64
-NC_000962.3	4247429	.	T	G	50	PASS	GENE=Rv0678;AACHANGE=L117R;REGION=coding;EFFECT=missense	AF:DP	0.9:48
-NC_000962.3	2288725	.	A	C	52	PASS	GENE=pncA;AACHANGE=D12A;REGION=coding;EFFECT=missense	AF:DP	1.0:70
-NC_000962.3	2715342	.	C	T	48	PASS	GENE=eis;AACHANGE=c.-14C>T;REGION=promoter;EFFECT=upstream	AF:DP	1.0:66
-NC_000962.3	4247574	.	A	G	58	PASS	GENE=embB;AACHANGE=M306V;REGION=coding;EFFECT=missense	AF:DP	1.0:71
-NC_000962.3	1473246	.	A	G	40	PASS	GENE=rrs;AACHANGE=a1401g;REGION=rrna;EFFECT=rrna	AF:DP	1.0:5
-NC_000962.3	764817	.	C	T	60	PASS	GENE=rpoC;AACHANGE=A542A;REGION=coding;EFFECT=synonymous	AF:DP	1.0:70
+NC_000962.3	2155168	.	G	C	60	PASS	GENE=katG;AACHANGE=S315T;REGION=coding;EFFECT=missense	AF:DP:AD	1.0:82:0,82
+NC_000962.3	761155	.	C	T	60	PASS	GENE=rpoB;AACHANGE=S450L;REGION=coding;EFFECT=missense	AF:DP:AD	0.98:75:2,73
+NC_000962.3	7570	.	A	G	55	PASS	GENE=gyrA;AACHANGE=D94G;REGION=coding;EFFECT=missense	AF:DP:AD	0.15:64:54,10
+NC_000962.3	4247429	.	T	G	50	PASS	GENE=Rv0678;AACHANGE=L117R;REGION=coding;EFFECT=missense	AF:DP:AD	0.9:48:5,43
+NC_000962.3	2288725	.	A	C	52	PASS	GENE=pncA;AACHANGE=D12A;REGION=coding;EFFECT=missense	AF:DP:AD	1.0:70:0,70
+NC_000962.3	2715342	.	C	T	48	PASS	GENE=eis;AACHANGE=c.-14C>T;REGION=promoter;EFFECT=upstream	AF:DP:AD	1.0:66:0,66
+NC_000962.3	4247574	.	A	G	58	PASS	GENE=embB;AACHANGE=M306V;REGION=coding;EFFECT=missense	AF:DP:AD	1.0:71:0,71
+NC_000962.3	1473246	.	A	G	40	PASS	GENE=rrs;AACHANGE=a1401g;REGION=rrna;EFFECT=rrna	AF:DP:AD	1.0:5:0,5
+NC_000962.3	764817	.	C	T	60	PASS	GENE=rpoC;AACHANGE=A542A;REGION=coding;EFFECT=synonymous	AF:DP:AD	1.0:70:0,70

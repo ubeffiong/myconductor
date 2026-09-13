@@ -1,22 +1,35 @@
-"""Myconductor -- an orchestration-and-reasoning layer for TB AMR.
+"""Myconductor — an evidence-orchestration layer for AMR genomics.
 
-Not another variant profiler: a conductor that ingests from the existing tools,
-routes every finding to the right specialist lane (catalogue lookup, VUS ML
-classifier, or efflux/regulatory model), synthesises a regimen, and -- when the
-strain defeats the whole arsenal -- automatically escalates to a drug-discovery
-loop. A federated living catalogue lets it learn without moving patient genomes.
+Not a resistance predictor. Myconductor runs validated AMR engines, reconciles
+what they say, keeps uncertainty as a first-class output, and governs how new
+evidence changes an interpretation.
+
+The rule everything else follows: absence of evidence is not susceptibility. A
+drug is reported susceptible only when its required loci were shown to be
+callable by evidence independent of the variant list, and only a
+coverage-backed susceptible call counts toward regimen eligibility.
+
+Status
+------
+Research scaffold. No component has been clinically validated; the bundled
+catalogue is a 14-entry illustrative subset, not the WHO catalogue; the engine
+adapters are written from documented schemas and have not been run against real
+tool output. See README.md for what is and is not implemented.
 
 Quick start
 -----------
     from myconductor import Myconductor
     from myconductor.reporting.render import render_text
 
-    report = Myconductor().analyze("myconductor/data/example_input.vcf")
+    report = Myconductor().analyze(
+        "myconductor/data/example_input.vcf",
+        mask_path="myconductor/data/example_callable.tsv",
+    )
     print(render_text(report))
 """
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .core.pipeline import Myconductor  # noqa: E402
 

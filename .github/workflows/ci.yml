@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Confirm the core has no third-party imports
+        run: python -c "import myconductor, sys; print(myconductor.__version__)"
+
+      - name: Run the test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Run the demo end to end
+        run: python -m myconductor demo
+
+      - name: Run the programmatic example
+        run: python examples/run_demo.py
+
+  safety-invariants:
+    name: Safety invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # These greps guard the specific defects this codebase was rebuilt to
+      # remove. They are crude on purpose: a reviewer should not have to
+      # remember them, and a regression here is a clinical-safety regression,
+      # not a style one.
+      - name: No presumed-usable fallback in synthesis
+        run: |
+          if grep -n "return True  # no evidence" myconductor/modules/synthesis.py; then
+            echo "::error::synthesis.py must never presume a drug usable on missing evidence"
+            exit 1
+          fi
+
+      - name: Hash-derived values stay out of the default path
+        run: |
+          if grep -rn "_stable_unit" myconductor/ --include=*.py \
+              | grep -v "modules/features.py"; then
+            echo "::error::hash-derived values must not be used outside features.py DemoAnnotator"
+            exit 1
+          fi
+
+      # Checked against the import graph, not the raw text: the module's
+      # docstring legitimately explains why discovery is absent.
+      - name: Discovery is not reachable from the clinical pipeline
+        run: |
+          python - <<'PY'
+          import ast, sys
+
+          source = open("myconductor/core/pipeline.py").read()
+          imported = []
+          for node in ast.walk(ast.parse(source)):
+              if isinstance(node, ast.Import):
+                  imported += [a.name for a in node.names]
+              elif isinstance(node, ast.ImportFrom):
+                  module = node.module or ""
+                  imported.append(module)
+                  imported += [f"{module}.{a.name}" for a in node.names]
+          offenders = [n for n in imported if "discovery" in n]
+          if offenders:
+              print(f"::error::core/pipeline.py imports the discovery "
+                    f"workflow: {offenders}")
+              sys.exit(1)
+          print("pass: the clinical pipeline does not import discovery")
+          PY
+
+      - name: Documentation makes no validation claim
+        run: |
+          if grep -rniE "(clinically )?validated (profile|catalogue|model)|is validated|ships validated" \
+              README.md docs/ 2>/dev/null; then
+            echo "::error::documentation must not claim validation"
+            exit 1
+          fi
+
+      - name: Verify safety invariants hold at runtime
+        run: python -m unittest tests.test_safety_invariants -v

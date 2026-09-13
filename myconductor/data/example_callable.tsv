@@ -1,0 +1,32 @@
+# Illustrative callable-locus evidence for the bundled demo input.
+#
+# This is the file that licenses susceptible calls. Without it, every drug in
+# the demo reports NOT_ASSESSED -- which is the correct answer when nothing has
+# shown that the loci were sequenced.
+#
+# Produce a real one with, for example:
+#   mosdepth --by targets.bed --thresholds 10 SAMPLE SAMPLE.bam
+#   samtools depth -a -b targets.bed SAMPLE.bam | awk ...
+# then emit one row per locus with the fraction of positions at or above the
+# depth floor.
+#
+# Deliberately incomplete: rrs is absent, so amikacin cannot be called
+# susceptible on coverage. That is the intended demonstration.
+locus	mean_depth	callable_fraction
+katG	82	1.00
+fabG1	74	0.99
+inhA	69	0.98
+rpoB	75	1.00
+pncA	70	0.97
+embB	71	0.99
+gyrA	64	0.98
+gyrB	58	0.96
+rplC	61	1.00
+rrl	57	0.97
+ddn	66	0.99
+fbiA	62	0.98
+fbiB	59	0.96
+fbiC	55	0.96
+fgd1	64	0.99
+atpE	78	1.00
+Rv0678	48	0.97
