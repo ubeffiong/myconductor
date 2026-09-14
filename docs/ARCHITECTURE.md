@@ -234,6 +234,50 @@ more dangerous than a gap:
   The full risk-coverage form of this test, evaluated at the baseline's own
   coverage, is `mycobench.analysis.selective`.
 
+- **No promotion of a prediction to a call, in either direction.** Calibration
+  against site-local phenotypes is implemented
+  (`modules/prediction_calibration.py`) and is allowed to do exactly one thing:
+  move a variant *up* the laboratory queue. `refuse_promotion()` is a named,
+  tested refusal rather than an absent feature, so the reasoning is where a
+  contributor will look for it.
+
+  The tempting argument is that a low calibrated probability asserts the
+  *absence* of resistance and is therefore the safe direction. In this system
+  that is backwards. `SUSCEPTIBLE` is the only call that admits a drug to a
+  regimen, so it is the actionable one: a wrong RESISTANT costs a usable drug,
+  a wrong SUSCEPTIBLE puts a patient on a failing regimen, which is how
+  amplified resistance and onward transmission are made. `INDETERMINATE`
+  already withholds safely. Structurally it would also route around the
+  callable mask — `SUSCEPTIBLE` requires positive evidence that the loci were
+  callable, and a probability is not coverage evidence: if a locus was never
+  callable, the model was scoring a variant nobody could observe.
+
+  A *low* probability returns no signal at all, rather than a reason to
+  deprioritise. A model being unexcited about a variant is not evidence that
+  the variant is harmless, and letting it push work down the queue would be the
+  model quietly deciding what never gets tested.
+
+  Calibration also refuses on the count of **resistant** observations, not the
+  total. At bedaquiline's ~0.8% prevalence the usual "at least 30 pairs" holds
+  a quarter of one resistant isolate, so the conventional minimum fails
+  silently on exactly the drugs where VUS work matters most.
+
+- **No imputed feature values.** `modules/variant_features.py` records the
+  vector a model was shown so a surprising prediction can be audited. A model
+  handed `delta_delta_g = 0.0` for an unfolded protein cannot distinguish
+  "energetically neutral" from "nobody looked", which is the
+  absence-of-evidence confusion one layer below the call states. Availability
+  is *derived* from the values rather than stored beside them: a parallel flag
+  is a second source of truth about one fact and drifts silently, which this
+  repo has already been bitten by once.
+
+- **No model resolving a discordance.** `modules/discordance_context.py` places
+  model and structural signals beside an unresolved conflict, where a clinician
+  would want them. It copies `calls`, `sources` and `note` unchanged and
+  populates only `context`; nothing counts votes or weights sources, and an
+  unapproved model is not shown at all, since unreviewed output placed beside a
+  clinical disagreement borrows standing it has not earned.
+
 - **No bundled minority-allele calibration or resistance prior.**
   `modules/calibration.py::CalibrationTable` ships empty and
   `NullPriorSource` is the default; a deployment supplies its own

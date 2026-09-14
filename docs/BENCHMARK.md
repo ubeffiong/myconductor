@@ -351,6 +351,64 @@ catalogued genotypic call for it, and nothing supplies a phenotype to score one
 against. Its target in `thresholds.py` is carried so a report can say this
 explicitly rather than omit the drug.
 
+## Measuring the incumbent
+
+Before any claim that something improves on the catalogue, the catalogue has to
+be measured. `mycobench baseline` does that.
+
+```bash
+mycobench baseline \
+  --catalogue data/who/mtb_amr_catalogue.ingested.json \
+  --reuse-table data/cryptic/CRyPTIC_reuse_table_20240917.csv \
+  --cache-dir /var/cache/mycobench --out-dir results/baseline \
+  --limit 400 --sample-seed 20260914 --jobs 8
+```
+
+The catalogue is not a classifier with a threshold to tune. It answers where it
+holds a graded entry and abstains elsewhere, so it is a single
+(coverage, error-rate) point. For one drug and one isolate:
+
+* carries a variant graded **resistant** → `R`;
+* carries none, **and every such coordinate was examined** → `S`;
+* otherwise **abstain**.
+
+The middle rule is the one that matters. Answering "susceptible" because no
+resistant variant was *found* would report not having looked — the defect this
+codebase was rebuilt to remove. `assessed_variants` carries which coordinates
+were actually examined, taken from the VCF's reference calls, so "we checked
+everywhere resistance could hide" has evidence behind it.
+
+Abstentions are counted with their reasons, because coverage and an error rate
+are meaningless apart: a predictor can always look accurate by declining the
+hard cases. False-susceptible errors are broken out separately, since that is
+the direction that puts a patient on a failing drug.
+
+The manifest emits **registry-ready baseline blocks** — the output of measuring
+the incumbent is the input to approving a challenger, with no retyping. A drug
+whose point is not estimable emits `null` rather than a number.
+
+> CRyPTIC and the WHO catalogue share underlying isolates. This is the
+> incumbent's **home-ground** performance: the bar a challenger must clear, and
+> the wrong number to quote as the catalogue's accuracy.
+
+### Two traps this surfaced
+
+**Namespace.** `DeterminantIndex` carries both the gene-label and the
+coordinate-key spelling of every determinant, but genotypes are label-keyed.
+Unioning the two inflates the denominator without adding a matchable entry —
+isoniazid holds 143 labels against 3,517 coordinate keys, capping the
+achievable assessed fraction near 4% and abstaining on every isolate. It
+produced a full table of plausible, wrong numbers. A mismatch is now detected
+and named rather than reported as absent coverage.
+
+**Residue numbering.** The WHO catalogue's rpoB Ser450 is residue **456** of
+UniProt P9WGY9; position 450 there is a threonine, and the offset is a
+consistent +6 across Leu430, Ser431, Asp435, His445 and Ser450. Every number in
+range resolves to *some* residue with *some* pLDDT, so an unchecked structural
+mapping annotates the wrong amino acid and looks fine doing it. `mycobench
+alphafold` therefore requires the caller to state the residue it expects and
+refuses on disagreement.
+
 ## What a run will not establish
 
 - **Clinical validity.** Nothing in Myconductor has been clinically evaluated.
