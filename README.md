@@ -266,6 +266,12 @@ site confounding check silently has nothing to compare. And the output is a
 **discovery result, never a resistance call** — promoting one requires curation
 through the federated ledger.
 
+Myconductor governs machine-learning output but does not produce it: there is no
+trained model, no feature computation and no protein folding in this repository.
+[`docs/ML_BOUNDARY.md`](docs/ML_BOUNDARY.md) sets out what exists, why a model
+could not change a single call even if it were perfect, and the one thing that
+must never be built.
+
 ## Tests
 
 ```bash

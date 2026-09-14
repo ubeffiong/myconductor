@@ -192,8 +192,9 @@ more dangerous than a gap:
   dropout tolerance, and is not wired into `transport.py`. See its own module
   docstring before reading its presence here as more than that.
 - **No model training, feature extraction, or protein folding.** This is the
-  boundary most often mistaken for a gap, so the reasoning is recorded here
-  rather than rediscovered. Myconductor *governs* model output; it does not
+  boundary most often mistaken for a gap. The full reasoning, the measured
+  baseline that bounds what a model could win, and the route for bringing one
+  are in [ML_BOUNDARY.md](ML_BOUNDARY.md); the summary is here. Myconductor *governs* model output; it does not
   produce it. Four reasons, none of them conservatism:
 
   1. **A model could not change a single call even if it were perfect.**
