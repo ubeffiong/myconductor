@@ -320,7 +320,13 @@ def vus_items(reports: Sequence[dict]) -> list[dict]:
                 "score": item.get("score"),
                 "features": {
                     "dimensions": humanise_all(available) or "None available",
-                    "gaps": "; ".join(item.get("data_gaps") or []) or "none recorded",
+                    # The available dimensions were humanised in the first
+                    # pass but the gaps were not, so the drill panel still
+                    # listed eight raw dimension names. The page-level scan
+                    # could not see it: the panel only exists once opened.
+                    "gaps": ("; ".join(humanise(g) for g in
+                                       (item.get("data_gaps") or []))
+                             or "None recorded"),
                     "experiment": item.get("recommended_experiment") or "not specified",
                 },
             })

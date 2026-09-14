@@ -347,6 +347,31 @@ class ReadableLabelTests(unittest.TestCase):
         self.assertIn("labels", payload)
         self.assertEqual(payload["labels"]["not_assessed"], "Not assessed")
 
+    def test_drill_panel_content_carries_no_raw_identifiers(self):
+        """The page-level scan cannot see a panel that is not open yet.
+
+        Eight raw dimension names survived the first labelling pass inside the
+        VUS drill's data-gaps field, invisible to any assertion that reads the
+        rendered page, because the panel is populated on click. So this checks
+        the payload the panel is built from instead.
+        """
+        payload = payload_of(self.html)
+        raw = []
+        for item in payload["vus"]:
+            for value in (item.get("features") or {}).values():
+                raw += re.findall(r"\b[a-z]+_[a-z_]+\b", str(value))
+            raw += re.findall(r"\b[a-z]+_[a-z_]+\b", str(item.get("priority", "")))
+        self.assertEqual(sorted(set(raw)), [], sorted(set(raw)))
+
+    def test_mechanism_cards_read_as_english(self):
+        payload = payload_of(self.html)
+        for card in payload["mechanisms"]:
+            self.assertEqual(
+                re.findall(r"\b[a-z]+_[a-z_]+\b", card["title"]), [], card["title"])
+            for tag in card["tags"]:
+                self.assertEqual(
+                    re.findall(r"\b[A-Z]{2,}_[A-Z_]+\b", tag["l"]), [], tag["l"])
+
     def test_a_variant_name_keeps_its_gene_case(self):
         from myconductor.reporting.labels import variant_name
         self.assertEqual(variant_name("Rv0678_L117R"), "Rv0678 L117R")
