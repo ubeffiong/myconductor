@@ -26,14 +26,16 @@ from __future__ import annotations
 import csv
 import json
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable, Optional
 
+from .. import __version__
 from ..cohort import write_rows
 from ..phenotypes import DRUG_CODES, REUSE_TABLE
 from ..thresholds import ACCEPTED_PHENOTYPE_QUALITY
-from . import effects, mechanism, mic
+from . import effects, mechanism, mic, stats
 from .genotypes import CoordinateIndex, GenotypeLoad, load_genotypes
 from .strata import DeterminantIndex, Isolate, cooccurrence, stratify
 
@@ -115,6 +117,13 @@ class AnalysisResult:
     #: The threshold actually applied, not the module default. A summary that
     #: prints the default while a different one was used misdescribes the run.
     min_carriers: int = MIN_CARRIERS
+    #: Everything needed to run this analysis again and get the same numbers.
+    #: Written into the manifest. Without the sampling seed in particular, a
+    #: result cannot be reproduced at all: nothing else records *which* isolates
+    #: were drawn. The rest of this codebase pins seeds, catalogue commits and
+    #: fixture hashes precisely so a figure can be regenerated, and a manifest
+    #: that omits its own inputs breaks that chain at the last step.
+    provenance: dict = field(default_factory=dict)
     skipped: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     elapsed_seconds: float = 0.0
@@ -247,6 +256,24 @@ def run(inputs: AnalysisInputs) -> AnalysisResult:
     started = time.monotonic()
     inputs.validate()
     result = AnalysisResult(min_carriers=inputs.min_carriers)
+    result.provenance = {
+        "mycobench_version": __version__,
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "catalogue": str(inputs.catalogue),
+        "phenotypes": str(inputs.phenotypes),
+        "reuse_table": str(inputs.reuse_table),
+        "limit": inputs.limit,
+        # The draw is reproducible only if the seed is recorded; null here
+        # means the first N rows were taken, which is a different cohort.
+        "sample_seed": inputs.sample_seed,
+        "min_carriers": inputs.min_carriers,
+        "drugs": list(inputs.drugs) if inputs.drugs else None,
+        "partition": inputs.partition,
+        "independent_clusters": inputs.independent_clusters,
+        "bootstrap_seed": stats.BOOTSTRAP_SEED,
+        "permutation_seed": stats.PERMUTATION_SEED,
+        "accepted_phenotype_quality": list(ACCEPTED_PHENOTYPE_QUALITY),
+    }
 
     coordinate_index = CoordinateIndex.from_catalogue(inputs.catalogue)
     determinant_index = DeterminantIndex.from_catalogue(inputs.catalogue)
@@ -343,6 +370,7 @@ def write_outputs(result: AnalysisResult, out_dir: str | Path) -> list[Path]:
                    EFFECT_COLUMNS),
     ]
     payload = {
+        "provenance": result.provenance,
         "reuse_release": REUSE_TABLE,
         "n_isolates_genotyped": result.load.n_loaded if result.load else 0,
         "allele_match_rate": (result.load.match_rate if result.load else 0.0),

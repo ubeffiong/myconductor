@@ -7,6 +7,7 @@ import gzip
 import json
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from mycobench.analysis import genotypes
@@ -341,6 +342,55 @@ class LoadGenotypesTests(unittest.TestCase):
                     "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n")
         path = genotypes.fetch_vcf("../reproducibility/a.vcf.gz", self.cache)
         self.assertTrue(path.is_file())
+
+    def test_an_interrupted_download_leaves_no_file_to_trust(self):
+        """A killed fetch must not leave a truncated VCF at the cache path.
+
+        The cache is trusted on nothing more than "exists and is non-empty".
+        These files are ~20 MB, so the write window is real, and prefetch runs
+        several workers at once — a Ctrl-C part-way through a 400-isolate run
+        is an ordinary event. Writing the final path directly would leave a
+        truncated file that every later run accepts and fails to parse, for
+        good, because nothing invalidates it.
+        """
+        relative = "reproducibility/killed.vcf.gz"
+        destination = self.cache / relative
+
+        def die_mid_write(_request, timeout=None):
+            raise KeyboardInterrupt("killed while downloading")
+
+        with unittest.mock.patch("urllib.request.urlopen", die_mid_write):
+            with self.assertRaises(KeyboardInterrupt):
+                genotypes.fetch_vcf(f"../{relative}", self.cache)
+
+        self.assertFalse(destination.exists(),
+                         "a truncated VCF was left at the cache path")
+        self.assertEqual(list(self.cache.rglob("*.part")), [],
+                         "a temporary file was left behind")
+
+    def test_a_completed_download_is_cached_whole(self):
+        payload = gzip.compress(
+            (VCF_HEADER
+             + "NC_000962.3\t761155\t.\tC\tT\t60\tPASS\t.\tGT\t1\n").encode())
+
+        class _Response:
+            def read(self):
+                return payload
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+        with unittest.mock.patch("urllib.request.urlopen",
+                                 lambda *a, **k: _Response()):
+            path = genotypes.fetch_vcf("../reproducibility/whole.vcf.gz",
+                                       self.cache)
+        self.assertEqual(path.read_bytes(), payload)
+        self.assertEqual(list(self.cache.rglob("*.part")), [])
+        result = genotypes.parse_vcf(path, self.index)
+        self.assertIn("rpoB_p.Ser450Leu", result.variants)
 
     def test_prefetch_downloads_nothing_when_the_cache_is_warm(self):
         self._cache("reproducibility/a.vcf.gz",

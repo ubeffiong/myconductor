@@ -21,7 +21,14 @@ version and recorded in a lock.
 """
 from __future__ import annotations
 
-__version__ = "0.1.0"
+#: Must equal myconductor.__version__ and the version in pyproject.toml. Both
+#: packages ship from one distribution, so a separate number here is not a
+#: second version, it is a wrong one: it is stamped into the analysis manifest,
+#: into run reports, and into the User-Agent sent to NCBI and EBI. A run whose
+#: recorded version does not identify the code that produced it cannot be
+#: reproduced from its own outputs. tests/test_packaging.py holds the three in
+#: step.
+__version__ = "0.2.0"
 
 #: Contact details NCBI asks callers to send. Set NCBI_EMAIL/NCBI_API_KEY in
 #: the environment; an API key raises the request allowance from 3/s to 10/s.

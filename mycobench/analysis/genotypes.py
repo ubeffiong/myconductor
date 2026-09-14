@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import os
 import random
 import urllib.error
 import urllib.request
@@ -219,7 +220,21 @@ def fetch_vcf(relative_path: str, cache_dir: str | Path,
             f"could not fetch {vcf_url(relative_path)}: {exc}") from exc
     if not payload:
         raise GenotypeError(f"{vcf_url(relative_path)} returned no bytes")
-    destination.write_bytes(payload)
+    # Write to a temporary file and rename, rather than writing the final path
+    # directly. These are ~20 MB, so the write is not instantaneous, and the
+    # cache is trusted on nothing more than "the file exists and is non-empty".
+    # A process killed mid-write would otherwise leave a truncated VCF at the
+    # canonical path, which every later run would accept and fail to parse --
+    # permanently, since nothing invalidates it. os.replace is atomic on POSIX
+    # and Windows, so a reader sees either no file or the whole file. It also
+    # makes concurrent fetches of one path safe, which matters now that
+    # prefetch_vcfs runs several workers at once.
+    temporary = destination.with_name(f"{destination.name}.{os.getpid()}.part")
+    try:
+        temporary.write_bytes(payload)
+        os.replace(temporary, destination)
+    finally:
+        temporary.unlink(missing_ok=True)
     return destination
 
 
