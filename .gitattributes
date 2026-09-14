@@ -1,0 +1,16 @@
+# Upstream fixtures are pinned by SHA256 against a specific upstream commit,
+# and tests/test_review_workflow.py asserts that pin on every run. The whole
+# point of those files is that they are byte-identical to what the upstream
+# project publishes, so that a parser is tested against real tool output rather
+# than against a copy someone tidied.
+#
+# Git's end-of-line translation breaks exactly that guarantee, and silently.
+# TB-Profiler's example_collate.txt genuinely contains CRLF upstream; checked
+# in without this rule, it was normalised to LF on commit, so the stored blob
+# hashed 0b397374... while the pin and the real upstream file hash ccd745a9...
+# Every Linux checkout then failed the hash assertion while Windows passed,
+# because only Windows got the CRLF back on checkout.
+#
+# -text disables translation in both directions: these bytes are data, not
+# source, and must round-trip unchanged on every platform.
+tests/fixtures/upstream/** -text
