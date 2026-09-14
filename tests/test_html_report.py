@@ -312,18 +312,18 @@ class ReadableLabelTests(unittest.TestCase):
 
     def setUp(self):
         self.html = render_html(demo_report())
-        self.markup = re.sub(r"<(script|style).*?</>", "", self.html,
+        self.markup = re.sub(r"<(script|style)\b.*?</\1>", "", self.html,
                              flags=re.S)
         self.text = re.sub(r"<[^>]+>", " ", self.markup)
 
     def test_no_snake_case_identifier_is_displayed(self):
-        leaked = sorted(set(re.findall(r"[a-z]+_[a-z_]+", self.text)))
+        leaked = sorted(set(re.findall(r"\b[a-z]+_[a-z_]+\b", self.text)))
         # A variant name such as eis_c.-10G>A is an identifier, not a label.
         leaked = [t for t in leaked if not t.endswith("_c")]
         self.assertEqual(leaked, [], leaked)
 
     def test_no_screaming_enum_is_displayed(self):
-        leaked = sorted(set(re.findall(r"[A-Z]{2,}_[A-Z_]+", self.text)))
+        leaked = sorted(set(re.findall(r"\b[A-Z]{2,}_[A-Z_]+\b", self.text)))
         self.assertEqual(leaked, [], leaked)
 
     def test_specific_terms_read_as_english(self):

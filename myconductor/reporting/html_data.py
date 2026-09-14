@@ -28,13 +28,16 @@ CALL_CLASS = {
 }
 
 #: The six states in the order the legend lists them, with their palette token.
+#: The six states in legend order: (display label, enum value, palette token).
+#: The label is what a reader sees; the enum value is what the payload and
+#: every export carry, so a consumer still joins on a stable key.
 CALL_ORDER = (
-    ("RESISTANT", "resistant", "var(--res)"),
-    ("SUSCEPTIBLE", "susceptible", "var(--sus)"),
-    ("INDETERMINATE", "indeterminate", "var(--ind)"),
-    ("NOT_ASSESSED", "not_assessed", "var(--na)"),
-    ("NO_CALL", "no_call", "var(--nc)"),
-    ("UNSUPPORTED", "unsupported", "var(--un)"),
+    ("Resistant", "resistant", "var(--res)"),
+    ("Susceptible", "susceptible", "var(--sus)"),
+    ("Indeterminate", "indeterminate", "var(--ind)"),
+    ("Not assessed", "not_assessed", "var(--na)"),
+    ("No call", "no_call", "var(--nc)"),
+    ("Unsupported", "unsupported", "var(--un)"),
 )
 
 TIER_COLOUR = {
@@ -182,7 +185,7 @@ def call_distribution(reports: Sequence[dict]) -> list[dict]:
             call = result.get("call")
             if call in counts:
                 counts[call] += 1
-    return [{"k": label, "v": counts[value], "c": colour}
+    return [{"k": label, "v": counts[value], "c": colour, "enum": value}
             for label, value, colour in CALL_ORDER if counts[value]]
 
 

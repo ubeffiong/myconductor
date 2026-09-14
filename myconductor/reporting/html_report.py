@@ -86,14 +86,17 @@ def _followup(data: dict) -> str:
     for finding in data.get("investigations", []):
         action = follow.get(finding.get("id"), {})
         chosen = action.get("selected") or {}
+        status = chosen.get("action", action.get("status", "unknown"))
         blocks.append(
             '<div class="interp-block">'
-            f'<h3>{_esc(finding.get("drug", ""))}: {_esc(finding.get("category", ""))}</h3>'
-            f'<p>{_esc(finding.get("certainty", ""))} — {_esc(finding.get("explanation", ""))}</p>'
-            f'<p><strong>Follow-up:</strong> '
-            f'{_esc(chosen.get("action", action.get("status", "unknown")))}</p>'
+            f'<h3>{_esc(finding.get("drug", "").capitalize())}: '
+            f'{_esc(humanise(finding.get("category", "")))}</h3>'
+            f'<p>{_esc(humanise(finding.get("certainty", "")))} — '
+            f'{_esc(_prose(finding.get("explanation", "")))}</p>'
+            f'<p><strong>Follow-up:</strong> {_esc(humanise(status))}</p>'
             f'<p>Priority {_esc(finding.get("priority", ""))}; estimated cost '
-            f'{_esc(chosen.get("cost", "unknown"))} {_esc(chosen.get("currency", ""))}</p>'
+            f'{_esc(chosen.get("cost", "unknown"))} '
+            f'{_esc(chosen.get("currency", ""))}</p>'
             "</div>")
     return "".join(blocks) or (
         '<div class="empty-state"><div class="empty-title">No unresolved findings'
@@ -110,12 +113,27 @@ def _qc(data: dict) -> str:
             f'<li><span class="qc-status {cls}">'
             f'{_esc(humanise(status or "not_performed"))}</span>'
             f'<span><strong>{_esc(humanise(check.get("check", "")))}</strong> — '
-            f'{_esc(check.get("detail", ""))}</span></li>')
+            f'{_esc(_prose(check.get("detail", "")))}</span></li>')
     return "".join(items) or (
         '<li><span class="qc-status qc-none">none</span>'
         '<span>No quality-control findings were recorded. That is not the same '
         'as every control passing.</span></li>')
 
+
+def _prose(text) -> str:
+    """Replace known internal identifiers inside upstream prose.
+
+    Only tokens present in the label map are touched, so this cannot reword a
+    clinical explanation — it just stops ``callable_mask`` and
+    ``availability_unknown`` appearing mid-sentence as though they were words.
+    """
+    if not text:
+        return ""
+    out = str(text)
+    for token in sorted(EXPLICIT, key=len, reverse=True):
+        if "_" in token and token in out:
+            out = out.replace(token, EXPLICIT[token].lower())
+    return out
 
 # -- generated commentary -------------------------------------------------
 def _interpretation(data: dict, drugs: Sequence[dict],
@@ -250,8 +268,8 @@ def _methods(data: dict, drugs: Sequence[dict], n_samples: int,
          "No phenotypic reference was supplied, so no accuracy figure is "
          "computed. The benchmark section is empty rather than estimated."),
         ("Call ontology",
-         "Six states: RESISTANT, SUSCEPTIBLE, INDETERMINATE, NOT_ASSESSED, "
-         "NO_CALL, UNSUPPORTED. Only catalogued and phenotypic evidence may "
+         "Six states: resistant, susceptible, indeterminate, not assessed, "
+         "no call, unsupported. Only catalogued and phenotypic evidence may "
          "establish RESISTANT; coverage is a precondition for SUSCEPTIBLE."),
         ("Coverage",
          f"Callable-locus evidence from outside the variant list. Depth floor "

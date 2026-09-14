@@ -79,7 +79,7 @@ function renderDonut(){
     const large = (a1-a0) > Math.PI ? 1 : 0;
     paths += `<path d="M ${x1} ${y1} A ${rOut} ${rOut} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${rIn} ${rIn} 0 ${large} 0 ${x4} ${y4} Z"
       fill="${d.c}" stroke="#fff" stroke-width="2" class="bar"
-      data-tip="${d.k}" data-v="${d.v}" data-pct="${(d.v/total*100).toFixed(1)}"
+      data-tip="${d.k}" data-enum="${d.enum || d.k}" data-v="${d.v}" data-pct="${(d.v/total*100).toFixed(1)}"
       style="cursor:pointer; opacity:.92"
       onmouseover="donutHover(this,event)" onmouseout="hideTip()" />`;
     a0 = a1;
@@ -97,19 +97,20 @@ function donutHover(el, e){
     <div class="tt-body">
       <div class="tt-row"><span class="tt-k">Count</span><span class="tt-v">${(+el.dataset.v).toLocaleString()}</span></div>
       <div class="tt-row"><span class="tt-k">Share</span><span class="tt-v">${el.dataset.pct}%</span></div>
-      <div class="tt-section"><div class="tt-note">${describeCall(el.dataset.tip)}</div></div>
+      <div class="tt-section"><div class="tt-note">${describeCall(el.dataset.enum || el.dataset.tip)}</div></div>
     </div>`);
 }
 function describeCall(k){
   const m = {
-    RESISTANT:'Established by catalogued or phenotypic evidence. Can inform clinical decision.',
-    SUSCEPTIBLE:'Coverage-gated absence of resistance markers. Only valid where loci were callable.',
-    INDETERMINATE:'Evidence insufficient to establish either state. Cannot be acted on.',
-    NOT_ASSESSED:'Loci not callable. Absence of evidence is not susceptibility.',
-    NO_CALL:'Analysis-side gap. Not a biological finding.',
-    UNSUPPORTED:'Variant detected, no catalogue support. Held for review.',
+    resistant:'Established by catalogued or phenotypic evidence. Can inform a clinical decision.',
+    susceptible:'Coverage-gated absence of resistance markers. Only valid where the loci were callable.',
+    indeterminate:'Evidence insufficient to establish either state. Cannot be acted on.',
+    not_assessed:'Loci not shown callable. Absence of evidence is not susceptibility.',
+    no_call:'Analysis-side gap. Not a biological finding.',
+    unsupported:'Drug not covered by this organism profile.',
   };
-  return m[k] || '';
+  const key = String(k || '').toLowerCase().replace(/[\s-]+/g, '_');
+  return m[key] || '';
 }
 
 /* ==========================================================
@@ -459,7 +460,7 @@ function renderCoverage(){
   const rows = DATA.coverage_matrix || [];
   if(!cols){
     return emptyState('coverageHeatmap', 'No callable-locus evidence supplied',
-      'Coverage is the precondition for susceptibility. Without a depth table, BED mask or gVCF, every drug is reported NOT_ASSESSED.');
+      'Coverage is the precondition for susceptibility. Without a depth table, BED mask or gVCF, every drug is reported not assessed.');
   }
   let html = '';
   html += `<div class="hm-row-label" style="height:60px;background:var(--card-alt)"></div>`;
@@ -481,7 +482,7 @@ function locusHover(e, el){
   showTip(e, `<div class="tt-head"><div class="tt-title">${el.dataset.locus}</div><div class="tt-sub">drug: ${el.dataset.drug}</div></div>
     <div class="tt-body">
       <div class="tt-row"><span class="tt-k">Callability</span><span class="tt-v">${el.dataset.level}</span></div>
-      <div class="tt-section"><div class="tt-note">Coverage-gated: a drug is NOT_ASSESSED unless this locus is callable above threshold.</div></div>
+      <div class="tt-section"><div class="tt-note">Coverage-gated: a drug is not assessed unless this locus is callable above threshold.</div></div>
     </div>`);
 }
 
@@ -983,7 +984,7 @@ function openDrugDrill(id){
       <h4>Evidence composition</h4>
       ${d.estimable ? `
         <div class="evidence-block res"><div class="tier">Catalogued · tier 1</div><div class="src">Primary resistance loci</div><div class="detail">Resistance calls for ${d.name} are driven by catalogue-tier evidence. Engine discordance is reported but does not override catalogue calls.</div></div>
-        <div class="evidence-block sus"><div class="tier">Coverage-gated</div><div class="src">Susceptibility calls</div><div class="detail">SUSCEPTIBLE is only reported where the defining loci are callable above the coverage threshold. Below threshold, the call is NOT_ASSESSED.</div></div>
+        <div class="evidence-block sus"><div class="tier">Coverage-gated</div><div class="src">Susceptibility calls</div><div class="detail">Susceptibility is only reported where the defining loci are callable above the coverage threshold. Below threshold, the call is not assessed.</div></div>
       ` : `
         <div class="evidence-block ind"><div class="tier">Insufficient phenotype signal</div><div class="src">Not estimable</div><div class="detail">Fewer than 20 phenotypically resistant isolates in the cohort. Error rate cannot be computed; the tool will report INDETERMINATE for non-catalogued variants in this drug's loci.</div></div>
       `}
