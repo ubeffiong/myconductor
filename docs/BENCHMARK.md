@@ -391,6 +391,65 @@ whose point is not estimable emits `null` rather than a number.
 > incumbent's **home-ground** performance: the bar a challenger must clear, and
 > the wrong number to quote as the catalogue's accuracy.
 
+### What it reports
+
+Per drug: coverage and a composite error rate, and then the metrics that say
+*which way* it is wrong — sensitivity, specificity, PPV, NPV, very-major and
+major error rates, with Wilson intervals. Missing resistance and over-calling
+it have opposite clinical consequences, and a single error rate averages them
+together.
+
+Three properties are load-bearing:
+
+- **VME and ME are derived**, not declared beside sensitivity and specificity.
+  VME ≡ 1 − sensitivity, ME ≡ 1 − specificity. Declaring them independently
+  once let this repo hold contradictory targets for six of eleven drugs.
+- **Abstained-resistant isolates are excluded from sensitivity and shown
+  beside it.** A predictor can always look sensitive by declining the hard
+  cases; folding those into "susceptible" would understate VME instead.
+- **An interval is withheld on an underpowered sample** while the point
+  estimate is still shown. The precision claim is what the sample cannot
+  support, not the estimate.
+
+**PPV and NPV do not transfer.** CRyPTIC was assembled to contain resistance,
+so its prevalence is far above a routine diagnostic service's. Sensitivity and
+specificity carry between populations; PPV and NPV must be recomputed at a
+setting's own prevalence. The prevalence each was computed at travels in the
+table.
+
+### Which drugs can be measured at all
+
+`measurability.tsv` answers this directly, because a benchmark that lists only
+what it happens to cover reads as a complete panel. Evaluating the catalogue
+needs a **genotypic** side to make a call from and a **phenotypic** side to
+score it against; a drug missing either cannot be evaluated, and the two
+absences have different remedies.
+
+| Drug | Catalogue | CRyPTIC MIC | Consequence |
+|---|---|---|---|
+| rifampicin, isoniazid, ethambutol, moxifloxacin, levofloxacin, amikacin, kanamycin, ethionamide, bedaquiline, clofazimine, delamanid, linezolid | yes | yes | measurable |
+| **pretomanid** | **no** | **no** | no pairing of these sources can evaluate it |
+| pyrazinamide, capreomycin, streptomycin | yes | no | a call can be made but not scored |
+| rifabutin | no | yes | a phenotype exists but nothing predicts it |
+
+Pretomanid is the case worth dwelling on: **a quarter of the BPaL regimen, and
+neither source mentions it.** Omitting it silently would read as an oversight;
+naming it reads as the infrastructure gap it is. The same goes for the five
+drugs whose point is `not estimable` — the manifest carries an
+`isolates_needed` figure extrapolated from observed prevalence, because
+"collect about this many more" is actionable where "insufficient data" is not.
+
+### Lineage
+
+`baseline_by_lineage.tsv` is written **only where lineages were supplied**. A
+pooled figure can be carried entirely by one lineage, and a tool that works on
+Lineage 2 and fails on Lineage 4 is a different product in each setting.
+
+The CRyPTIC reuse table has **no lineage column**, so this file is normally
+absent, and a single `unknown` bucket is treated as the absence of
+stratification rather than a result. Supply lineages through `--metadata` to
+make the check live.
+
 ### Two traps this surfaced
 
 **Namespace.** `DeterminantIndex` carries both the gene-label and the

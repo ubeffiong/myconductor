@@ -135,6 +135,31 @@ class DrugBaseline:
                 f"{false_s} called susceptible but resistant)")
 
 
+def locus_of(label: str) -> str:
+    """The gene a determinant label names, e.g. ``rpoB_p.Ser450Leu`` -> ``rpoB``.
+
+    Labels are ``gene_change``; the change may itself contain underscores, so
+    only the first segment is the locus.
+    """
+    return label.split("_", 1)[0] if label else ""
+
+
+def _locus_fraction(determinants: set, assessed: Optional[frozenset]) -> float:
+    """Share of a drug's catalogued **loci** that were examined.
+
+    The denominator is the set of genes the drug's determinants sit in, not the
+    number of determinants, so a drug with 136 graded variants in one gene is
+    not held to a stricter standard than one with eleven across two.
+    """
+    loci = {locus_of(label) for label in determinants if locus_of(label)}
+    if not loci:
+        return 0.0
+    if not assessed:
+        return 0.0
+    seen = {locus_of(label) for label in assessed if locus_of(label)}
+    return len(loci & seen) / len(loci)
+
+
 def _truth_for(row: dict, code: str) -> Optional[str]:
     return TRUTH_LABELS.get((row.get(f"{code}_BINARY_PHENOTYPE") or "").strip().upper())
 
@@ -171,12 +196,20 @@ def catalogue_predictions(
             continue
 
         # No resistant variant found. That is only susceptibility if we looked
-        # everywhere one could have been.
+        # everywhere one could have been — and "everywhere" is a question about
+        # loci, not about enumerating catalogued variants.
+        #
+        # Counting variant coordinates instead made the rule silently stricter
+        # for better-studied drugs: rifampicin has 136 graded determinants and
+        # isoniazid 143, against eleven for amikacin, so a 95% variant-level
+        # threshold was essentially unreachable for the first two. The
+        # catalogue then never answered "susceptible" for them at all, every
+        # answered isolate was an R call, and specificity came out at exactly
+        # zero — an artifact of the denominator, not a property of the
+        # catalogue. Locus coverage is what the callable mask actually
+        # establishes, and it is what ``profile.required_loci`` means.
         assessed = isolate.assessed_variants
-        if assessed is None:
-            examined = 0.0
-        else:
-            examined = len(determinants & set(assessed)) / len(determinants)
+        examined = _locus_fraction(determinants, assessed)
         if examined >= assessed_fraction:
             predictions.append(Prediction(isolate.isolate_id, "S", truth, 1.0))
         else:

@@ -52,13 +52,41 @@ class SusceptibilityRuleTests(unittest.TestCase):
         self.assertFalse(predictions[0].answerable)
         self.assertEqual(abstained[baseline.ABSTAIN_INCOMPLETE], 1)
 
-    def test_partial_examination_below_the_threshold_abstains(self):
-        # Two of four coordinates examined is 50%, under the 95% requirement.
+    def test_partial_locus_examination_abstains(self):
+        """Examined katG but not inhA: resistance could be at the unexamined one."""
+        multi_gene = {"katG_S315T", "inhA_I21T", "fabG1_c.-15C>T"}
         predictions, abstained = baseline.catalogue_predictions(
-            [isolate("a", assessed={"rpoB_S450L", "rpoB_H445Y"})],
-            {"a": "S"}, DETERMINANTS)
+            [isolate("a", assessed={"katG_S315T"})], {"a": "S"}, multi_gene)
         self.assertIsNone(predictions[0].predicted)
         self.assertEqual(abstained[baseline.ABSTAIN_INCOMPLETE], 1)
+
+    def test_examining_every_locus_answers_susceptible(self):
+        multi_gene = {"katG_S315T", "inhA_I21T", "fabG1_c.-15C>T"}
+        predictions, _ = baseline.catalogue_predictions(
+            [isolate("a", assessed={"katG_S315T", "inhA_I21T",
+                                    "fabG1_c.-15C>T"})],
+            {"a": "S"}, multi_gene)
+        self.assertEqual(predictions[0].predicted, "S")
+
+    def test_one_variant_per_locus_is_enough_to_examine_that_locus(self):
+        """The artifact this rule was changed to remove.
+
+        Counting graded *variants* rather than loci made the threshold silently
+        stricter for better-studied drugs. Rifampicin has 136 catalogued
+        determinants, almost all in rpoB; requiring 95% of them to be
+        individually examined meant the catalogue never answered susceptible
+        for it at all, every answered isolate was an R call, and specificity
+        came out at exactly zero. That was the denominator, not the catalogue.
+        """
+        many_in_one_gene = {f"rpoB_v{i}" for i in range(136)}
+        predictions, _ = baseline.catalogue_predictions(
+            [isolate("a", assessed={"rpoB_v0"})], {"a": "S"}, many_in_one_gene)
+        self.assertEqual(predictions[0].predicted, "S")
+
+    def test_locus_is_the_first_label_segment(self):
+        self.assertEqual(baseline.locus_of("rpoB_p.Ser450Leu"), "rpoB")
+        self.assertEqual(baseline.locus_of("fabG1_c.-15C>T"), "fabG1")
+        self.assertEqual(baseline.locus_of(""), "")
 
     def test_unknown_assessed_set_is_treated_as_nothing_examined(self):
         """``None`` means the VCF carried no coverage evidence at all."""
