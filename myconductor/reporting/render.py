@@ -111,6 +111,15 @@ def render_text(report: AnalysisReport) -> str:
             for drug, missing in sorted(unsupported.items()):
                 detail = ", ".join(missing) if missing else "no loci declared"
                 lines.append(f"     - {drug}: {detail}")
+        if panel.get("off_panel_variants"):
+            lines.append("")
+            lines.append("   ! The input carries variants at loci this panel "
+                         "says it does not target:")
+            lines.append(f"     {', '.join(panel['off_panel_variants'])}")
+            lines.append("     The declaration and the data disagree. Nothing "
+                         "was discarded — a variant")
+            lines.append("     call is evidence — but one of the two is wrong "
+                         "and should be corrected.")
         if panel.get("discarded"):
             lines.append("")
             lines.append(f"   {_wrap(panel['note'], 3)}")

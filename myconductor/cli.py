@@ -144,6 +144,15 @@ def _run_analyze(args: argparse.Namespace) -> int:
         Path(args.fhir).parent.mkdir(parents=True, exist_ok=True)
         Path(args.fhir).write_text(to_fhir_json(report), encoding="utf-8")
         print(f"\n[FHIR bundle written to {args.fhir}]")
+
+    if args.jsonld:
+        from .reporting.semantic import summarise, to_jsonld, write_jsonld
+
+        written = write_jsonld(report, args.jsonld)
+        print(f"\n[JSON-LD written to {written}]")
+        print(f"  {summarise(to_jsonld(report))}")
+        print("  Six call states, not two: a drug may be used only where "
+              "establishesUse is true.")
     return 0
 
 
@@ -338,6 +347,11 @@ def build_parser() -> argparse.ArgumentParser:
                                       "detection.")
     a.add_argument("--sample", help="Sample name, for multi-sample VCFs.")
     a.add_argument("--fhir", metavar="PATH", help="Also write a FHIR bundle.")
+    a.add_argument("--jsonld", metavar="PATH",
+                   help="Also write a JSON-LD export carrying the six call "
+                        "states and their semantics, for consumers outside "
+                        "this system. Refuses to emit any binary "
+                        "resistant/susceptible field.")
     a.add_argument("--depth-floor", type=int, default=10,
                    help="Minimum read depth to accept a locus (default 10).")
     a.add_argument("--callable-floor", type=float, default=0.95,

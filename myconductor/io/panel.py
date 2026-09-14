@@ -208,6 +208,25 @@ def restrict(mask: CallableMask, panel: Panel
                                         discarded=discarded)
 
 
+def off_panel_variants(panel: Panel, genes: Iterable[str]) -> list[str]:
+    """Loci that carried a variant but which the panel says it does not target.
+
+    A disagreement between the declaration and the data, and it is reported
+    rather than acted on. Variants are deliberately **not** filtered by the
+    panel: dropping a variant call at an undeclared locus would discard
+    evidence of resistance, which is the one direction this system never moves
+    in. If the panel is under-declared the variant is real and the declaration
+    needs fixing; if the data came from a different assay than the panel
+    describes, that is worth knowing before reading any of it.
+
+    The check is one-sided by nature. An *over*-declared panel — one claiming
+    loci the assay never amplified — produces no variants to notice, which is
+    exactly why ``verified`` exists and why over-declaration is the dangerous
+    direction.
+    """
+    return sorted({gene for gene in genes if gene and not panel.covers(gene)})
+
+
 def unsupported_drugs(panel: Panel, required_loci_by_drug: dict[str, list[str]]
                       ) -> dict[str, list[str]]:
     """Drugs this panel cannot support, mapped to the loci it is missing.

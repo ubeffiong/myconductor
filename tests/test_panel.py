@@ -227,6 +227,80 @@ class NarrowPanelTests(unittest.TestCase):
         self.assertIn("atpE", report.discarded)
 
 
+class PanelDataDisagreementTests(unittest.TestCase):
+    """A variant at an undeclared locus is reported, never filtered."""
+
+    def test_off_panel_variants_are_listed(self):
+        from myconductor.io.panel import off_panel_variants
+        self.assertEqual(
+            off_panel_variants(panel(), ["rpoB", "pncA", "gyrA", "katG"]),
+            ["gyrA", "pncA"])
+
+    def test_on_panel_variants_raise_nothing(self):
+        from myconductor.io.panel import off_panel_variants
+        self.assertEqual(off_panel_variants(panel(), ["rpoB", "katG"]), [])
+
+    def test_blank_gene_names_are_ignored(self):
+        from myconductor.io.panel import off_panel_variants
+        self.assertEqual(off_panel_variants(panel(), ["", None, "rpoB"]), [])
+
+    def test_the_disagreement_reaches_the_report(self):
+        from myconductor.catalogue.profile import load_profile
+        from myconductor.core.pipeline import Myconductor
+
+        profile = load_profile()
+        conductor = Myconductor()
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            vcf = root / "s.vcf"
+            # A pncA variant, on an assay whose panel excludes pncA.
+            vcf.write_text(
+                "##fileformat=VCFv4.2\n"
+                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\n"
+                "NC_000962.3\t2289252\t.\tG\tA\t60\tPASS\tGENE=pncA\tGT:DP\t1:100\n",
+                encoding="utf-8")
+            depth = root / "d.tsv"
+            depth.write_text(
+                "locus\tmean_depth\tcallable_fraction\n"
+                + "".join(f"{locus}\t120\t0.99\n" for locus in sorted(profile.loci)),
+                encoding="utf-8")
+            report = conductor.analyze(
+                vcf, mask_path=depth,
+                panel_path=PANEL_DIR / "first-line-core.json")
+
+        self.assertIn("pncA", report.panel["off_panel_variants"])
+
+    def test_the_variant_is_not_discarded_by_the_panel(self):
+        """Dropping it would discard evidence of resistance."""
+        from myconductor.catalogue.profile import load_profile
+        from myconductor.core.pipeline import Myconductor
+
+        profile = load_profile()
+        conductor = Myconductor()
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            vcf = root / "s.vcf"
+            vcf.write_text(
+                "##fileformat=VCFv4.2\n"
+                "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tS1\n"
+                "NC_000962.3\t2289252\t.\tG\tA\t60\tPASS\tGENE=pncA\tGT:DP\t1:100\n",
+                encoding="utf-8")
+            depth = root / "d.tsv"
+            depth.write_text(
+                "locus\tmean_depth\tcallable_fraction\n"
+                + "".join(f"{locus}\t120\t0.99\n" for locus in sorted(profile.loci)),
+                encoding="utf-8")
+            with_panel = conductor.analyze(
+                vcf, mask_path=depth,
+                panel_path=PANEL_DIR / "first-line-core.json")
+            without = conductor.analyze(vcf, mask_path=depth)
+
+        # The pncA evidence survives restriction; only coverage was narrowed.
+        pyr_with = {r.drug: r for r in with_panel.drug_results}["pyrazinamide"]
+        pyr_without = {r.drug: r for r in without.drug_results}["pyrazinamide"]
+        self.assertEqual(len(pyr_with.evidence), len(pyr_without.evidence))
+
+
 class EndToEndTests(unittest.TestCase):
     """Through the real pipeline, which is where it has to hold."""
 

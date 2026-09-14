@@ -183,7 +183,8 @@ class Myconductor:
             from ..io.panel import Panel
             panel = Panel.load(panel_path)
         if panel is not None:
-            from ..io.panel import restrict, unsupported_drugs
+            from ..io.panel import (
+                off_panel_variants, restrict, unsupported_drugs)
             mask, panel_restriction = restrict(mask, panel)
 
         if context is not None and context.sample_id != adapted.sample_id:
@@ -396,6 +397,11 @@ class Myconductor:
                     declared,
                     {drug: self.profile.required_loci(drug)
                      for drug in self.profile.drugs}),
+                # The declaration and the data disagreeing is worth knowing
+                # before reading either. Variants are never filtered by the
+                # panel: dropping one would discard evidence of resistance.
+                "off_panel_variants": off_panel_variants(
+                    declared, (v.gene for v in adapted.variants)),
             }
 
         report = AnalysisReport(
