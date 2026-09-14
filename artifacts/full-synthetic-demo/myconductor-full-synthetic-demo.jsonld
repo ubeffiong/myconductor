@@ -1,0 +1,1029 @@
+{
+  "@context": {
+    "@vocab": "https://github.com/ubeffiong/myconductor/ns/v1#",
+    "myco": "https://github.com/ubeffiong/myconductor/ns/v1#",
+    "id": "@id",
+    "type": "@type",
+    "drug": {
+      "@id": "https://github.com/ubeffiong/myconductor/ns/v1#drug"
+    },
+    "call": {
+      "@id": "https://github.com/ubeffiong/myconductor/ns/v1#call"
+    },
+    "tier": {
+      "@id": "https://github.com/ubeffiong/myconductor/ns/v1#tier"
+    },
+    "evidence": {
+      "@id": "https://github.com/ubeffiong/myconductor/ns/v1#evidence",
+      "@container": "@set"
+    },
+    "coverage": {
+      "@id": "https://github.com/ubeffiong/myconductor/ns/v1#coverage",
+      "@container": "@set"
+    },
+    "discordance": {
+      "@id": "https://github.com/ubeffiong/myconductor/ns/v1#discordance"
+    },
+    "myco:note": "Six call states, not two. A drug may be used only where establishesUse is true. INDETERMINATE, NOT_ASSESSED, NO_CALL and UNSUPPORTED are four distinct reasons no verdict was reached and must not be merged with each other or with SUSCEPTIBLE."
+  },
+  "type": "AnalysisReport",
+  "id": "urn:myconductor:report:MTB-DEMO-001",
+  "schema": "myconductor.semantic.v1",
+  "sampleId": "MTB-DEMO-001",
+  "demoMode": true,
+  "drugResults": [
+    {
+      "type": "DrugResult",
+      "drug": "amikacin",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+        "value": "inferred",
+        "rank": 2,
+        "mayEstablishResistance": false
+      },
+      "permitsUse": false,
+      "reason": "Regulatory variant upstream of eis (c.-14C>T): may modulate expression affecting amikacin. Effect size unmeasured \u2014 susceptibility withheld.",
+      "assayStatus": "insufficient",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+            "value": "inferred",
+            "rank": 2,
+            "mayEstablishResistance": false
+          },
+          "lane": "efflux_regulatory",
+          "source": "myconductor-efflux-rules",
+          "variantKey": "NC_000962.3:NC_000962.3:2715342:C>T",
+          "variantLabel": "eis_c.-14C>T",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Regulatory variant upstream of eis (c.-14C>T): may modulate expression affecting amikacin. Effect size unmeasured \u2014 susceptibility withheld.",
+          "confidence": null,
+          "limitations": [
+            "no expression evidence: de-repression is inferred from gene membership alone, not measured",
+            "rule-based inference, not graded catalogue evidence and not a validated predictive model"
+          ]
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+            "value": "none",
+            "rank": 0,
+            "mayEstablishResistance": false
+          },
+          "lane": "vus",
+          "source": "myconductor-vus-workbench",
+          "variantKey": "NC_000962.3:NC_000962.3:2715342:C>T",
+          "variantLabel": "eis_c.-14C>T",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Uninterpreted upstream variant eis_c.-14C>T in eis, a locus relevant to amikacin. Susceptibility cannot be concluded; resistance is not asserted.",
+          "confidence": null,
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "rrs",
+          "meanDepth": null,
+          "callableFraction": null,
+          "source": "absent",
+          "callableEvidencePresent": false
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "bedaquiline",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+        "value": "inferred",
+        "rank": 2,
+        "mayEstablishResistance": false
+      },
+      "permitsUse": false,
+      "reason": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+            "value": "inferred",
+            "rank": 2,
+            "mayEstablishResistance": false
+          },
+          "lane": "efflux_regulatory",
+          "source": "myconductor-efflux-rules",
+          "variantKey": "NC_000962.3:NC_000962.3:4247429:T>G",
+          "variantLabel": "Rv0678_L117R",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+          "confidence": null,
+          "limitations": [
+            "no expression evidence: de-repression is inferred from gene membership alone, not measured",
+            "rule-based inference, not graded catalogue evidence and not a validated predictive model",
+            "a missense change in a regulator carries materially weaker evidence than loss of function; prioritise it for validation rather than acting on it"
+          ]
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+            "value": "none",
+            "rank": 0,
+            "mayEstablishResistance": false
+          },
+          "lane": "vus",
+          "source": "myconductor-vus-workbench",
+          "variantKey": "NC_000962.3:NC_000962.3:4247429:T>G",
+          "variantLabel": "Rv0678_L117R",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Uninterpreted missense variant Rv0678_L117R in Rv0678, a locus relevant to bedaquiline. Susceptibility cannot be concluded; resistance is not asserted.",
+          "confidence": null,
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ]
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/predicted",
+            "value": "predicted",
+            "rank": 1,
+            "mayEstablishResistance": false
+          },
+          "lane": "engine",
+          "source": "engine",
+          "variantKey": null,
+          "variantLabel": null,
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Expression observation for Rv0678: reported elevated. Drug response remains unestablished by expression.",
+          "confidence": null,
+          "limitations": [
+            "Fold change alone does not establish overexpression, efflux activity or resistance."
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "atpE",
+          "meanDepth": 78,
+          "callableFraction": 1.0,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "Rv0678",
+          "meanDepth": 48,
+          "callableFraction": 0.97,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "clofazimine",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+        "value": "inferred",
+        "rank": 2,
+        "mayEstablishResistance": false
+      },
+      "permitsUse": false,
+      "reason": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+            "value": "inferred",
+            "rank": 2,
+            "mayEstablishResistance": false
+          },
+          "lane": "efflux_regulatory",
+          "source": "myconductor-efflux-rules",
+          "variantKey": "NC_000962.3:NC_000962.3:4247429:T>G",
+          "variantLabel": "Rv0678_L117R",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+          "confidence": null,
+          "limitations": [
+            "no expression evidence: de-repression is inferred from gene membership alone, not measured",
+            "rule-based inference, not graded catalogue evidence and not a validated predictive model",
+            "a missense change in a regulator carries materially weaker evidence than loss of function; prioritise it for validation rather than acting on it"
+          ]
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+            "value": "none",
+            "rank": 0,
+            "mayEstablishResistance": false
+          },
+          "lane": "vus",
+          "source": "myconductor-vus-workbench",
+          "variantKey": "NC_000962.3:NC_000962.3:4247429:T>G",
+          "variantLabel": "Rv0678_L117R",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Uninterpreted missense variant Rv0678_L117R in Rv0678, a locus relevant to clofazimine. Susceptibility cannot be concluded; resistance is not asserted.",
+          "confidence": null,
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ]
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/predicted",
+            "value": "predicted",
+            "rank": 1,
+            "mayEstablishResistance": false
+          },
+          "lane": "engine",
+          "source": "engine",
+          "variantKey": null,
+          "variantLabel": null,
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Expression observation for Rv0678: reported elevated. Drug response remains unestablished by expression.",
+          "confidence": null,
+          "limitations": [
+            "Fold change alone does not establish overexpression, efflux activity or resistance."
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "Rv0678",
+          "meanDepth": 48,
+          "callableFraction": 0.97,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "ethambutol",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+        "value": "resistant",
+        "establishesUse": false,
+        "isEstablished": true,
+        "reasonUnestablished": null
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+        "value": "catalogued",
+        "rank": 3,
+        "mayEstablishResistance": true
+      },
+      "permitsUse": false,
+      "reason": "Catalogued resistant for ethambutol (grade: Assoc w R).",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+            "value": "resistant",
+            "establishesUse": false,
+            "isEstablished": true,
+            "reasonUnestablished": null
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+            "value": "catalogued",
+            "rank": 3,
+            "mayEstablishResistance": true
+          },
+          "lane": "catalogue",
+          "source": "myconductor-bundled-catalogue",
+          "variantKey": "NC_000962.3:NC_000962.3:4247574:A>G",
+          "variantLabel": "embB_M306V",
+          "scope": "variant",
+          "whoGrade": "Assoc w R",
+          "rationale": "Catalogued resistant for ethambutol (grade: Assoc w R).",
+          "confidence": 0.88,
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "embB",
+          "meanDepth": 71,
+          "callableFraction": 0.99,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "isoniazid",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+        "value": "catalogued",
+        "rank": 3,
+        "mayEstablishResistance": true
+      },
+      "permitsUse": false,
+      "reason": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+            "value": "resistant",
+            "establishesUse": false,
+            "isEstablished": true,
+            "reasonUnestablished": null
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+            "value": "catalogued",
+            "rank": 3,
+            "mayEstablishResistance": true
+          },
+          "lane": "catalogue",
+          "source": "myconductor-bundled-catalogue",
+          "variantKey": "NC_000962.3:NC_000962.3:2155168:G>C",
+          "variantLabel": "katG_S315T",
+          "scope": "variant",
+          "whoGrade": "Assoc w R",
+          "rationale": "Catalogued resistant for isoniazid (grade: Assoc w R).",
+          "confidence": 0.98,
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ]
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+            "value": "resistant",
+            "establishesUse": false,
+            "isEstablished": true,
+            "reasonUnestablished": null
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+            "value": "catalogued",
+            "rank": 3,
+            "mayEstablishResistance": true
+          },
+          "lane": "engine",
+          "source": "engine",
+          "variantKey": null,
+          "variantLabel": null,
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Synthetic TB-Profiler resistance assertion.",
+          "confidence": null,
+          "limitations": []
+        },
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/susceptible",
+            "value": "susceptible",
+            "establishesUse": true,
+            "isEstablished": true,
+            "reasonUnestablished": null
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+            "value": "none",
+            "rank": 0,
+            "mayEstablishResistance": false
+          },
+          "lane": "engine",
+          "source": "engine",
+          "variantKey": null,
+          "variantLabel": null,
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Synthetic Mykrobe assertion used to exercise engine discordance.",
+          "confidence": null,
+          "limitations": []
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "katG",
+          "meanDepth": 82,
+          "callableFraction": 1.0,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "fabG1",
+          "meanDepth": 74,
+          "callableFraction": 0.99,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "inhA",
+          "meanDepth": 69,
+          "callableFraction": 0.98,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ],
+      "discordance": {
+        "type": "Discordance",
+        "calls": [
+          "resistant",
+          "susceptible"
+        ],
+        "sources": [
+          "myconductor-bundled-catalogue",
+          "engine"
+        ],
+        "note": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+        "context": [],
+        "resolved": false
+      }
+    },
+    {
+      "type": "DrugResult",
+      "drug": "linezolid",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+        "value": "none",
+        "rank": 0,
+        "mayEstablishResistance": false
+      },
+      "permitsUse": false,
+      "reason": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "rplC",
+          "meanDepth": 61,
+          "callableFraction": 1.0,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "rrl",
+          "meanDepth": 57,
+          "callableFraction": 0.97,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "moxifloxacin",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+        "value": "resistant",
+        "establishesUse": false,
+        "isEstablished": true,
+        "reasonUnestablished": null
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+        "value": "catalogued",
+        "rank": 3,
+        "mayEstablishResistance": true
+      },
+      "permitsUse": false,
+      "reason": "Catalogued resistant for moxifloxacin (grade: Assoc w R).",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+            "value": "resistant",
+            "establishesUse": false,
+            "isEstablished": true,
+            "reasonUnestablished": null
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+            "value": "catalogued",
+            "rank": 3,
+            "mayEstablishResistance": true
+          },
+          "lane": "catalogue",
+          "source": "myconductor-bundled-catalogue",
+          "variantKey": "NC_000962.3:NC_000962.3:7570:A>G",
+          "variantLabel": "gyrA_D94G",
+          "scope": "variant",
+          "whoGrade": "Assoc w R",
+          "rationale": "Catalogued resistant for moxifloxacin (grade: Assoc w R).",
+          "confidence": 0.95,
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "gyrA",
+          "meanDepth": 64,
+          "callableFraction": 0.98,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "gyrB",
+          "meanDepth": 58,
+          "callableFraction": 0.96,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "pretomanid",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+        "value": "none",
+        "rank": 0,
+        "mayEstablishResistance": false
+      },
+      "permitsUse": false,
+      "reason": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "ddn",
+          "meanDepth": 66,
+          "callableFraction": 0.99,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "fbiA",
+          "meanDepth": 62,
+          "callableFraction": 0.98,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "fbiB",
+          "meanDepth": 59,
+          "callableFraction": 0.96,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "fbiC",
+          "meanDepth": 55,
+          "callableFraction": 0.96,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        },
+        {
+          "type": "LocusCoverage",
+          "locus": "fgd1",
+          "meanDepth": 64,
+          "callableFraction": 0.99,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "pyrazinamide",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+        "value": "indeterminate",
+        "establishesUse": false,
+        "isEstablished": false,
+        "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+        "value": "none",
+        "rank": 0,
+        "mayEstablishResistance": false
+      },
+      "permitsUse": false,
+      "reason": "Uninterpreted missense variant pncA_D12A in pncA, a locus relevant to pyrazinamide. Susceptibility cannot be concluded; resistance is not asserted.",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+            "value": "indeterminate",
+            "establishesUse": false,
+            "isEstablished": false,
+            "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+            "value": "none",
+            "rank": 0,
+            "mayEstablishResistance": false
+          },
+          "lane": "vus",
+          "source": "myconductor-vus-workbench",
+          "variantKey": "NC_000962.3:NC_000962.3:2288725:A>C",
+          "variantLabel": "pncA_D12A",
+          "scope": "isolate",
+          "whoGrade": null,
+          "rationale": "Uninterpreted missense variant pncA_D12A in pncA, a locus relevant to pyrazinamide. Susceptibility cannot be concluded; resistance is not asserted.",
+          "confidence": null,
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "pncA",
+          "meanDepth": 70,
+          "callableFraction": 0.97,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    },
+    {
+      "type": "DrugResult",
+      "drug": "rifampicin",
+      "call": {
+        "type": "Call",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+        "value": "resistant",
+        "establishesUse": false,
+        "isEstablished": true,
+        "reasonUnestablished": null
+      },
+      "tier": {
+        "type": "Tier",
+        "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+        "value": "catalogued",
+        "rank": 3,
+        "mayEstablishResistance": true
+      },
+      "permitsUse": false,
+      "reason": "Catalogued resistant for rifampicin (grade: Assoc w R).",
+      "assayStatus": "adequate",
+      "confidence": null,
+      "evidence": [
+        {
+          "type": "Evidence",
+          "call": {
+            "type": "Call",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+            "value": "resistant",
+            "establishesUse": false,
+            "isEstablished": true,
+            "reasonUnestablished": null
+          },
+          "tier": {
+            "type": "Tier",
+            "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+            "value": "catalogued",
+            "rank": 3,
+            "mayEstablishResistance": true
+          },
+          "lane": "catalogue",
+          "source": "myconductor-bundled-catalogue",
+          "variantKey": "NC_000962.3:NC_000962.3:761155:C>T",
+          "variantLabel": "rpoB_S450L",
+          "scope": "variant",
+          "whoGrade": "Assoc w R",
+          "rationale": "Catalogued resistant for rifampicin (grade: Assoc w R).",
+          "confidence": 0.98,
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ]
+        }
+      ],
+      "coverage": [
+        {
+          "type": "LocusCoverage",
+          "locus": "rpoB",
+          "meanDepth": 75,
+          "callableFraction": 1.0,
+          "source": "depth-table",
+          "callableEvidencePresent": true
+        }
+      ]
+    }
+  ],
+  "callStates": [
+    {
+      "type": "Call",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/resistant",
+      "value": "resistant",
+      "establishesUse": false,
+      "isEstablished": true,
+      "reasonUnestablished": null
+    },
+    {
+      "type": "Call",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/susceptible",
+      "value": "susceptible",
+      "establishesUse": true,
+      "isEstablished": true,
+      "reasonUnestablished": null
+    },
+    {
+      "type": "Call",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/indeterminate",
+      "value": "indeterminate",
+      "establishesUse": false,
+      "isEstablished": false,
+      "reasonUnestablished": "conflicting evidence, or a lane that abstained"
+    },
+    {
+      "type": "Call",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/not_assessed",
+      "value": "not_assessed",
+      "establishesUse": false,
+      "isEstablished": false,
+      "reasonUnestablished": "required loci were not shown to be callable"
+    },
+    {
+      "type": "Call",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/no_call",
+      "value": "no_call",
+      "establishesUse": false,
+      "isEstablished": false,
+      "reasonUnestablished": "genotype at the locus is not reliable"
+    },
+    {
+      "type": "Call",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#call/unsupported",
+      "value": "unsupported",
+      "establishesUse": false,
+      "isEstablished": false,
+      "reasonUnestablished": "drug is not covered by this organism profile"
+    }
+  ],
+  "tiers": [
+    {
+      "type": "Tier",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/phenotypic",
+      "value": "phenotypic",
+      "rank": 4,
+      "mayEstablishResistance": true
+    },
+    {
+      "type": "Tier",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/catalogued",
+      "value": "catalogued",
+      "rank": 3,
+      "mayEstablishResistance": true
+    },
+    {
+      "type": "Tier",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/inferred",
+      "value": "inferred",
+      "rank": 2,
+      "mayEstablishResistance": false
+    },
+    {
+      "type": "Tier",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/predicted",
+      "value": "predicted",
+      "rank": 1,
+      "mayEstablishResistance": false
+    },
+    {
+      "type": "Tier",
+      "id": "https://github.com/ubeffiong/myconductor/ns/v1#tier/none",
+      "value": "none",
+      "rank": 0,
+      "mayEstablishResistance": false
+    }
+  ],
+  "interpretation": {
+    "type": "InterpretationGuidance",
+    "note": "A drug may be used only where establishesUse is true. The four unestablished states are distinct and must not be merged: INDETERMINATE means evidence conflicted or a lane abstained, NOT_ASSESSED means the required loci were not shown to be callable, NO_CALL means the genotype is unreliable, UNSUPPORTED means the drug is outside this organism profile. None of them means susceptible.",
+    "noBinaryField": "This document deliberately carries no resistant/susceptible boolean. Deriving one discards four states and reintroduces the presumption that absent evidence implies susceptibility.",
+    "terminology": "The vocabulary is local. No SNOMED CT, LOINC or NCIT codes are asserted, because mapping them is a curation task with clinical consequences and inventing them here would be the same failure as inventing terminology codes in a FHIR bundle."
+  },
+  "assayPanel": {
+    "type": "AssayPanel",
+    "name": "Synthetic comprehensive TB panel",
+    "version": "2026.1",
+    "assay": "targeted-amplicon",
+    "locusListVerified": false,
+    "unsupportedDrugs": {},
+    "note": "Synthetic comprehensive TB panel 2026.1: every mask locus is on the panel (17 locus/loci)"
+  },
+  "provenance": {
+    "type": "Provenance",
+    "tool": "Myconductor",
+    "version": "0.2.0",
+    "organismProfile": "mtbc",
+    "profileVersion": "0.2.0-illustrative",
+    "referenceAssembly": "NC_000962.3",
+    "depthFloor": 10,
+    "callableFractionFloor": 0.95,
+    "coverageSource": "depth-table restricted to Synthetic comprehensive TB panel 2026.1",
+    "demoMode": true,
+    "generatedUtc": "2026-09-14T12:26:26+00:00"
+  }
+}

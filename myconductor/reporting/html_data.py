@@ -17,6 +17,7 @@ borrowing a shape from somewhere else.
 """
 from __future__ import annotations
 
+import re
 from typing import Any, Iterable, Optional, Sequence
 
 from .labels import humanise, humanise_all, variant_name
@@ -71,6 +72,16 @@ DRUG_CLASS = {
 
 def code_for(drug: str) -> str:
     return DRUG_CODES.get(drug.lower(), drug[:3].upper())
+
+
+def display_variant(value: Any) -> str:
+    """Human label for either a gene/change token or a coordinate identity."""
+    raw = str(value or "")
+    match = re.search(r":(\d+):([^:>]+)>([^:>]+)$", raw)
+    if match:
+        pos, ref, alt = match.groups()
+        return f"{ref} to {alt} at genomic position {int(pos):,}"
+    return variant_name(raw)
 
 
 def _float(value: Any) -> Optional[float]:
@@ -372,10 +383,15 @@ def alignment_loci(reports: Sequence[dict]) -> dict:
     the invention this module exists to prevent.
     """
     loci: dict[str, dict] = {}
+    samples = [{
+        "id": report.get("sample_id", "sample"),
+        "lineage": (report.get("context") or {}).get("lineage") or "untyped",
+        "site": (report.get("context") or {}).get("site_id") or "site not recorded",
+    } for report in reports]
+
     for report in reports:
         sample = report.get("sample_id", "sample")
-        lineage = (report.get("context") or {}).get("lineage") or "untyped"
-        carried: dict[str, list[str]] = {}
+        carried: dict[str, dict[str, dict]] = {}
         for result in report.get("drug_results", []):
             drug = result.get("drug", "")
             for item in result.get("evidence") or []:
@@ -385,34 +401,132 @@ def alignment_loci(reports: Sequence[dict]) -> dict:
                 ref, alt = variant.get("ref"), variant.get("alt")
                 if not gene or pos is None or not ref or not alt:
                     continue
+                position = int(pos)
+                change = (item.get("variant_label") or variant.get("hgvs_p")
+                          or variant.get("hgvs_c") or f"{ref}{position}{alt}")
                 entry = loci.setdefault(gene, {
                     "name": gene, "assembly": variant.get("assembly", "reference"),
-                    "positions": {}, "isolates": {},
+                    "positions": {}, "samples": {},
                 })
-                record = entry["positions"].setdefault(int(pos), {
-                    "pos": int(pos), "ref": ref, "alt": alt,
-                    "label": item.get("variant_label") or "",
-                    "catalogued": item.get("tier") == "catalogued",
-                    "drugs": set(),
+                record = entry["positions"].setdefault(position, {
+                    "pos": position, "ref": ref, "alt": alt,
+                    "label": change, "change": change,
+                    "display": variant_name(f"{gene}_{change}"),
+                    "consequence": humanise(variant.get("consequence") or "not supplied"),
+                    "region": humanise(variant.get("region") or "not supplied"),
+                    "catalogued": False, "drugs": set(), "tiers": set(),
+                    "lanes": set(), "calls": set(), "rationales": set(),
+                    "limitations": set(), "evidence_ids": set(), "carriers": set(),
+                    "depths": [], "vafs": [],
                 })
-                record["drugs"].add(drug)
-                carried.setdefault(gene, []).append(str(int(pos)))
+                record["catalogued"] = record["catalogued"] or item.get("tier") == "catalogued"
+                record["drugs"].add(humanise(drug))
+                record["tiers"].add(humanise(item.get("tier") or "unknown"))
+                record["lanes"].add(humanise(item.get("lane") or "unknown"))
+                record["calls"].add(humanise(item.get("call") or "unknown"))
+                if item.get("rationale"):
+                    record["rationales"].add(str(item["rationale"]))
+                for limitation in item.get("limitations") or []:
+                    record["limitations"].add(humanise(limitation))
+                if item.get("evidence_id"):
+                    record["evidence_ids"].add(str(item["evidence_id"])[:12])
+                if variant.get("depth") is not None:
+                    record["depths"].append(variant.get("depth"))
+                if variant.get("vaf") is not None:
+                    record["vafs"].append(variant.get("vaf"))
+                record["carriers"].add(sample)
+                carried.setdefault(gene, {})[str(position)] = {
+                    "pos": str(position), "alt": alt, "depth": variant.get("depth"),
+                    "vaf": variant.get("vaf"), "tier": humanise(item.get("tier") or "unknown"),
+                    "lane": humanise(item.get("lane") or "unknown"),
+                    "call": humanise(item.get("call") or "unknown"),
+                }
         for gene, positions in carried.items():
-            loci[gene]["isolates"][sample] = {
-                "id": sample, "lineage": lineage, "carried": sorted(set(positions))}
+            entry = loci.setdefault(gene, {"name": gene, "assembly": "reference", "positions": {}, "samples": {}})
+            sample_entry = entry["samples"].setdefault(sample, {"carried": {}})
+            sample_entry["carried"].update(positions)
 
     out = {}
+    n_samples = max(1, len(samples))
     for gene, entry in sorted(loci.items()):
         positions = sorted(entry["positions"].values(), key=lambda p: p["pos"])
         for record in positions:
+            depths = [d for d in record.pop("depths") if d is not None]
+            vafs = [v for v in record.pop("vafs") if v is not None]
+            carriers = sorted(record.pop("carriers"))
             record["drugs"] = sorted(record["drugs"])
+            record["tiers"] = sorted(record["tiers"])
+            record["lanes"] = sorted(record["lanes"])
+            record["calls"] = sorted(record["calls"])
+            record["rationales"] = sorted(record["rationales"])[:3]
+            record["limitations"] = sorted(record["limitations"])[:4]
+            record["evidence_ids"] = sorted(record["evidence_ids"])[:4]
+            record["carrier_count"] = len(carriers)
+            record["carrier_fraction"] = len(carriers) / n_samples
+            record["median_depth"] = sorted(depths)[len(depths)//2] if depths else None
+            record["mean_vaf"] = round(sum(vafs) / len(vafs), 3) if vafs else None
+        isolates = []
+        for sample in samples:
+            sample_entry = entry.get("samples", {}).get(sample["id"], {})
+            carried_map = sample_entry.get("carried", {})
+            isolates.append({
+                "id": sample["id"], "lineage": sample["lineage"], "site": sample["site"],
+                "carried": sorted(carried_map), "variants": carried_map,
+            })
         out[gene] = {
             "name": entry["name"], "assembly": entry["assembly"],
-            "positions": positions,
-            "isolates": list(entry["isolates"].values()),
+            "positions": positions, "isolates": isolates,
         }
     return out
 
+
+
+def external_model_benchmarks(rows: Iterable[dict]) -> list[dict]:
+    """Normalise external-model benchmark rows for the HTML report."""
+    out = []
+    for row in rows or []:
+        verdict = str(row.get("verdict") or row.get("baseline_verdict") or "not supplied")
+        out.append({
+            "model": str(row.get("model") or row.get("model_id") or "External model"),
+            "version": str(row.get("version") or row.get("model_version") or "not supplied"),
+            "drug": humanise(row.get("drug") or "not supplied"),
+            "lineage": humanise(row.get("lineage") or "All lineages"),
+            "cohort": str(row.get("cohort") or "not supplied"),
+            "source": str(row.get("source") or "not supplied"),
+            "call_rate": _percent_value(row.get("call_rate")),
+            "error_rate": _percent_value(row.get("error_rate")),
+            "baseline_coverage": _percent_value(row.get("baseline_coverage") or row.get("baseline_call_rate")),
+            "baseline_error_rate": _percent_value(row.get("baseline_error_rate") or row.get("baseline_risk")),
+            "matched_coverage": _percent_value(row.get("matched_coverage")),
+            "matched_error_rate": _percent_value(row.get("matched_error_rate")),
+            "sensitivity": _percent_value(row.get("sensitivity")),
+            "specificity": _percent_value(row.get("specificity")),
+            "n_evaluable": _int_value(row.get("n_evaluable") or row.get("n_predictions")),
+            "n_called": _int_value(row.get("n_called")),
+            "n_dropped": _int_value(row.get("n_dropped")),
+            "verdict": humanise(verdict),
+            "verdict_key": verdict.lower().replace("_", "-").replace(" ", "-"),
+            "registry_ready": str(row.get("registry_ready") or "").lower() in {"yes", "true", "1"},
+            "notes": str(row.get("notes") or row.get("reason") or "No benchmark note supplied"),
+        })
+    return out
+
+
+def _percent_value(value) -> Optional[float]:
+    if value is None or value == "":
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    return round(numeric * 100, 2) if numeric <= 1 else round(numeric, 2)
+
+
+def _int_value(value) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
 
 def audit_events(entries: Iterable[dict]) -> list[dict]:
     out = []
@@ -519,7 +633,7 @@ def epistasis_notes(reports: Sequence[dict]) -> list[dict]:
             pairs = item.get("matched_pairs") or []
             variants = []
             for pair in pairs:
-                variants.append(" + ".join(variant_name(v) for v in pair))
+                variants.append(" + ".join(display_variant(v) for v in pair))
             out.append({
                 "drug": humanise(item.get("drug") or "Drug not recorded"),
                 "interaction": humanise(item.get("interaction") or "annotation only"),
@@ -573,6 +687,7 @@ def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
     shaped = {key: [] for key in (
         "population", "mic", "structural", "regulatory", "expression",
         "models", "panels")}
+    gene_list = lambda values: ", ".join(str(item) for item in (values or []))
     for report in reports:
         population = report.get("population_structure")
         if population:
@@ -584,11 +699,11 @@ def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
                 "groups": [{
                     "fraction": _float(group.get("estimated_fraction")),
                     "lineage": humanise(group.get("lineage") or "Not assigned"),
-                    "variants": [variant_name(v) for v in group.get("variant_keys", [])],
+                    "variants": [display_variant(v) for v in group.get("variant_keys", [])],
                     "linkage": str(group.get("linkage_source") or "No molecular linkage supplied"),
                     "note": str(group.get("note") or "Frequency group only; not a reconstructed clone."),
                 } for group in population.get("subpopulations", [])],
-                "unclustered": [variant_name(v) for v in population.get("unclustered_variant_keys", [])],
+                "unclustered": [display_variant(v) for v in population.get("unclustered_variant_keys", [])],
                 "gaps": humanise_all(population.get("data_gaps", [])),
             })
         for row in report.get("quantitative_findings", []) or []:
@@ -608,7 +723,7 @@ def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
             if row.get("ligand_distance") is not None:
                 distance = f"{row['ligand_distance']} {row.get('distance_unit') or ''}".strip()
             shaped["structural"].append({
-                "variant": variant_name(row.get("variant_key") or ""),
+                "variant": display_variant(row.get("variant_key") or ""),
                 "gene": str(row.get("gene") or "Not supplied"),
                 "location": humanise(row.get("location") or "unknown"),
                 "effect": str(row.get("predicted_effect") or "Not supplied"),
@@ -620,7 +735,7 @@ def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
         for row in report.get("regulatory_findings", []) or []:
             shaped["regulatory"].append({
                 "name": str(row.get("name") or "Unnamed region"),
-                "variant": variant_name(row.get("variant_key") or ""),
+                "variant": display_variant(row.get("variant_key") or ""),
                 "type": humanise(row.get("type") or "unknown"),
                 "targets": humanise_all(row.get("target_genes", [])),
                 "drugs": humanise_all(row.get("drug_associations", [])),
@@ -641,7 +756,7 @@ def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
         for row in report.get("in_silico_findings", []) or []:
             basis = row.get("baseline_basis") or {}
             shaped["models"].append({
-                "variant": variant_name(row.get("variant_key") or ""),
+                "variant": display_variant(row.get("variant_key") or ""),
                 "drug": humanise(row.get("drug")),
                 "prediction": humanise(row.get("prediction") or "uncertain"),
                 "confidence": row.get("confidence"),
@@ -660,11 +775,11 @@ def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
                 "assay": humanise(panel.get("assay") or "unknown"),
                 "verified": bool(panel.get("verified")),
                 "loci": panel.get("n_loci"),
-                "kept": humanise_all(panel.get("kept", [])),
-                "discarded": humanise_all(panel.get("discarded", [])),
-                "unsupported": [{"drug": humanise(drug), "missing": humanise_all(missing)}
+                "kept": gene_list(panel.get("kept", [])),
+                "discarded": gene_list(panel.get("discarded", [])),
+                "unsupported": [{"drug": humanise(drug), "missing": gene_list(missing)}
                                 for drug, missing in sorted((panel.get("unsupported_drugs") or {}).items())],
-                "off_panel": humanise_all(panel.get("off_panel_variants", [])),
+                "off_panel": ", ".join(display_variant(v) for v in panel.get("off_panel_variants", [])),
                 "note": str(panel.get("note") or ""),
                 "source": str(panel.get("source") or "Not supplied"),
             })

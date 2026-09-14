@@ -491,16 +491,23 @@ def _meta(data: dict, drugs: Sequence[dict], n_samples: int,
     provenance = data.get("provenance", {})
     estimable = sum(1 for d in drugs if d["estimable"])
     catalogue = provenance.get("catalogue") or {}
-    pairs = [
-        ("Sample", data.get("sample_id", "—")),
-        ("Isolates", n_samples),
+    primary = data.get("sample_id", "—")
+    pairs = []
+    if n_samples > 1:
+        pairs.extend([
+            ("Report scope", f"Cohort report · {n_samples} isolates"),
+            ("Primary isolate", f"{primary} (first record used for interoperability exports)"),
+        ])
+    else:
+        pairs.append(("Report scope", f"Single-isolate report · {primary}"))
+    pairs.extend([
         ("Drugs reported",
          f"{estimable} / {len(drugs)} estimable" if drugs else "—"),
         ("Catalogue", catalogue.get("version") or catalogue.get("name") or "bundled"),
         ("Engines", ", ".join(e.get("name", "") for e in provenance.get("engines", []))
          or "none supplied"),
         ("Lineages", " · ".join(lineages) if lineages else "not recorded"),
-    ]
+    ])
     return "".join(
         f'<div class="meta-item"><div class="k">{_esc(k)}</div>'
         f'<div class="v">{_esc(v)}</div></div>' for k, v in pairs)
@@ -518,6 +525,7 @@ def render_html(report,
                 prevalence_rows: Optional[Iterable[dict]] = None,
                 target_rows: Optional[Iterable[dict]] = None,
                 watchlist_rows: Optional[Iterable[dict]] = None,
+                external_benchmark_rows: Optional[Iterable[dict]] = None,
                 extra_reports: Sequence[Any] = (),
                 reference_method: Optional[str] = None) -> str:
     """Render one self-contained HTML report.
@@ -562,6 +570,10 @@ def render_html(report,
         # came from. The mock shipped a fixed string here.
         "run": {
             "sample_id": data.get("sample_id"),
+            "scope": "cohort" if len(reports) > 1 else "single_isolate",
+            "label": (f"cohort-{len(reports)}-isolates" if len(reports) > 1
+                      else data.get("sample_id")),
+            "primary_sample_id": data.get("sample_id"),
             "fingerprint": provenance.get("analysis_fingerprint"),
             "generated_utc": provenance.get("generated_utc"),
             "tool": provenance.get("tool"),
@@ -586,11 +598,20 @@ def render_html(report,
         "targets": shape.target_evidence(target_rows or []),
         "epistasis": shape.epistasis_notes(reports),
         "watchlist": shape.watchlist_rows(watchlist_rows or []),
+        "external_benchmarks": shape.external_model_benchmarks(external_benchmark_rows or []),
         "workflows": workflows,
         "audit": shape.audit_events(audit_entries or []),
         "validation_outcomes": (validation or {}).get("outcomes", []),
-        "validation_timeline": (validation or {}).get("timeline", []),
-        "federated_sites": list(federated_sites or []),
+        "validation_timeline": [{
+            "date": row.get("date") or row.get("timestamp") or row.get("period") or "Date not supplied",
+            "text": row.get("text") or " — ".join(filter(None, (row.get("title"), row.get("detail")))) or "Validation event",
+        } for row in (validation or {}).get("timeline", [])],
+        "federated_sites": [{
+            "id": row.get("id") or row.get("site") or row.get("site_id") or "Unnamed site",
+            "n": row.get("n") if row.get("n") is not None else row.get("submissions", 0),
+            "k": row.get("k") if row.get("k") is not None else row.get("anonymity_threshold", 0),
+            "status": humanise(row.get("status") or "Not supplied"),
+        } for row in (federated_sites or [])],
         "error_trend": list(error_trend or []),
         "measurability": list(measurability or []),
         # One label source for both sides, so the runtime and the
@@ -620,11 +641,14 @@ def render_html(report,
     # json.dumps with no raw "<" so the payload cannot close the script early.
     encoded = json.dumps(payload, default=str).replace("<", "\\u003c")
 
+    report_label = (f"cohort report, {len(reports)} isolates" if len(reports) > 1
+                    else f"isolate {data.get('sample_id')}")
+
     return (
         "<!doctype html>\n<html lang=\"en\">\n<head>\n"
         "<meta charset=\"utf-8\">\n"
         "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n"
-        f"<title>Myconductor evidence review — {_esc(data.get('sample_id'))}</title>\n"
+        f"<title>Myconductor evidence review — {_esc(report_label)}</title>\n"
         "<style>\n" + _asset("report.css") + "\n</style>\n</head>\n<body>\n"
         '<header class="report-header">\n'
         f'  <div class="scaffold-badge">{_esc(banner)}</div>\n'

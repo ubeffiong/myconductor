@@ -1,5 +1,6 @@
 <nav class="section-nav" id="nav">
   <a href="#summary">Summary</a>
+  <a href="#sample-drilldown">Sample drilldown</a>
   <a href="#bench">Benchmark</a>
   <a href="#calls">Calls</a>
   <a href="#coverage">Coverage</a>
@@ -9,6 +10,7 @@
   <a href="#epistasis">Epistasis</a>
   <a href="#prevalence">Prevalence</a>
   <a href="#watchlist">Watch list</a>
+  <a href="#external-benchmarks">External models</a>
   <a href="#targets">Target evidence</a>
   <a href="#alignment">Alignment</a>
   <a href="#discordance">Discordance</a>
@@ -62,6 +64,22 @@
       <div id="trendChart"></div>
       <p style="font-size:11.5px; color:var(--text-2); margin-top:12px; line-height:1.6">__TREND_PROSE__</p>
     </div>
+  </div>
+</section>
+
+<!-- ============ SAMPLE DRILLDOWN ============ -->
+<section id="sample-drilldown">
+  <div class="section-head">
+    <div class="section-kicker">Cohort navigation · Isolate drilldown</div>
+    <h2 class="section-title">Inspect one sample without changing the cohort-level report</h2>
+    <p class="section-desc">The report remains a cohort summary. Use this filter to inspect one isolate's site, lineage, drug calls, called variants, and locus callability from the same payload.</p>
+  </div>
+  <div class="card sample-filter-card">
+    <div class="sample-filter-row">
+      <label for="sampleFilter">Sample</label>
+      <select id="sampleFilter" aria-label="Sample drilldown filter" onchange="renderSampleDrilldown(this.value)"></select>
+    </div>
+    <div id="sampleDrilldown"></div>
   </div>
 </section>
 
@@ -348,12 +366,13 @@
 <!-- ============ §7 ALIGNMENT ============ -->
 <section id="alignment">
   <div class="section-head">
-    <div class="section-kicker">§ 7 · Variant Alignment</div>
-    <h2 class="section-title">Called variants in context</h2>
-    <p class="section-desc">An alignment of the variants this run actually called, at their real
-    coordinates, with the reference allele beside each. Positions with no record are not drawn:
-    &ldquo;no variant was called here&rdquo; is not the same as knowing the base, and filling the gap
-    with a generated one would be inventing sequence. Click any variant for its evidence card.</p>
+    <div class="section-kicker">§ 7 · Cohort Variant Context</div>
+    <h2 class="section-title">Called variants in genomic context</h2>
+    <p class="section-desc">A cohort-level sequence-style view of the variants this run actually called.
+    The ruler shows observed genomic coordinates, the gene track shows the affected locus, and isolate rows show
+    which cohort members carried each alternate allele. This is not a reconstructed full sequence: unobserved
+    bases are shown as reference/no-call cells rather than invented sequence. Click any variant marker for the
+    evidence card.</p>
   </div>
 
   <div class="card" style="padding:14px">
@@ -363,17 +382,24 @@
         <select id="avLocus" onchange="renderAliView()">
           <option value="">Loading observed loci…</option>
         </select>
-        <label>Isolates</label>
+        <label>Isolates shown</label>
         <select id="avCount" onchange="renderAliView()">
+          <option value="12">12</option>
           <option value="24">24</option>
           <option value="40">40</option>
           <option value="60">60</option>
         </select>
+        <label>Focus</label>
+        <select id="avFocus" onchange="renderAliView()">
+          <option value="all">All called positions</option>
+          <option value="catalogued">Catalogued resistance-associated</option>
+          <option value="uncertain">Uncertain / contextual</option>
+        </select>
         <div class="spacer"></div>
         <div class="av-legend">
-          <span><span class="b" style="background:var(--res)"></span>resistance-associated</span>
-          <span><span class="b" style="background:var(--ind)"></span>uncertain</span>
-          <span><span class="b" style="background:var(--bg)"></span>gap</span>
+          <span><span class="b" style="background:var(--res)"></span>catalogued resistance-associated</span>
+          <span><span class="b" style="background:var(--ind)"></span>uncertain/contextual</span>
+          <span><span class="b" style="background:var(--bg)"></span>not carried in this isolate</span>
         </div>
       </div>
       <div class="av-scroll">
@@ -460,6 +486,16 @@
     <article class="card workflow-card"><div class="card-head"><div class="card-title">Governed model output</div><div class="card-note">approved provenance; no call or ranking effect</div></div><div id="modelWorkflow"></div></article>
     <article class="card workflow-card"><div class="card-head"><div class="card-title">Assay-panel scope</div><div class="card-note">physical coverage limits before callability</div></div><div id="panelWorkflow"></div></article>
   </div>
+</section>
+
+<!-- ============ EXTERNAL MODEL BENCHMARKS ============ -->
+<section id="external-benchmarks">
+  <div class="section-head">
+    <div class="section-kicker">Benchmark bridge · External predictors</div>
+    <h2 class="section-title">External model performance at matched catalogue coverage</h2>
+    <p class="section-desc">Bring-your-own model outputs are benchmarked against the catalogue baseline at the same coverage, so a model is not rewarded for abstaining on hard isolates. Green means the model beat the catalogue at matched coverage; red means it did not; amber means the evidence is incomplete or underpowered.</p>
+  </div>
+  <div id="externalBenchmarkGrid" class="external-benchmark-grid"></div>
 </section>
 
 <!-- ============ §11 VALIDATION ============ -->

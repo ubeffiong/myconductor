@@ -32,6 +32,8 @@ const AUDIT_EVENTS = DATA.audit || [];
 function pct(v, digits){ return (v === null || v === undefined || Number.isNaN(v))
   ? '—' : (digits === undefined ? v : Number(v).toFixed(digits)) + '%'; }
 function num(v){ return (v === null || v === undefined) ? '—' : v; }
+function esc(v){ return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
+function pctFraction(v, digits){ return (v === null || v === undefined || Number.isNaN(v)) ? '—' : (Number(v) * 100).toFixed(digits === undefined ? 1 : digits) + '%'; }
 
 function textColorForError(e){
   if(e === null) return 'var(--text-3)';
@@ -679,95 +681,103 @@ function renderAliView(){
   if(select && !select.dataset.filled){
     select.innerHTML = ids.map(id => {
       const l = LOCI[id];
-      return `<option value="${id}">${l.name} \u00b7 ${l.positions.length} position(s)</option>`;
+      const nPos = (l.positions || []).length;
+      const nCarriers = new Set((l.positions || []).flatMap(v => v.carriers || [])).size;
+      return `<option value="${esc(id)}">${esc(l.name)} · ${nPos} position(s) · ${nCarriers} carrier(s)</option>`;
     }).join('');
     select.dataset.filled = '1';
   }
   const locusId = (select && LOCI[select.value]) ? select.value : ids[0];
   const locus = LOCI[locusId];
-  const positions = locus.positions || [];
+  const focus = (document.getElementById('avFocus') || {}).value || 'all';
+  const sourcePositions = locus.positions || [];
+  const positions = sourcePositions.filter(v =>
+    focus === 'all' || (focus === 'catalogued' ? v.catalogued : !v.catalogued));
   const isolates = (locus.isolates || []).slice(
-    0, parseInt((document.getElementById('avCount') || {}).value || '24', 10));
+    0, parseInt((document.getElementById('avCount') || {}).value || '12', 10));
+  const cellW = 46;
 
   if(!positions.length){
-    return emptyState('avContent', `No called positions in ${locus.name}`,
-      'The locus was examined but carried no variant record.');
+    return emptyState('avContent', `No ${focus} positions in ${locus.name}`,
+      'The current filter removed every observed position for this locus. Choose all called positions to return to the complete context view.');
   }
 
-  let html = '';
-  html += `<div class="av-row track"><div class="av-label">Position</div><div class="av-ruler">`;
+  const posByKey = new Map(positions.map(v => [String(v.pos), v]));
+  const locusStart = Math.min(...positions.map(v => Number(v.pos)));
+  const locusEnd = Math.max(...positions.map(v => Number(v.pos)));
+  const carrierTotal = new Set(positions.flatMap(v => v.carriers || [])).size;
+  const positionTotal = positions.length;
+
+  let html = `<div class="av-summary">
+    <div><span class="av-summary-k">Locus</span><strong>${esc(locus.name)}</strong><small>${esc(locus.assembly || 'reference')}</small></div>
+    <div><span class="av-summary-k">Observed span</span><strong>${locusStart.toLocaleString()}–${locusEnd.toLocaleString()}</strong><small>${positionTotal} called position(s)</small></div>
+    <div><span class="av-summary-k">Cohort carriers</span><strong>${carrierTotal}/${(locus.isolates || []).length}</strong><small>within rendered report payload</small></div>
+    <div><span class="av-summary-k">Evidence mix</span><strong>${positions.filter(v=>v.catalogued).length} catalogued</strong><small>${positions.filter(v=>!v.catalogued).length} contextual/uncertain</small></div>
+  </div>`;
+
+  html += `<div class="av-row track"><div class="av-label">Coordinate</div><div class="av-ruler">`;
   positions.forEach(v => {
-    html += `<div class="av-tick major" style="width:${9 * Math.max(1, String(v.pos).length)}px;min-width:34px;text-align:left;padding-left:3px">${v.pos}</div>`;
+    html += `<button class="av-tick major" style="width:${cellW}px;min-width:${cellW}px" data-pos="${v.pos}" title="${esc(v.display || v.label || '')}">${v.pos}</button>`;
   });
   html += `</div></div>`;
 
-  html += `<div class="av-row track-gene"><div class="av-label">Gene</div>
-    <div style="display:flex;padding:0 4px;align-items:center;height:100%">
-    <div style="width:${positions.length*34}px;height:16px;background:linear-gradient(90deg,var(--accent),var(--accent-line));border-radius:3px;position:relative">
-      <span style="position:absolute;left:10px;top:-1px;font-size:10px;color:#fff;font-weight:700;letter-spacing:.05em">${locus.name}</span>
-    </div></div></div>`;
+  html += `<div class="av-row track-gene"><div class="av-label">Gene model</div>
+    <div class="av-gene-track" style="width:${positions.length*cellW}px;min-width:${positions.length*cellW}px">
+      <span>${esc(locus.name)}</span>${positions.map(v => `<i class="${v.catalogued ? 'hot' : 'uncertain'}" style="left:${positions.indexOf(v)*cellW + cellW/2}px" title="${esc(v.display || v.label)}"></i>`).join('')}
+    </div></div>`;
 
-  html += `<div class="av-row track"><div class="av-label">Change</div><div class="av-seq">`;
-  positions.forEach(v => {
-    html += `<div class="av-base ${v.catalogued ? 'variant' : 'variant ind'}"
-      style="width:34px;min-width:34px" title="${v.label || ''}">${v.ref}\u2192${v.alt}</div>`;
-  });
-  html += `</div></div>`;
-
-  html += `<div class="av-row track"><div class="av-label"><span class="lid">REF</span><span class="llin">${locus.assembly || 'reference'}</span></div><div class="av-seq">`;
-  positions.forEach(v => {
-    html += `<div class="av-base ${v.ref}" style="width:34px;min-width:34px">${v.ref}</div>`;
-  });
-  html += `</div></div>`;
+  const track = (label, values, cls='') => {
+    html += `<div class="av-row track"><div class="av-label">${label}</div><div class="av-seq ${cls}">` + values.join('') + `</div></div>`;
+  };
+  track('Reference', positions.map(v => `<div class="av-base ${esc(v.ref)}" style="width:${cellW}px;min-width:${cellW}px">${esc(v.ref)}</div>`));
+  track('Alternate', positions.map(v => `<div class="av-base ${v.catalogued ? 'variant' : 'variant ind'}" style="width:${cellW}px;min-width:${cellW}px" title="${esc(v.display || v.label)}">${esc(v.alt)}</div>`));
+  track('Consequence', positions.map(v => `<div class="av-annotation" style="width:${cellW}px;min-width:${cellW}px" title="${esc(v.display || '')}">${esc((v.consequence || '—').replace(' ', '\n'))}</div>`));
+  track('Drug', positions.map(v => `<div class="av-annotation drug" style="width:${cellW}px;min-width:${cellW}px" title="${esc((v.drugs || []).join(', '))}">${esc((v.drugs || ['—'])[0])}</div>`));
+  track('Carriers', positions.map(v => `<div class="av-carrier-bar" style="width:${cellW}px;min-width:${cellW}px"><span style="height:${Math.max(4, Math.round((v.carrier_fraction || 0) * 34))}px" class="${v.catalogued ? 'hot' : 'uncertain'}"></span><em>${esc(v.carrier_count || 0)}</em></div>`), 'carrier-track');
 
   isolates.forEach(iso => {
-    html += `<div class="av-row"><div class="av-label"><span class="lid">${iso.id}</span><span class="llin">${iso.lineage || 'untyped'}</span></div><div class="av-seq">`;
+    html += `<div class="av-row"><div class="av-label"><span class="lid">${esc(iso.id)}</span><span class="llin">${esc(iso.lineage || 'untyped')}</span></div><div class="av-seq">`;
     positions.forEach(v => {
-      const carried = (iso.carried || []).indexOf(String(v.pos)) >= 0;
-      if(carried){
-        html += `<div class="av-base ${v.catalogued ? 'variant' : 'variant ind'}"
-          style="width:34px;min-width:34px"
-          data-iso="${iso.id}" data-lin="${iso.lineage || 'untyped'}" data-pos="${v.pos}"
-          data-ref="${v.ref}" data-alt="${v.alt}" data-label="${v.label || ''}"
-          data-drug="${(v.drugs || []).join(', ')}">${v.alt}</div>`;
+      const variant = (iso.variants || {})[String(v.pos)];
+      if(variant){
+        const payload = encodeURIComponent(JSON.stringify({ iso: iso.id, lineage: iso.lineage, site: iso.site, locus: locus.name, ...v, isolateVariant: variant }));
+        html += `<button class="av-base ${v.catalogued ? 'variant' : 'variant ind'}"
+          style="width:${cellW}px;min-width:${cellW}px"
+          data-variant="${payload}" title="${esc(iso.id)} carries ${esc(v.display || v.label)}">${esc(v.alt)}</button>`;
       } else {
-        html += `<div class="av-base ${v.ref}" style="width:34px;min-width:34px"
-          title="reference allele at this position">${v.ref}</div>`;
+        html += `<div class="av-base refcall" style="width:${cellW}px;min-width:${cellW}px" title="No alternate allele reported for ${esc(iso.id)} at ${v.pos}">${esc(v.ref)}</div>`;
       }
     });
     html += `</div></div>`;
   });
 
-  if(locus.coverage && locus.coverage.length === positions.length){
-    html += `<div class="av-row track"><div class="av-label">Callable</div><div class="av-cov">`;
-    locus.coverage.forEach(fraction => {
-      if(fraction === null){
-        html += `<div class="av-cov-bar crit" style="height:4px" title="no coverage evidence"></div>`;
-      } else {
-        const hh = Math.max(4, Math.round(fraction * 34));
-        const cls = fraction < 0.5 ? 'crit' : fraction < 0.8 ? 'low' : '';
-        html += `<div class="av-cov-bar ${cls}" style="height:${hh}px;width:34px"
-          title="${Math.round(fraction*100)}% callable"></div>`;
-      }
-    });
-    html += `</div></div>`;
-  }
+  html += `<div class="av-position-cards">`;
+  positions.forEach(v => {
+    html += `<button class="av-position-card ${v.catalogued ? 'catalogued' : 'uncertain'}" data-variant="${encodeURIComponent(JSON.stringify({ locus: locus.name, ...v }))}">
+      <strong>${esc(v.display || v.label || `${v.ref}${v.pos}${v.alt}`)}</strong>
+      <span>${esc((v.drugs || []).join(', ') || 'drug not mapped')}</span>
+      <small>${esc((v.calls || []).join(', ') || 'call not supplied')} · ${esc((v.tiers || []).join(', ') || 'tier not supplied')} · ${pctFraction(v.carrier_fraction)} carriers</small>
+    </button>`;
+  });
+  html += `</div>`;
 
   content.innerHTML = html;
 
-  content.querySelectorAll('.av-base.variant[data-pos]').forEach(el => {
+  content.querySelectorAll('[data-variant]').forEach(el => {
+    const data = () => JSON.parse(decodeURIComponent(el.dataset.variant));
     el.addEventListener('mouseenter', ev => {
-      showTip(ev, `<div class="tt-head"><div class="tt-title">${el.dataset.pos} ${el.dataset.ref}\u2192${el.dataset.alt}</div>
-          <div class="tt-sub">${locus.name}${el.dataset.drug ? ' \u00b7 ' + el.dataset.drug : ''}</div></div>
+      const v = data();
+      showTip(ev, `<div class="tt-head"><div class="tt-title">${esc(v.display || v.label || `${v.ref}${v.pos}${v.alt}`)}</div>
+          <div class="tt-sub">${esc(v.locus || locus.name)}${v.drugs && v.drugs.length ? ' · ' + esc(v.drugs.join(', ')) : ''}</div></div>
         <div class="tt-body">
-          <div class="tt-row"><span class="tt-k">Isolate</span><span class="tt-v">${el.dataset.iso}</span></div>
-          <div class="tt-row"><span class="tt-k">Lineage</span><span class="tt-v">${el.dataset.lin}</span></div>
-          <div class="tt-row"><span class="tt-k">Change</span><span class="tt-v">${el.dataset.label || '\u2014'}</span></div>
-          <div class="tt-section"><div class="tt-note">Positions shown are those with a real record in this run. A variant not in the catalogue is held at INDETERMINATE.</div></div>
+          <div class="tt-row"><span class="tt-k">Position</span><span class="tt-v">${esc(v.pos)}</span></div>
+          <div class="tt-row"><span class="tt-k">Change</span><span class="tt-v">${esc(v.ref)}→${esc(v.alt)}</span></div>
+          <div class="tt-row"><span class="tt-k">Carriers</span><span class="tt-v">${esc(v.carrier_count || 0)} (${pctFraction(v.carrier_fraction)})</span></div>
+          <div class="tt-section"><div class="tt-note">${v.catalogued ? 'Catalogued evidence can establish resistance when the catalogue and coverage gates support it.' : 'Contextual or uncertain evidence is retained for review and cannot establish resistance by itself.'}</div></div>
         </div>`);
     });
     el.addEventListener('mouseleave', hideTip);
-    el.addEventListener('click', () => openVariantDrill(el.dataset));
+    el.addEventListener('click', () => openVariantDrill(data()));
   });
 }
 
@@ -837,7 +847,7 @@ function renderVUS(){
    MECH CARDS
    ========================================================== */
 function renderMech(){
-  if(!(MECH_CARDS) || !(MECH_CARDS).length){ return emptyState('mechGrid', 'No mechanism hypotheses', 'No lane raised a named mechanism for this sample.'); }
+  if(!(MECH_CARDS) || !(MECH_CARDS).length){ return emptyState('mechGrid', 'No mechanism hypotheses', 'No lane raised a named mechanism for the rendered report scope.'); }
   const g = document.getElementById('mechGrid');
   g.innerHTML = MECH_CARDS.map((m,i)=>`
     <div class="mech-card" onclick="openMechDrill(${i})" style="cursor:pointer">
@@ -1068,35 +1078,55 @@ function evidenceChain(call, drug){
 }
 
 function openVariantDrill(d){
+  const title = d.display || d.label || `${d.ref || ''}${d.pos || ''}${d.alt || ''}`;
+  const rationales = (d.rationales || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li>No rationale text supplied for this evidence record.</li>';
+  const limitations = (d.limitations || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li>No additional limitation text supplied.</li>';
+  const ids = (d.evidence_ids || []).map(x => `<span class="tag engine">${esc(x)}</span>`).join(' ') || '<span class="tag na">No evidence id</span>';
+  const isoRows = d.iso ? `<span class="k">Selected isolate</span><span class="v">${esc(d.iso)}</span>
+        <span class="k">Lineage</span><span class="v">${esc(d.lineage || d.lin || 'untyped')}</span>
+        <span class="k">Site</span><span class="v">${esc(d.site || 'site not recorded')}</span>` : '';
   const body = `
     <div class="drill-section">
-      <h4>Variant</h4>
+      <h4>Variant identity</h4>
       <div class="drill-kv">
-        <span class="k">Position</span><span class="v">${d.pos}</span>
-        <span class="k">Change</span><span class="v">${d.ref} → ${d.alt}</span>
-        <span class="k">Isolate</span><span class="v">${d.iso}</span>
-        <span class="k">Lineage</span><span class="v">${d.lin}</span>
+        <span class="k">Locus</span><span class="v">${esc(d.locus || '—')}</span>
+        <span class="k">Position</span><span class="v">${esc(d.pos || '—')}</span>
+        <span class="k">Allele change</span><span class="v">${esc(d.ref || '—')} → ${esc(d.alt || '—')}</span>
+        <span class="k">HGVS / amino-acid change</span><span class="v">${esc(d.change || d.label || 'not supplied')}</span>
+        <span class="k">Consequence</span><span class="v">${esc(d.consequence || 'not supplied')}</span>
+        ${isoRows}
       </div>
     </div>
     <div class="drill-section">
-      <h4>Effect on call</h4>
-      <div class="evidence-block ind"><div class="tier">Pending</div><div class="src">Depends on catalogue entry</div><div class="detail">Whether this position drives a resistance call depends on the catalogue entry for this codon and the drug under assessment. If the variant is not catalogued, the call will be INDETERMINATE.</div></div>
+      <h4>Evidence effect</h4>
+      <div class="evidence-block ${d.catalogued ? 'res' : 'ind'}"><div class="tier">${d.catalogued ? 'Catalogued resistance-associated' : 'Contextual / uncertain'}</div><div class="src">${esc((d.drugs || []).join(', ') || 'Drug mapping not supplied')}</div><div class="detail">${d.catalogued ? 'This mutation is represented by catalogued evidence in the report payload. The final drug call still remains coverage-gated and evidence-tier-gated.' : 'This mutation is visible because it was observed in a resistance-associated context, but it is not sufficient to establish resistance without stronger evidence.'}</div></div>
     </div>
     <div class="drill-section">
-      <h4>Evidence context</h4>
+      <h4>Cohort context</h4>
       <div class="drill-kv">
-        <span class="k">Conservation</span><span class="v">high (phyloP &gt; 2)</span>
-        <span class="k">Structural</span><span class="v">in drug-binding pocket</span>
-        <span class="k">Catalogue</span><span class="v">tier 2 (likely)</span>
+        <span class="k">Carriers in report</span><span class="v">${esc(d.carrier_count || 0)} (${pctFraction(d.carrier_fraction)})</span>
+        <span class="k">Calls represented</span><span class="v">${esc((d.calls || []).join(', ') || 'not supplied')}</span>
+        <span class="k">Evidence tiers</span><span class="v">${esc((d.tiers || []).join(', ') || 'not supplied')}</span>
+        <span class="k">Evidence lanes</span><span class="v">${esc((d.lanes || []).join(', ') || 'not supplied')}</span>
+        <span class="k">Mean VAF</span><span class="v">${d.mean_vaf === null || d.mean_vaf === undefined ? '—' : pctFraction(d.mean_vaf)}</span>
+        <span class="k">Median depth</span><span class="v">${num(d.median_depth)}</span>
       </div>
+    </div>
+    <div class="drill-section">
+      <h4>Rationale and limitations</h4>
+      <ul class="drill-list">${rationales}</ul>
+      <h4 style="margin-top:12px">Limitations</h4>
+      <ul class="drill-list">${limitations}</ul>
+      <div style="margin-top:10px">${ids}</div>
     </div>
     <div class="drill-actions">
       <button onclick="downloadReport('vcf')">Download variant VCF</button>
       <button onclick="panel.classList.remove('open')">Close</button>
     </div>
   `;
-  openPanel(`${d.ref}${d.pos}${d.alt}`, body);
+  openPanel(title, body);
 }
+
 
 function openVUSDrill(rank){
   const v = VUS_ITEMS.find(x=>x.rank===rank);
@@ -1185,7 +1215,7 @@ function downloadReport(kind){
      purpose is coordinates. An export that cannot be built from real data
      emits a header comment saying so and writes no rows. */
   const run = DATA.run || {};
-  const stamp = run.sample_id || 'report';
+  const stamp = run.label || run.sample_id || 'report';
   const NL = String.fromCharCode(10);
   const TAB = String.fromCharCode(9);
 
@@ -1440,9 +1470,10 @@ function renderPrevalence(){
   const fields = [['drug','Drug'],['lineage','Lineage'],['geography','Geography']];
   document.getElementById('prevalenceFilters').innerHTML = fields.map(function(pair){
     const field=pair[0], label=pair[1];
-    return `<label>${label}<select onchange="setPrevalence('${field}',this.value)">
+    const id = `prev-${field}`;
+    return `<div class="filter-field"><label for="${id}">${label}</label><select id="${id}" aria-label="${label}" onchange="setPrevalence('${field}',this.value)">
       <option>All</option>${uniqueValues(field).map(function(v){ return `<option${prevalenceState[field]===v?' selected':''}>${safeText(v)}</option>`; }).join('')}
-      </select></label>`;
+      </select></div>`;
   }).join('');
   const rows = PREVALENCE.filter(function(r){
     return fields.every(function(pair){ return prevalenceState[pair[0]]==='All' || r[pair[0]]===prevalenceState[pair[0]]; });

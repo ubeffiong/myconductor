@@ -8,6 +8,7 @@
     mycobench fetch-phenotypes  --out-dir DIR [--cohort-out C]
     mycobench run               --cohort NAME [--stages ...] [--write-script F]
     mycobench report            --results-dir R [--out report.html]
+    mycobench benchmark-model   --predictions P --phenotypes T --baseline B --model-id ID --model-version V
     mycobench version
 """
 from __future__ import annotations
@@ -354,6 +355,66 @@ def _run_report(args) -> int:
 
 # -- analyse --------------------------------------------------------------
 
+def _run_benchmark_model(args) -> int:
+    """Benchmark externally supplied per-isolate model predictions."""
+    import json
+    from datetime import datetime, timezone
+
+    from .analysis import external_model
+    from .cohort import write_rows
+
+    predictions = external_model.load_predictions(args.predictions)
+    truths = external_model.load_truths(args.phenotypes)
+    baselines, baseline_source = external_model.load_catalogue_baselines(args.baseline)
+    print(f"[benchmark-model] predictions {args.predictions}")
+    print(f"[benchmark-model] phenotypes  {args.phenotypes}")
+    print(f"[benchmark-model] baseline    {args.baseline}")
+
+    results = external_model.measure_external_model(
+        predictions, truths, baselines, drugs=tuple(args.drug) if args.drug else None,
+        model_id=args.model_id, model_version=args.model_version,
+        cohort=args.cohort, source=args.source, lineage=args.lineage,
+        baseline_source=baseline_source)
+    out_dir = Path(args.out_dir)
+    rows = external_model.result_rows(results)
+    written = [write_rows(out_dir / "external_model_benchmark.tsv", rows,
+                          external_model.RESULT_COLUMNS)]
+
+    payload = external_model.payload(
+        results, model_id=args.model_id, model_version=args.model_version,
+        training_data_provenance=args.training_data_provenance,
+        organism=args.organism)
+    payload["provenance"] = {
+        "mycobench_version": __version__,
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "predictions": str(args.predictions),
+        "phenotypes": str(args.phenotypes),
+        "baseline": str(args.baseline),
+        "baseline_source": baseline_source,
+    }
+    manifest = out_dir / "external_model_benchmark.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    written.append(manifest)
+
+    for drug, result in sorted(results.items()):
+        matched = result.comparison.matched
+        matched_text = ("no matched point" if matched is None else
+                        f"risk {matched.selective_risk:.3f} at coverage {matched.coverage:.3f}"
+                        if matched.selective_risk is not None else
+                        f"coverage {matched.coverage:.3f}; risk underpowered")
+        print(f"  {drug}: {result.comparison.verdict} ({matched_text}); "
+              f"{len(result.dropped)} dropped")
+        for reason in result.comparison.reasons:
+            print(f"      note: {reason}")
+
+    for path in written:
+        print(f"Wrote {path}")
+    print("Registry-ready rows are included in external_model_benchmark.json; "
+          "ModelRegistry approval still performs its own governance check.")
+    return 0
+
+
 def _run_baseline(args) -> int:
     """Measure what the incumbent catalogue achieves on this cohort."""
     import json
@@ -654,6 +715,27 @@ def build_parser() -> argparse.ArgumentParser:
     an.add_argument("--independent-clusters", action="store_true",
                     help="Keep one deterministic representative per patient and reviewed genetic cluster.")
     an.set_defaults(func=_run_analyse)
+
+    bm = sub.add_parser(
+        "benchmark-model",
+        help="Benchmark an external TB-AMR predictor from per-isolate predictions.")
+    bm.add_argument("--predictions", required=True,
+                    help="TSV/CSV with isolate_id, drug, predicted, optional confidence.")
+    bm.add_argument("--phenotypes", required=True,
+                    help="Generic phenotype TSV/CSV or CRyPTIC reuse table.")
+    bm.add_argument("--baseline", required=True,
+                    help="catalogue_baseline.json or catalogue_baseline.tsv from mycobench baseline.")
+    bm.add_argument("--model-id", required=True)
+    bm.add_argument("--model-version", required=True)
+    bm.add_argument("--training-data-provenance", required=True,
+                    help="Training-data reference recorded in the registry payload.")
+    bm.add_argument("--out-dir", default="results/external-model")
+    bm.add_argument("--cohort", default="external-evaluation")
+    bm.add_argument("--source", default="external prediction file")
+    bm.add_argument("--lineage", default="unknown")
+    bm.add_argument("--organism", default="mtbc")
+    bm.add_argument("--drug", action="append")
+    bm.set_defaults(func=_run_benchmark_model)
 
     from .analysis.baseline import ASSESSED_FRACTION_FOR_SUSCEPTIBLE
 

@@ -1,0 +1,3227 @@
+{
+  "sample_id": "MTB-DEMO-001",
+  "drug_results": [
+    {
+      "drug": "amikacin",
+      "call": "indeterminate",
+      "tier": "inferred",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "amikacin",
+          "call": "indeterminate",
+          "tier": "inferred",
+          "lane": "efflux_regulatory",
+          "confidence": null,
+          "variant": {
+            "gene": "eis",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 2715342,
+            "ref": "C",
+            "alt": "T",
+            "hgvs_c": "c.-14C>T",
+            "hgvs_p": null,
+            "consequence": "upstream"
+          },
+          "rationale": "Regulatory variant upstream of eis (c.-14C>T): may modulate expression affecting amikacin. Effect size unmeasured — susceptibility withheld.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-efflux-rules",
+            "version": "0.2.0",
+            "database": "drug_loci.json (efflux_regulators, promoter_loci)",
+            "database_version": null
+          },
+          "limitations": [
+            "no expression evidence: de-repression is inferred from gene membership alone, not measured",
+            "rule-based inference, not graded catalogue evidence and not a validated predictive model"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "8e08f3a398faf9f4050c4af7db947fd818ae2e6fc9bc516d648bf870aa5c8f80"
+        },
+        {
+          "drug": "amikacin",
+          "call": "indeterminate",
+          "tier": "none",
+          "lane": "vus",
+          "confidence": null,
+          "variant": {
+            "gene": "eis",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 2715342,
+            "ref": "C",
+            "alt": "T",
+            "hgvs_c": "c.-14C>T",
+            "hgvs_p": null,
+            "consequence": "upstream"
+          },
+          "rationale": "Uninterpreted upstream variant eis_c.-14C>T in eis, a locus relevant to amikacin. Susceptibility cannot be concluded; resistance is not asserted.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-vus-workbench",
+            "version": "0.2.0",
+            "database": "NullAnnotator",
+            "database_version": null
+          },
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "11a5a0dbb36786340a9d258460f62d50dc24f2f5e06a63ed977e026aa65f53a4"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "rrs",
+          "mean_depth": null,
+          "callable_fraction": null,
+          "source": "absent"
+        }
+      ],
+      "reason": "Regulatory variant upstream of eis (c.-14C>T): may modulate expression affecting amikacin. Effect size unmeasured — susceptibility withheld.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "insufficient"
+    },
+    {
+      "drug": "bedaquiline",
+      "call": "indeterminate",
+      "tier": "inferred",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "bedaquiline",
+          "call": "indeterminate",
+          "tier": "inferred",
+          "lane": "efflux_regulatory",
+          "confidence": null,
+          "variant": {
+            "gene": "Rv0678",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 4247429,
+            "ref": "T",
+            "alt": "G",
+            "hgvs_c": null,
+            "hgvs_p": "L117R",
+            "consequence": "missense"
+          },
+          "rationale": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-efflux-rules",
+            "version": "0.2.0",
+            "database": "drug_loci.json (efflux_regulators, promoter_loci)",
+            "database_version": null
+          },
+          "limitations": [
+            "no expression evidence: de-repression is inferred from gene membership alone, not measured",
+            "rule-based inference, not graded catalogue evidence and not a validated predictive model",
+            "a missense change in a regulator carries materially weaker evidence than loss of function; prioritise it for validation rather than acting on it"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "7890ce574ab02bf4fc3f9069d1abd4532870041c21c0078a9da40311c02328ad"
+        },
+        {
+          "drug": "bedaquiline",
+          "call": "indeterminate",
+          "tier": "none",
+          "lane": "vus",
+          "confidence": null,
+          "variant": {
+            "gene": "Rv0678",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 4247429,
+            "ref": "T",
+            "alt": "G",
+            "hgvs_c": null,
+            "hgvs_p": "L117R",
+            "consequence": "missense"
+          },
+          "rationale": "Uninterpreted missense variant Rv0678_L117R in Rv0678, a locus relevant to bedaquiline. Susceptibility cannot be concluded; resistance is not asserted.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-vus-workbench",
+            "version": "0.2.0",
+            "database": "NullAnnotator",
+            "database_version": null
+          },
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "3cc83364bd489663176a882897515aabb63116b90f4f3e90763930251ae1d69d"
+        },
+        {
+          "drug": "bedaquiline",
+          "call": "indeterminate",
+          "tier": "predicted",
+          "lane": "engine",
+          "confidence": null,
+          "variant": null,
+          "rationale": "Expression observation for Rv0678: reported elevated. Drug response remains unestablished by expression.",
+          "who_grade": null,
+          "engine": null,
+          "limitations": [
+            "Fold change alone does not establish overexpression, efflux activity or resistance."
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": "MTB-DEMO-001",
+          "observation_id": "SYN-EXP-001",
+          "scope": "isolate",
+          "metadata": {
+            "expression_observation": {
+              "gene": "Rv0678",
+              "measurement_type": "rna_seq",
+              "expression_level": 7.2,
+              "reference_level": 1.0,
+              "fold_change": 7.2,
+              "provenance": "Synthetic RNA-seq run 11",
+              "sample_id": "MTB-DEMO-001",
+              "observation_id": "SYN-EXP-001",
+              "isolate_id": "ISO-DEMO-001",
+              "site_id": "SYNTHETIC-SITE-01",
+              "organism": "mtbc",
+              "unit": "normalised counts",
+              "timestamp": "2026-04-01",
+              "confidence": 0.88,
+              "reported_conclusion": "elevated",
+              "interpretation_source": "Synthetic analysis plan",
+              "linked_variant_keys": [
+                "NC_000962.3:NC_000962.3:4247429:T>G"
+              ],
+              "linkage_source": "Same synthetic isolate",
+              "measurement_scale": "reported_metric"
+            }
+          },
+          "evidence_id": "0272d1c5ebe7cddd60eeffe57af71d0159c295ed91c6c0df0653ff5e3b8f8712"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "atpE",
+          "mean_depth": 78,
+          "callable_fraction": 1.0,
+          "source": "depth-table"
+        },
+        {
+          "locus": "Rv0678",
+          "mean_depth": 48,
+          "callable_fraction": 0.97,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "clofazimine",
+      "call": "indeterminate",
+      "tier": "inferred",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "clofazimine",
+          "call": "indeterminate",
+          "tier": "inferred",
+          "lane": "efflux_regulatory",
+          "confidence": null,
+          "variant": {
+            "gene": "Rv0678",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 4247429,
+            "ref": "T",
+            "alt": "G",
+            "hgvs_c": null,
+            "hgvs_p": "L117R",
+            "consequence": "missense"
+          },
+          "rationale": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-efflux-rules",
+            "version": "0.2.0",
+            "database": "drug_loci.json (efflux_regulators, promoter_loci)",
+            "database_version": null
+          },
+          "limitations": [
+            "no expression evidence: de-repression is inferred from gene membership alone, not measured",
+            "rule-based inference, not graded catalogue evidence and not a validated predictive model",
+            "a missense change in a regulator carries materially weaker evidence than loss of function; prioritise it for validation rather than acting on it"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "3cb94f58df26be9fd201de13a8c5e65a58fad9443a05fd54a117a24343aa220f"
+        },
+        {
+          "drug": "clofazimine",
+          "call": "indeterminate",
+          "tier": "none",
+          "lane": "vus",
+          "confidence": null,
+          "variant": {
+            "gene": "Rv0678",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 4247429,
+            "ref": "T",
+            "alt": "G",
+            "hgvs_c": null,
+            "hgvs_p": "L117R",
+            "consequence": "missense"
+          },
+          "rationale": "Uninterpreted missense variant Rv0678_L117R in Rv0678, a locus relevant to clofazimine. Susceptibility cannot be concluded; resistance is not asserted.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-vus-workbench",
+            "version": "0.2.0",
+            "database": "NullAnnotator",
+            "database_version": null
+          },
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "ae2110ed03b5297b21998c872a3ef429c19db307560ddbf7c03ec0cc10080b6a"
+        },
+        {
+          "drug": "clofazimine",
+          "call": "indeterminate",
+          "tier": "predicted",
+          "lane": "engine",
+          "confidence": null,
+          "variant": null,
+          "rationale": "Expression observation for Rv0678: reported elevated. Drug response remains unestablished by expression.",
+          "who_grade": null,
+          "engine": null,
+          "limitations": [
+            "Fold change alone does not establish overexpression, efflux activity or resistance."
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": "MTB-DEMO-001",
+          "observation_id": "SYN-EXP-001",
+          "scope": "isolate",
+          "metadata": {
+            "expression_observation": {
+              "gene": "Rv0678",
+              "measurement_type": "rna_seq",
+              "expression_level": 7.2,
+              "reference_level": 1.0,
+              "fold_change": 7.2,
+              "provenance": "Synthetic RNA-seq run 11",
+              "sample_id": "MTB-DEMO-001",
+              "observation_id": "SYN-EXP-001",
+              "isolate_id": "ISO-DEMO-001",
+              "site_id": "SYNTHETIC-SITE-01",
+              "organism": "mtbc",
+              "unit": "normalised counts",
+              "timestamp": "2026-04-01",
+              "confidence": 0.88,
+              "reported_conclusion": "elevated",
+              "interpretation_source": "Synthetic analysis plan",
+              "linked_variant_keys": [
+                "NC_000962.3:NC_000962.3:4247429:T>G"
+              ],
+              "linkage_source": "Same synthetic isolate",
+              "measurement_scale": "reported_metric"
+            }
+          },
+          "evidence_id": "5ffae52589321499e36862d831c9a539356c2a38061222e3500a0fb48209cedb"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "Rv0678",
+          "mean_depth": 48,
+          "callable_fraction": 0.97,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "ethambutol",
+      "call": "resistant",
+      "tier": "catalogued",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "ethambutol",
+          "call": "resistant",
+          "tier": "catalogued",
+          "lane": "catalogue",
+          "confidence": 0.88,
+          "variant": {
+            "gene": "embB",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 4247574,
+            "ref": "A",
+            "alt": "G",
+            "hgvs_c": null,
+            "hgvs_p": "M306V",
+            "consequence": "missense"
+          },
+          "rationale": "Catalogued resistant for ethambutol (grade: Assoc w R).",
+          "who_grade": "Assoc w R",
+          "engine": {
+            "name": "myconductor-bundled-catalogue",
+            "version": "0.2.0",
+            "database": "mtb_amr_catalogue.json",
+            "database_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)"
+          },
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ],
+          "catalogue_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)",
+          "rule_id": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue):embB_M306V:ethambutol:resistant",
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "variant",
+          "metadata": {},
+          "evidence_id": "744a47d6f064a23025cdf263b0cb4efdcc30dfdc231dd8295349e9f872807175"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "embB",
+          "mean_depth": 71,
+          "callable_fraction": 0.99,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "Catalogued resistant for ethambutol (grade: Assoc w R).",
+      "genomic_call": "resistant",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "isoniazid",
+      "call": "indeterminate",
+      "tier": "catalogued",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "isoniazid",
+          "call": "resistant",
+          "tier": "catalogued",
+          "lane": "catalogue",
+          "confidence": 0.98,
+          "variant": {
+            "gene": "katG",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 2155168,
+            "ref": "G",
+            "alt": "C",
+            "hgvs_c": null,
+            "hgvs_p": "S315T",
+            "consequence": "missense"
+          },
+          "rationale": "Catalogued resistant for isoniazid (grade: Assoc w R).",
+          "who_grade": "Assoc w R",
+          "engine": {
+            "name": "myconductor-bundled-catalogue",
+            "version": "0.2.0",
+            "database": "mtb_amr_catalogue.json",
+            "database_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)"
+          },
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ],
+          "catalogue_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)",
+          "rule_id": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue):katG_S315T:isoniazid:resistant",
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "variant",
+          "metadata": {},
+          "evidence_id": "593bc1e969749751073b081b9180d9cbee218a329198d1703ee3b25f01ef3992"
+        },
+        {
+          "drug": "isoniazid",
+          "call": "resistant",
+          "tier": "catalogued",
+          "lane": "engine",
+          "confidence": null,
+          "variant": null,
+          "rationale": "Synthetic TB-Profiler resistance assertion.",
+          "who_grade": null,
+          "engine": null,
+          "limitations": [],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "323058b619a230da50da744ec01cd9000a7d91a169c0cad149415ac44834a62f"
+        },
+        {
+          "drug": "isoniazid",
+          "call": "susceptible",
+          "tier": "none",
+          "lane": "engine",
+          "confidence": null,
+          "variant": null,
+          "rationale": "Synthetic Mykrobe assertion used to exercise engine discordance.",
+          "who_grade": null,
+          "engine": null,
+          "limitations": [],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "0c9a6afd0a81c50b17a7d05c1fb396d6e4121fd5779445af2867fe921d318751"
+        }
+      ],
+      "discordance": {
+        "drug": "isoniazid",
+        "calls": [
+          "resistant",
+          "susceptible"
+        ],
+        "sources": [
+          "myconductor-bundled-catalogue",
+          "engine"
+        ],
+        "note": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+        "context": []
+      },
+      "coverage": [
+        {
+          "locus": "katG",
+          "mean_depth": 82,
+          "callable_fraction": 1.0,
+          "source": "depth-table"
+        },
+        {
+          "locus": "fabG1",
+          "mean_depth": 74,
+          "callable_fraction": 0.99,
+          "source": "depth-table"
+        },
+        {
+          "locus": "inhA",
+          "mean_depth": 69,
+          "callable_fraction": 0.98,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "linezolid",
+      "call": "indeterminate",
+      "tier": "none",
+      "confidence": null,
+      "evidence": [],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "rplC",
+          "mean_depth": 61,
+          "callable_fraction": 1.0,
+          "source": "depth-table"
+        },
+        {
+          "locus": "rrl",
+          "mean_depth": 57,
+          "callable_fraction": 0.97,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "moxifloxacin",
+      "call": "resistant",
+      "tier": "catalogued",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "moxifloxacin",
+          "call": "resistant",
+          "tier": "catalogued",
+          "lane": "catalogue",
+          "confidence": 0.95,
+          "variant": {
+            "gene": "gyrA",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 7570,
+            "ref": "A",
+            "alt": "G",
+            "hgvs_c": null,
+            "hgvs_p": "D94G",
+            "consequence": "missense"
+          },
+          "rationale": "Catalogued resistant for moxifloxacin (grade: Assoc w R).",
+          "who_grade": "Assoc w R",
+          "engine": {
+            "name": "myconductor-bundled-catalogue",
+            "version": "0.2.0",
+            "database": "mtb_amr_catalogue.json",
+            "database_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)"
+          },
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ],
+          "catalogue_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)",
+          "rule_id": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue):gyrA_D94G:moxifloxacin:resistant",
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "variant",
+          "metadata": {},
+          "evidence_id": "b0194a83a5f1647b592f2b159828c44b1da350ea8ede18866e55a62150e694c1"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "gyrA",
+          "mean_depth": 64,
+          "callable_fraction": 0.98,
+          "source": "depth-table"
+        },
+        {
+          "locus": "gyrB",
+          "mean_depth": 58,
+          "callable_fraction": 0.96,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "Catalogued resistant for moxifloxacin (grade: Assoc w R).",
+      "genomic_call": "resistant",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "pretomanid",
+      "call": "indeterminate",
+      "tier": "none",
+      "confidence": null,
+      "evidence": [],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "ddn",
+          "mean_depth": 66,
+          "callable_fraction": 0.99,
+          "source": "depth-table"
+        },
+        {
+          "locus": "fbiA",
+          "mean_depth": 62,
+          "callable_fraction": 0.98,
+          "source": "depth-table"
+        },
+        {
+          "locus": "fbiB",
+          "mean_depth": 59,
+          "callable_fraction": 0.96,
+          "source": "depth-table"
+        },
+        {
+          "locus": "fbiC",
+          "mean_depth": 55,
+          "callable_fraction": 0.96,
+          "source": "depth-table"
+        },
+        {
+          "locus": "fgd1",
+          "mean_depth": 64,
+          "callable_fraction": 0.99,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "pyrazinamide",
+      "call": "indeterminate",
+      "tier": "none",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "pyrazinamide",
+          "call": "indeterminate",
+          "tier": "none",
+          "lane": "vus",
+          "confidence": null,
+          "variant": {
+            "gene": "pncA",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 2288725,
+            "ref": "A",
+            "alt": "C",
+            "hgvs_c": null,
+            "hgvs_p": "D12A",
+            "consequence": "missense"
+          },
+          "rationale": "Uninterpreted missense variant pncA_D12A in pncA, a locus relevant to pyrazinamide. Susceptibility cannot be concluded; resistance is not asserted.",
+          "who_grade": null,
+          "engine": {
+            "name": "myconductor-vus-workbench",
+            "version": "0.2.0",
+            "database": "NullAnnotator",
+            "database_version": null
+          },
+          "limitations": [
+            "variant of unknown significance: no graded catalogue entry",
+            "no predictive call is made; see the VUS priority list for the evidence dimensions and the recommended validation experiment"
+          ],
+          "catalogue_version": null,
+          "rule_id": null,
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "isolate",
+          "metadata": {},
+          "evidence_id": "daf2bdfea60a0e4bf9dc213f6d57f4edbf5ed42a49d4f0b3c129c894e5241cf3"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "pncA",
+          "mean_depth": 70,
+          "callable_fraction": 0.97,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "Uninterpreted missense variant pncA_D12A in pncA, a locus relevant to pyrazinamide. Susceptibility cannot be concluded; resistance is not asserted.",
+      "genomic_call": "indeterminate",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    },
+    {
+      "drug": "rifampicin",
+      "call": "resistant",
+      "tier": "catalogued",
+      "confidence": null,
+      "evidence": [
+        {
+          "drug": "rifampicin",
+          "call": "resistant",
+          "tier": "catalogued",
+          "lane": "catalogue",
+          "confidence": 0.98,
+          "variant": {
+            "gene": "rpoB",
+            "assembly": "NC_000962.3",
+            "chrom": "NC_000962.3",
+            "pos": 761155,
+            "ref": "C",
+            "alt": "T",
+            "hgvs_c": null,
+            "hgvs_p": "S450L",
+            "consequence": "missense"
+          },
+          "rationale": "Catalogued resistant for rifampicin (grade: Assoc w R).",
+          "who_grade": "Assoc w R",
+          "engine": {
+            "name": "myconductor-bundled-catalogue",
+            "version": "0.2.0",
+            "database": "mtb_amr_catalogue.json",
+            "database_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)"
+          },
+          "limitations": [
+            "matched on gene/label, not coordinates; annotator spellings differ, so this match is weaker than a coordinate match",
+            "from the bundled illustrative catalogue, not the WHO catalogue"
+          ],
+          "catalogue_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)",
+          "rule_id": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue):rpoB_S450L:rifampicin:resistant",
+          "asserts_coverage": false,
+          "sample_id": null,
+          "observation_id": null,
+          "scope": "variant",
+          "metadata": {},
+          "evidence_id": "ccf4a89812903361302c5ac5708932c7ed7a4a0e51903a5bd32e09a93ff6c4e5"
+        }
+      ],
+      "discordance": null,
+      "coverage": [
+        {
+          "locus": "rpoB",
+          "mean_depth": 75,
+          "callable_fraction": 1.0,
+          "source": "depth-table"
+        }
+      ],
+      "reason": "Catalogued resistant for rifampicin (grade: Assoc w R).",
+      "genomic_call": "resistant",
+      "phenotypic_call": null,
+      "assay_status": "adequate"
+    }
+  ],
+  "provenance": {
+    "tool": "Myconductor",
+    "version": "0.2.0",
+    "organism_profile": "mtbc",
+    "profile_version": "0.2.0-illustrative",
+    "reference_assembly": "NC_000962.3",
+    "depth_floor": 10,
+    "callable_fraction_floor": 0.95,
+    "catalogue": {
+      "name": "myconductor-bundled-catalogue",
+      "version": "0.2.0",
+      "database": "mtb_amr_catalogue.json",
+      "database_version": "demo-0.2.0 (ILLUSTRATIVE SUBSET — NOT the WHO catalogue)"
+    },
+    "engines": [
+      {
+        "name": "TB-Profiler",
+        "version": "4.4",
+        "database": "Synthetic catalogue",
+        "database_version": "2026.1"
+      },
+      {
+        "name": "Mykrobe",
+        "version": "0.13",
+        "database": "Synthetic panel",
+        "database_version": "2026.1"
+      }
+    ],
+    "coverage_source": "depth-table restricted to Synthetic comprehensive TB panel 2026.1",
+    "demo_mode": true,
+    "generated_utc": "2026-09-14T12:26:26+00:00",
+    "input_sha256": "92ab6d954beeaa03f156221f6af98482f90eb3db05ce0abeb86dbc43be987266",
+    "analysis_fingerprint": "eadf21e93959e04335da2d1c0eb2f6be45f8c4aab32d45ce943c8efccc1deff4",
+    "policy_version": "research-default",
+    "source_hashes": {
+      "variants": "92ab6d954beeaa03f156221f6af98482f90eb3db05ce0abeb86dbc43be987266",
+      "catalogue": "d3f66b346fdcfbdcb79a61337bb3637d5d29af169656de157df09511d79cc436",
+      "implementation": "3e2d75d12af810828fdbe7599834a8318893f8e5c241bc33e4e8782d8e5e8102",
+      "mask": "aacff15830f25ba5f2cb918925e7c8cde6efc171cfd1c4755ddeaaac25ab7f9f",
+      "TB-Profiler": "1be28da6563046e371e73269a1775bdfe219e8f4ea84e276a74625482a8443e4",
+      "Mykrobe": "5e84796605c4ca29b44dcf2d7e921b4e5f7e2a09c63c83a13237833490d53685"
+    }
+  },
+  "eligibility": {
+    "assessments": [
+      {
+        "name": "BPaLM",
+        "drugs": [
+          "bedaquiline",
+          "pretomanid",
+          "linezolid",
+          "moxifloxacin"
+        ],
+        "min_required": 3,
+        "usable": [],
+        "resistant": [
+          "moxifloxacin"
+        ],
+        "unestablished": {
+          "bedaquiline": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+          "pretomanid": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+          "linezolid": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient."
+        },
+        "eligible": false,
+        "shortfall": 3,
+        "note": "0/3 required drugs have established susceptibility; resistant: moxifloxacin; not established: bedaquiline, linezolid, pretomanid."
+      },
+      {
+        "name": "BPaL",
+        "drugs": [
+          "bedaquiline",
+          "pretomanid",
+          "linezolid"
+        ],
+        "min_required": 3,
+        "usable": [],
+        "resistant": [],
+        "unestablished": {
+          "bedaquiline": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+          "pretomanid": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+          "linezolid": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient."
+        },
+        "eligible": false,
+        "shortfall": 3,
+        "note": "0/3 required drugs have established susceptibility; not established: bedaquiline, linezolid, pretomanid."
+      },
+      {
+        "name": "first-line",
+        "drugs": [
+          "isoniazid",
+          "rifampicin",
+          "pyrazinamide",
+          "ethambutol"
+        ],
+        "min_required": 4,
+        "usable": [],
+        "resistant": [
+          "ethambutol",
+          "rifampicin"
+        ],
+        "unestablished": {
+          "isoniazid": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+          "pyrazinamide": "Uninterpreted missense variant pncA_D12A in pncA, a locus relevant to pyrazinamide. Susceptibility cannot be concluded; resistance is not asserted."
+        },
+        "eligible": false,
+        "shortfall": 4,
+        "note": "0/4 required drugs have established susceptibility; resistant: ethambutol, rifampicin; not established: isoniazid, pyrazinamide."
+      }
+    ],
+    "any_eligible": false,
+    "resistant_drugs": [
+      "ethambutol",
+      "moxifloxacin",
+      "rifampicin"
+    ],
+    "unestablished_drugs": {
+      "amikacin": "Regulatory variant upstream of eis (c.-14C>T): may modulate expression affecting amikacin. Effect size unmeasured — susceptibility withheld.",
+      "bedaquiline": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+      "clofazimine": "Missense change in efflux regulator Rv0678: de-repression is plausible but unquantified, and carries materially weaker evidence than loss of function. Susceptibility withheld pending phenotypic testing.",
+      "isoniazid": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+      "linezolid": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "pretomanid": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "pyrazinamide": "Uninterpreted missense variant pncA_D12A in pncA, a locus relevant to pyrazinamide. Susceptibility cannot be concluded; resistance is not asserted."
+    },
+    "summary": "No regimen reaches its required count of drugs with established, coverage-backed susceptibility. This is a statement about the available evidence, not a conclusion that no regimen exists — 7 drug(s) could not be assessed at all.",
+    "requires_clinical_review": true
+  },
+  "heteroresistance": [
+    {
+      "variant_label": "katG_S315T",
+      "variant_key": "NC_000962.3:NC_000962.3:2155168:G>C",
+      "drug": "isoniazid",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 100%; not a minority subpopulation",
+      "vaf": 1.0,
+      "depth": 82,
+      "alt_depth": 82,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "rpoB_S450L",
+      "variant_key": "NC_000962.3:NC_000962.3:761155:C>T",
+      "drug": "rifampicin",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 98%; not a minority subpopulation",
+      "vaf": 0.98,
+      "depth": 75,
+      "alt_depth": 73,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "gyrA_D94G",
+      "variant_key": "NC_000962.3:NC_000962.3:7570:A>G",
+      "drug": "moxifloxacin",
+      "assessable": true,
+      "detected": true,
+      "note": "Minority allele at 15% (10/64 reads), above the illumina limit of detection (5%). A consensus-only caller may not report this. Read-level confirmation (strand bias, mapping quality, contamination check) is required before acting on it.",
+      "vaf": 0.15,
+      "depth": 64,
+      "alt_depth": 10,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "Rv0678_L117R",
+      "variant_key": "NC_000962.3:NC_000962.3:4247429:T>G",
+      "drug": "bedaquiline",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 90%; not a minority subpopulation",
+      "vaf": 0.9,
+      "depth": 48,
+      "alt_depth": 43,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "Rv0678_L117R",
+      "variant_key": "NC_000962.3:NC_000962.3:4247429:T>G",
+      "drug": "clofazimine",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 90%; not a minority subpopulation",
+      "vaf": 0.9,
+      "depth": 48,
+      "alt_depth": 43,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "pncA_D12A",
+      "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+      "drug": "pyrazinamide",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 100%; not a minority subpopulation",
+      "vaf": 1.0,
+      "depth": 70,
+      "alt_depth": 70,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "eis_c.-14C>T",
+      "variant_key": "NC_000962.3:NC_000962.3:2715342:C>T",
+      "drug": "amikacin",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 100%; not a minority subpopulation",
+      "vaf": 1.0,
+      "depth": 66,
+      "alt_depth": 66,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    },
+    {
+      "variant_label": "embB_M306V",
+      "variant_key": "NC_000962.3:NC_000962.3:4247574:A>G",
+      "drug": "ethambutol",
+      "assessable": true,
+      "detected": false,
+      "note": "allele is the majority population at 100%; not a minority subpopulation",
+      "vaf": 1.0,
+      "depth": 71,
+      "alt_depth": 71,
+      "limit_of_detection": 0.05,
+      "platform": "illumina",
+      "posterior_resistance_probability": null,
+      "posterior_interval": null,
+      "calibration_source": "uncalibrated default"
+    }
+  ],
+  "vus_priorities": [
+    {
+      "variant_label": "Rv0678_L117R",
+      "variant_key": "NC_000962.3:NC_000962.3:4247429:T>G",
+      "gene": "Rv0678",
+      "drug": "bedaquiline",
+      "priority": "insufficient-data",
+      "dimensions": [
+        {
+          "name": "in_resistance_region",
+          "available": true,
+          "value": true,
+          "source": "drug_loci.json gene list",
+          "note": ""
+        },
+        {
+          "name": "consequence",
+          "available": true,
+          "value": "missense",
+          "source": "input annotation",
+          "note": ""
+        },
+        {
+          "name": "conservation",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a conservation service (SIFT, PolyPhen-2, phyloP)"
+        },
+        {
+          "name": "structural_impact",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a structure source (PDB or AlphaFold) and a ddG model"
+        },
+        {
+          "name": "ligand_distance",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a structure with the ligand or active site annotated"
+        },
+        {
+          "name": "substitution_severity",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a Grantham or BLOSUM matrix and a resolved substitution"
+        },
+        {
+          "name": "population_prevalence",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires an isolate population database"
+        },
+        {
+          "name": "lineage_distribution",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires lineage-typed isolate counts"
+        },
+        {
+          "name": "homoplasy",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a phylogeny and ancestral-state reconstruction"
+        },
+        {
+          "name": "mic_association",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires paired MIC measurements"
+        },
+        {
+          "name": "cooccurring_known_variants",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires isolate-level co-occurrence counts"
+        },
+        {
+          "name": "literature_support",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a curated literature index"
+        },
+        {
+          "name": "_ranking_basis",
+          "available": true,
+          "value": "only 2 of 12 dimensions have a data source (5 needed to rank); ordering below is a consequence-class triage, not an evidence ranking",
+          "source": "NullAnnotator",
+          "note": ""
+        }
+      ],
+      "recommended_experiment": "Site-directed mutagenesis of Rv0678 L117R in a susceptible background, then MIC against bedaquiline; pair with a wild-type control.",
+      "data_gaps": [
+        "conservation",
+        "structural_impact",
+        "ligand_distance",
+        "substitution_severity",
+        "population_prevalence",
+        "lineage_distribution",
+        "homoplasy",
+        "mic_association",
+        "cooccurring_known_variants",
+        "literature_support"
+      ],
+      "score": null
+    },
+    {
+      "variant_label": "Rv0678_L117R",
+      "variant_key": "NC_000962.3:NC_000962.3:4247429:T>G",
+      "gene": "Rv0678",
+      "drug": "clofazimine",
+      "priority": "insufficient-data",
+      "dimensions": [
+        {
+          "name": "in_resistance_region",
+          "available": true,
+          "value": true,
+          "source": "drug_loci.json gene list",
+          "note": ""
+        },
+        {
+          "name": "consequence",
+          "available": true,
+          "value": "missense",
+          "source": "input annotation",
+          "note": ""
+        },
+        {
+          "name": "conservation",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a conservation service (SIFT, PolyPhen-2, phyloP)"
+        },
+        {
+          "name": "structural_impact",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a structure source (PDB or AlphaFold) and a ddG model"
+        },
+        {
+          "name": "ligand_distance",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a structure with the ligand or active site annotated"
+        },
+        {
+          "name": "substitution_severity",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a Grantham or BLOSUM matrix and a resolved substitution"
+        },
+        {
+          "name": "population_prevalence",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires an isolate population database"
+        },
+        {
+          "name": "lineage_distribution",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires lineage-typed isolate counts"
+        },
+        {
+          "name": "homoplasy",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a phylogeny and ancestral-state reconstruction"
+        },
+        {
+          "name": "mic_association",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires paired MIC measurements"
+        },
+        {
+          "name": "cooccurring_known_variants",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires isolate-level co-occurrence counts"
+        },
+        {
+          "name": "literature_support",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a curated literature index"
+        },
+        {
+          "name": "_ranking_basis",
+          "available": true,
+          "value": "only 2 of 12 dimensions have a data source (5 needed to rank); ordering below is a consequence-class triage, not an evidence ranking",
+          "source": "NullAnnotator",
+          "note": ""
+        }
+      ],
+      "recommended_experiment": "Site-directed mutagenesis of Rv0678 L117R in a susceptible background, then MIC against clofazimine; pair with a wild-type control.",
+      "data_gaps": [
+        "conservation",
+        "structural_impact",
+        "ligand_distance",
+        "substitution_severity",
+        "population_prevalence",
+        "lineage_distribution",
+        "homoplasy",
+        "mic_association",
+        "cooccurring_known_variants",
+        "literature_support"
+      ],
+      "score": null
+    },
+    {
+      "variant_label": "pncA_D12A",
+      "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+      "gene": "pncA",
+      "drug": "pyrazinamide",
+      "priority": "insufficient-data",
+      "dimensions": [
+        {
+          "name": "in_resistance_region",
+          "available": true,
+          "value": true,
+          "source": "drug_loci.json gene list",
+          "note": ""
+        },
+        {
+          "name": "consequence",
+          "available": true,
+          "value": "missense",
+          "source": "input annotation",
+          "note": ""
+        },
+        {
+          "name": "conservation",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a conservation service (SIFT, PolyPhen-2, phyloP)"
+        },
+        {
+          "name": "structural_impact",
+          "available": true,
+          "value": [
+            {
+              "location": "binding_pocket",
+              "reported_effect": "Synthetic report of a possible local packing change",
+              "source_confidence": 0.72
+            }
+          ],
+          "source": "Synthetic structural archive",
+          "note": "Imported claims, not a functional score; excluded from ranking."
+        },
+        {
+          "name": "ligand_distance",
+          "available": true,
+          "value": [
+            {
+              "value": 4.8,
+              "unit": "angstrom",
+              "ligand": "Synthetic pyrazinamide analogue"
+            }
+          ],
+          "source": "Synthetic structural archive",
+          "note": "Reported distance only; no inferred binding effect."
+        },
+        {
+          "name": "substitution_severity",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a Grantham or BLOSUM matrix and a resolved substitution"
+        },
+        {
+          "name": "population_prevalence",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires an isolate population database"
+        },
+        {
+          "name": "lineage_distribution",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires lineage-typed isolate counts"
+        },
+        {
+          "name": "homoplasy",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a phylogeny and ancestral-state reconstruction"
+        },
+        {
+          "name": "mic_association",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires paired MIC measurements"
+        },
+        {
+          "name": "cooccurring_known_variants",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires isolate-level co-occurrence counts"
+        },
+        {
+          "name": "literature_support",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a curated literature index"
+        },
+        {
+          "name": "_ranking_basis",
+          "available": true,
+          "value": "only 2 of 12 dimensions have a data source (5 needed to rank); ordering below is a consequence-class triage, not an evidence ranking",
+          "source": "NullAnnotator",
+          "note": ""
+        },
+        {
+          "name": "in_silico_prediction",
+          "available": true,
+          "value": {
+            "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+            "drug": "pyrazinamide",
+            "model_id": "vus-classifier",
+            "model_version": "2.1",
+            "training_data_reference": "synthetic-training/1",
+            "prediction": "resistant",
+            "source": "Synthetic predictions/run-7",
+            "sample_id": "MTB-DEMO-001",
+            "isolate_id": "ISO-DEMO-001",
+            "site_id": "SYNTHETIC-SITE-01",
+            "organism": "mtbc",
+            "timestamp": "2026-04-01",
+            "confidence": 0.91,
+            "feature_attributions": {
+              "conservation": 0.36,
+              "structure": 0.24
+            },
+            "structural_context": null,
+            "tier": "predicted",
+            "call_effect": "none",
+            "ranking_effect": "none",
+            "baseline_basis": {
+              "drug": "pyrazinamide",
+              "lineage": "Lineage 1",
+              "cohort": "synthetic-independent-evaluation-1",
+              "baseline": "Synthetic catalogue baseline",
+              "basis": "answers 95% versus 91% and errs on 4.0% versus 8.0% against Synthetic catalogue baseline",
+              "caveat": "Beating the catalogue on an evaluation cohort is not calibration and not clinical validation; this prediction still cannot establish resistance."
+            },
+            "interpretation": "Externally supplied prediction and attributions; approval does not calibrate confidence or establish drug response."
+          },
+          "source": "Synthetic predictions/run-7",
+          "note": "Imported after ranking; confidence is not pooled with unrelated feature scales."
+        }
+      ],
+      "recommended_experiment": "Site-directed mutagenesis of pncA D12A in a susceptible background, then MIC against pyrazinamide; pair with a wild-type control.",
+      "data_gaps": [
+        "conservation",
+        "substitution_severity",
+        "population_prevalence",
+        "lineage_distribution",
+        "homoplasy",
+        "mic_association",
+        "cooccurring_known_variants",
+        "literature_support"
+      ],
+      "score": null
+    },
+    {
+      "variant_label": "eis_c.-14C>T",
+      "variant_key": "NC_000962.3:NC_000962.3:2715342:C>T",
+      "gene": "eis",
+      "drug": "amikacin",
+      "priority": "insufficient-data",
+      "dimensions": [
+        {
+          "name": "in_resistance_region",
+          "available": true,
+          "value": true,
+          "source": "drug_loci.json gene list",
+          "note": ""
+        },
+        {
+          "name": "consequence",
+          "available": true,
+          "value": "upstream",
+          "source": "input annotation",
+          "note": ""
+        },
+        {
+          "name": "conservation",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a conservation service (SIFT, PolyPhen-2, phyloP)"
+        },
+        {
+          "name": "structural_impact",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a structure source (PDB or AlphaFold) and a ddG model"
+        },
+        {
+          "name": "ligand_distance",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a structure with the ligand or active site annotated"
+        },
+        {
+          "name": "substitution_severity",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a Grantham or BLOSUM matrix and a resolved substitution"
+        },
+        {
+          "name": "population_prevalence",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires an isolate population database"
+        },
+        {
+          "name": "lineage_distribution",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires lineage-typed isolate counts"
+        },
+        {
+          "name": "homoplasy",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a phylogeny and ancestral-state reconstruction"
+        },
+        {
+          "name": "mic_association",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires paired MIC measurements"
+        },
+        {
+          "name": "cooccurring_known_variants",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires isolate-level co-occurrence counts"
+        },
+        {
+          "name": "literature_support",
+          "available": false,
+          "value": null,
+          "source": "none",
+          "note": "requires a curated literature index"
+        },
+        {
+          "name": "_ranking_basis",
+          "available": true,
+          "value": "only 2 of 12 dimensions have a data source (5 needed to rank); ordering below is a consequence-class triage, not an evidence ranking",
+          "source": "NullAnnotator",
+          "note": ""
+        }
+      ],
+      "recommended_experiment": "Reporter fusion or RT-qPCR to measure eis expression change, then MIC against amikacin — a regulatory variant needs an expression readout, not a structural one.",
+      "data_gaps": [
+        "conservation",
+        "structural_impact",
+        "ligand_distance",
+        "substitution_severity",
+        "population_prevalence",
+        "lineage_distribution",
+        "homoplasy",
+        "mic_association",
+        "cooccurring_known_variants",
+        "literature_support"
+      ],
+      "score": null
+    }
+  ],
+  "mechanism_queue": [
+    {
+      "variant_label": "Rv0678_L117R",
+      "variant_key": "NC_000962.3:NC_000962.3:4247429:T>G",
+      "gene": "Rv0678",
+      "drug": "bedaquiline",
+      "hypothesis": "Efflux-pump de-repression via a missense change in Rv0678 (MmpS5-MmpL5), raising the MIC of the drug(s) below, is plausible but unmeasured.",
+      "evidence_gaps": [
+        "no efflux-pump expression assay (RT-qPCR/RNA-seq of mmpS5-mmpL5 vs a wild-type control)",
+        "no MIC shift assay with an efflux-pump inhibitor (e.g. verapamil)",
+        "no allelic-exchange or CRISPRi knockdown of the specific missense allele to isolate its effect from background variation"
+      ],
+      "resolving_experiments": [
+        "RT-qPCR or RNA-seq of mmpS5-mmpL5 expression in Rv0678 mutant vs wild-type background",
+        "MIC of bedaquiline with and without an efflux-pump inhibitor (e.g. verapamil), to test whether the shift is efflux-mediated",
+        "Site-directed mutagenesis of Rv0678 in a susceptible background, then MIC against bedaquiline with and without an efflux-pump inhibitor"
+      ]
+    },
+    {
+      "variant_label": "Rv0678_L117R",
+      "variant_key": "NC_000962.3:NC_000962.3:4247429:T>G",
+      "gene": "Rv0678",
+      "drug": "clofazimine",
+      "hypothesis": "Efflux-pump de-repression via a missense change in Rv0678 (MmpS5-MmpL5), raising the MIC of the drug(s) below, is plausible but unmeasured.",
+      "evidence_gaps": [
+        "no efflux-pump expression assay (RT-qPCR/RNA-seq of mmpS5-mmpL5 vs a wild-type control)",
+        "no MIC shift assay with an efflux-pump inhibitor (e.g. verapamil)",
+        "no allelic-exchange or CRISPRi knockdown of the specific missense allele to isolate its effect from background variation"
+      ],
+      "resolving_experiments": [
+        "RT-qPCR or RNA-seq of mmpS5-mmpL5 expression in Rv0678 mutant vs wild-type background",
+        "MIC of clofazimine with and without an efflux-pump inhibitor (e.g. verapamil), to test whether the shift is efflux-mediated",
+        "Site-directed mutagenesis of Rv0678 in a susceptible background, then MIC against clofazimine with and without an efflux-pump inhibitor"
+      ]
+    },
+    {
+      "variant_label": "eis_c.-14C>T",
+      "variant_key": "NC_000962.3:NC_000962.3:2715342:C>T",
+      "gene": "eis",
+      "drug": "amikacin",
+      "hypothesis": "Regulatory variant c.-14C>T upstream of eis may alter its expression, shifting the MIC of amikacin, but the effect size is unmeasured.",
+      "evidence_gaps": [
+        "no reporter-fusion or RT-qPCR measurement of the expression change this variant causes"
+      ],
+      "resolving_experiments": [
+        "Reporter-gene fusion or RT-qPCR to quantify eis expression change, then MIC against amikacin"
+      ]
+    },
+    {
+      "variant_label": "pncA_D12A",
+      "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+      "gene": "pncA",
+      "drug": "pyrazinamide",
+      "hypothesis": "External structural annotation: Synthetic report of a possible local packing change",
+      "evidence_gaps": [
+        "Source: Synthetic structural archive (2026.1); structural annotation does not establish drug response."
+      ],
+      "resolving_experiments": [
+        "Review the source method and independently measured phenotype."
+      ]
+    }
+  ],
+  "discordances": [
+    {
+      "drug": "isoniazid",
+      "calls": [
+        "resistant",
+        "susceptible"
+      ],
+      "sources": [
+        "myconductor-bundled-catalogue",
+        "engine"
+      ],
+      "note": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+      "context": []
+    },
+    {
+      "drug": "isoniazid",
+      "calls": [
+        "resistant",
+        "susceptible"
+      ],
+      "sources": [
+        "TB-Profiler",
+        "Mykrobe"
+      ],
+      "note": "Mykrobe says susceptible; TB-Profiler says resistant. Not resolved by vote: engines sharing a catalogue are not independent evidence.",
+      "context": []
+    }
+  ],
+  "qc": [
+    {
+      "check": "input_parsed",
+      "status": "pass",
+      "detail": "8 variant record(s) accepted"
+    },
+    {
+      "check": "record_depth",
+      "status": "warn",
+      "detail": "1 record(s) below 10x excluded: rrs_a1401g"
+    },
+    {
+      "check": "sequencing_platform",
+      "status": "pass",
+      "detail": "platform: illumina"
+    },
+    {
+      "check": "callable_mask",
+      "status": "pass",
+      "detail": "callable-locus evidence supplied from depth-table restricted to Synthetic comprehensive TB panel 2026.1"
+    },
+    {
+      "check": "reference_assembly",
+      "status": "pass",
+      "detail": "input matches the profile assembly (NC_000962.3)"
+    },
+    {
+      "check": "profile_annotation",
+      "status": "warn",
+      "detail": "33 locus/loci in the mtbc profile have no declared length, so callable fractions must be supplied explicitly by the input. Reference annotation arrives with an ingested catalogue."
+    },
+    {
+      "check": "profile_validation",
+      "status": "warn",
+      "detail": "the mtbc profile v0.2.0-illustrative ships with no validation data. No sensitivity, specificity or error rate has been established for it."
+    },
+    {
+      "check": "species_confirmation",
+      "status": "pass",
+      "detail": "Synthetic pass used to exercise the workflow"
+    },
+    {
+      "check": "mtbc_vs_ntm",
+      "status": "not_performed",
+      "detail": "requires reads or an assembly; not available from a variant file. Matters because NTM species have different intrinsic resistance and different targets."
+    },
+    {
+      "check": "read_quality",
+      "status": "not_performed",
+      "detail": "requires FASTQ; not available from a variant file. Matters because low-quality bases inflate false-positive minority alleles."
+    },
+    {
+      "check": "contamination",
+      "status": "pass",
+      "detail": "Synthetic pass used to exercise the workflow"
+    },
+    {
+      "check": "coverage_breadth",
+      "status": "not_performed",
+      "detail": "requires BAM/CRAM or a callable mask; not available from a variant file. Matters because breadth is what licenses a susceptible call; see callable_mask."
+    },
+    {
+      "check": "mapping_quality",
+      "status": "pass",
+      "detail": "Synthetic pass used to exercise the workflow"
+    },
+    {
+      "check": "mixed_infection",
+      "status": "pass",
+      "detail": "Synthetic pass used to exercise the workflow"
+    },
+    {
+      "check": "lineage_assignment",
+      "status": "not_performed",
+      "detail": "requires reads or a genome-wide SNP set; not available from a variant file. Matters because lineage confounds variant-phenotype association and catalogue transfer."
+    },
+    {
+      "check": "sample_swap_detection",
+      "status": "not_performed",
+      "detail": "requires genotype fingerprint across samples; not available from a variant file. Matters because a swapped sample attaches one patient's resistance to another's record."
+    },
+    {
+      "check": "reference_bias",
+      "status": "not_performed",
+      "detail": "requires BAM/CRAM and the reference used; not available from a variant file. Matters because reference-biased alignment loses divergent alleles."
+    }
+  ],
+  "qc_warnings": [
+    "rrs_a1401g: depth 5 below floor 10x; record excluded from evidence. This does NOT make the corresponding drug susceptible — it becomes NOT_ASSESSED unless a callable mask shows the locus was covered.",
+    "rpoC_A542A: no lane could interpret this variant (synonymous in rpoC); reported, not dropped."
+  ],
+  "lane_counts": {
+    "catalogue": 4,
+    "efflux_regulatory": 2,
+    "vus": 3,
+    "engine": 0,
+    "phenotype": 0,
+    "coverage": 0,
+    "unexamined": 1
+  },
+  "demo_mode": true,
+  "context": {
+    "sample_id": "MTB-DEMO-001",
+    "isolate_id": "ISO-DEMO-001",
+    "site_id": "SYNTHETIC-SITE-01",
+    "organism": "mtbc",
+    "assay": "targeted-amplicon",
+    "specimen_id": "SYNTHETIC-SPECIMEN-001",
+    "collected_at": "2026-03-01",
+    "lineage": "Lineage 1",
+    "subspecies": null,
+    "engine_sample_ids": {},
+    "qc": [
+      {
+        "check": "species_confirmation",
+        "status": "pass",
+        "detail": "Synthetic pass used to exercise the workflow"
+      },
+      {
+        "check": "contamination",
+        "status": "pass",
+        "detail": "Synthetic pass used to exercise the workflow"
+      },
+      {
+        "check": "mapping_quality",
+        "status": "pass",
+        "detail": "Synthetic pass used to exercise the workflow"
+      },
+      {
+        "check": "mixed_infection",
+        "status": "pass",
+        "detail": "Synthetic pass used to exercise the workflow"
+      }
+    ],
+    "erm41_status": "unknown",
+    "erm41_source": null,
+    "rrl_status": "unknown",
+    "rrl_source": null,
+    "rrs_status": "unknown",
+    "rrs_source": null
+  },
+  "investigations": [
+    {
+      "id": "6ab865512297fb329efa645f",
+      "drug": "isoniazid",
+      "category": "engine_discordance",
+      "certainty": "observed",
+      "explanation": "2 source(s) call isoniazid resistant and 1 call it susceptible. The conclusion is indeterminate; the conflict is unresolved and needs phenotypic testing.",
+      "candidate_actions": [
+        "review_engine_evidence"
+      ],
+      "evidence_ids": [
+        "593bc1e969749751073b081b9180d9cbee218a329198d1703ee3b25f01ef3992",
+        "323058b619a230da50da744ec01cd9000a7d91a169c0cad149415ac44834a62f",
+        "0c9a6afd0a81c50b17a7d05c1fb396d6e4121fd5779445af2867fe921d318751"
+      ],
+      "priority": 0,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "00935bee177de178eef9c722",
+      "drug": "amikacin",
+      "category": "coverage_gap",
+      "certainty": "observed",
+      "explanation": "Required genomic loci are not independently shown callable.",
+      "candidate_actions": [
+        "review_coverage",
+        "repeat_sequencing"
+      ],
+      "evidence_ids": [
+        "8e08f3a398faf9f4050c4af7db947fd818ae2e6fc9bc516d648bf870aa5c8f80",
+        "11a5a0dbb36786340a9d258460f62d50dc24f2f5e06a63ed977e026aa65f53a4"
+      ],
+      "priority": 1,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "7292c193abdffbb2608d3cf6",
+      "drug": "amikacin",
+      "category": "uncertain_interpretation",
+      "certainty": "observed",
+      "explanation": "Uninterpreted genomic evidence requires expert assessment; resistance is not inferred.",
+      "candidate_actions": [
+        "review_variant",
+        "confirm_phenotype"
+      ],
+      "evidence_ids": [
+        "8e08f3a398faf9f4050c4af7db947fd818ae2e6fc9bc516d648bf870aa5c8f80",
+        "11a5a0dbb36786340a9d258460f62d50dc24f2f5e06a63ed977e026aa65f53a4"
+      ],
+      "priority": 2,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "f86cbbd7edc4475e4e971c93",
+      "drug": "bedaquiline",
+      "category": "uncertain_interpretation",
+      "certainty": "observed",
+      "explanation": "Uninterpreted genomic evidence requires expert assessment; resistance is not inferred.",
+      "candidate_actions": [
+        "review_variant",
+        "confirm_phenotype"
+      ],
+      "evidence_ids": [
+        "7890ce574ab02bf4fc3f9069d1abd4532870041c21c0078a9da40311c02328ad",
+        "3cc83364bd489663176a882897515aabb63116b90f4f3e90763930251ae1d69d",
+        "0272d1c5ebe7cddd60eeffe57af71d0159c295ed91c6c0df0653ff5e3b8f8712"
+      ],
+      "priority": 2,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "a1261b0d971259fa341900ed",
+      "drug": "clofazimine",
+      "category": "uncertain_interpretation",
+      "certainty": "observed",
+      "explanation": "Uninterpreted genomic evidence requires expert assessment; resistance is not inferred.",
+      "candidate_actions": [
+        "review_variant",
+        "confirm_phenotype"
+      ],
+      "evidence_ids": [
+        "3cb94f58df26be9fd201de13a8c5e65a58fad9443a05fd54a117a24343aa220f",
+        "ae2110ed03b5297b21998c872a3ef429c19db307560ddbf7c03ec0cc10080b6a",
+        "5ffae52589321499e36862d831c9a539356c2a38061222e3500a0fb48209cedb"
+      ],
+      "priority": 2,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "184c7284b04d12b2387c0efc",
+      "drug": "linezolid",
+      "category": "validation_gap",
+      "certainty": "observed",
+      "explanation": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "candidate_actions": [
+        "review_validation_scope"
+      ],
+      "evidence_ids": [],
+      "priority": 2,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "2c673a1986fe6219dcff4374",
+      "drug": "pretomanid",
+      "category": "validation_gap",
+      "certainty": "observed",
+      "explanation": "No resistance-associated variant detected, but susceptibility is not established: no matching validated organism/drug/assay/engine/database scope with required QC. Coverage alone is insufficient.",
+      "candidate_actions": [
+        "review_validation_scope"
+      ],
+      "evidence_ids": [],
+      "priority": 2,
+      "rule_version": "investigation-1"
+    },
+    {
+      "id": "38ed6ec12f35bed9f6ba31c4",
+      "drug": "pyrazinamide",
+      "category": "uncertain_interpretation",
+      "certainty": "observed",
+      "explanation": "Uninterpreted genomic evidence requires expert assessment; resistance is not inferred.",
+      "candidate_actions": [
+        "review_variant",
+        "confirm_phenotype"
+      ],
+      "evidence_ids": [
+        "daf2bdfea60a0e4bf9dc213f6d57f4edbf5ed42a49d4f0b3c129c894e5241cf3"
+      ],
+      "priority": 2,
+      "rule_version": "investigation-1"
+    }
+  ],
+  "follow_up": [
+    {
+      "investigation_id": "6ab865512297fb329efa645f",
+      "drug": "isoniazid",
+      "priority": 0,
+      "status": "recommended",
+      "selected": {
+        "id": "engine-v1",
+        "action": "review_engine_evidence",
+        "available": true,
+        "cost": 10.0,
+        "currency": "USD",
+        "turnaround_hours": 8
+      },
+      "alternatives": [
+        {
+          "id": "engine-v1",
+          "action": "review_engine_evidence",
+          "available": true,
+          "cost": 10.0,
+          "currency": "USD",
+          "turnaround_hours": 8
+        }
+      ],
+      "charged_cost": 10.0,
+      "remaining_budget": 110.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "00935bee177de178eef9c722",
+      "drug": "amikacin",
+      "priority": 1,
+      "status": "recommended",
+      "selected": {
+        "id": "coverage-v1",
+        "action": "review_coverage",
+        "available": true,
+        "cost": 5.0,
+        "currency": "USD",
+        "turnaround_hours": 4
+      },
+      "alternatives": [
+        {
+          "id": "coverage-v1",
+          "action": "review_coverage",
+          "available": true,
+          "cost": 5.0,
+          "currency": "USD",
+          "turnaround_hours": 4
+        }
+      ],
+      "charged_cost": 5.0,
+      "remaining_budget": 105.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "7292c193abdffbb2608d3cf6",
+      "drug": "amikacin",
+      "priority": 2,
+      "status": "recommended",
+      "selected": {
+        "id": "review-v1",
+        "action": "review_variant",
+        "available": true,
+        "cost": 20.0,
+        "currency": "USD",
+        "turnaround_hours": 24
+      },
+      "alternatives": [
+        {
+          "id": "review-v1",
+          "action": "review_variant",
+          "available": true,
+          "cost": 20.0,
+          "currency": "USD",
+          "turnaround_hours": 24
+        },
+        {
+          "id": "phenotype-v1",
+          "action": "confirm_phenotype",
+          "available": true,
+          "cost": 45.0,
+          "currency": "USD",
+          "turnaround_hours": 72
+        }
+      ],
+      "charged_cost": 20.0,
+      "remaining_budget": 85.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "f86cbbd7edc4475e4e971c93",
+      "drug": "bedaquiline",
+      "priority": 2,
+      "status": "recommended",
+      "selected": {
+        "id": "review-v1",
+        "action": "review_variant",
+        "available": true,
+        "cost": 20.0,
+        "currency": "USD",
+        "turnaround_hours": 24
+      },
+      "alternatives": [
+        {
+          "id": "review-v1",
+          "action": "review_variant",
+          "available": true,
+          "cost": 20.0,
+          "currency": "USD",
+          "turnaround_hours": 24
+        },
+        {
+          "id": "phenotype-v1",
+          "action": "confirm_phenotype",
+          "available": true,
+          "cost": 45.0,
+          "currency": "USD",
+          "turnaround_hours": 72
+        }
+      ],
+      "charged_cost": 20.0,
+      "remaining_budget": 65.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "a1261b0d971259fa341900ed",
+      "drug": "clofazimine",
+      "priority": 2,
+      "status": "recommended",
+      "selected": {
+        "id": "review-v1",
+        "action": "review_variant",
+        "available": true,
+        "cost": 20.0,
+        "currency": "USD",
+        "turnaround_hours": 24
+      },
+      "alternatives": [
+        {
+          "id": "review-v1",
+          "action": "review_variant",
+          "available": true,
+          "cost": 20.0,
+          "currency": "USD",
+          "turnaround_hours": 24
+        },
+        {
+          "id": "phenotype-v1",
+          "action": "confirm_phenotype",
+          "available": true,
+          "cost": 45.0,
+          "currency": "USD",
+          "turnaround_hours": 72
+        }
+      ],
+      "charged_cost": 20.0,
+      "remaining_budget": 45.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "184c7284b04d12b2387c0efc",
+      "drug": "linezolid",
+      "priority": 2,
+      "status": "availability_unknown",
+      "selected": null,
+      "alternatives": [],
+      "charged_cost": null,
+      "remaining_budget": 45.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "2c673a1986fe6219dcff4374",
+      "drug": "pretomanid",
+      "priority": 2,
+      "status": "availability_unknown",
+      "selected": null,
+      "alternatives": [],
+      "charged_cost": null,
+      "remaining_budget": 45.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    },
+    {
+      "investigation_id": "38ed6ec12f35bed9f6ba31c4",
+      "drug": "pyrazinamide",
+      "priority": 2,
+      "status": "recommended",
+      "selected": {
+        "id": "review-v1",
+        "action": "review_variant",
+        "available": true,
+        "cost": 20.0,
+        "currency": "USD",
+        "turnaround_hours": 24
+      },
+      "alternatives": [
+        {
+          "id": "review-v1",
+          "action": "review_variant",
+          "available": true,
+          "cost": 20.0,
+          "currency": "USD",
+          "turnaround_hours": 24
+        },
+        {
+          "id": "phenotype-v1",
+          "action": "confirm_phenotype",
+          "available": true,
+          "cost": 45.0,
+          "currency": "USD",
+          "turnaround_hours": 72
+        }
+      ],
+      "charged_cost": 20.0,
+      "remaining_budget": 25.0,
+      "basis": "priority-first heuristic; no measured probability of resolution",
+      "requires_laboratory_review": true
+    }
+  ],
+  "report_schema": "myconductor.report.v1",
+  "analysis_manifest": {
+    "sources": {
+      "variants": "92ab6d954beeaa03f156221f6af98482f90eb3db05ce0abeb86dbc43be987266",
+      "catalogue": "d3f66b346fdcfbdcb79a61337bb3637d5d29af169656de157df09511d79cc436",
+      "implementation": "3e2d75d12af810828fdbe7599834a8318893f8e5c241bc33e4e8782d8e5e8102",
+      "mask": "aacff15830f25ba5f2cb918925e7c8cde6efc171cfd1c4755ddeaaac25ab7f9f",
+      "TB-Profiler": "1be28da6563046e371e73269a1775bdfe219e8f4ea84e276a74625482a8443e4",
+      "Mykrobe": "5e84796605c4ca29b44dcf2d7e921b4e5f7e2a09c63c83a13237833490d53685"
+    },
+    "context": {
+      "sample_id": "MTB-DEMO-001",
+      "isolate_id": "ISO-DEMO-001",
+      "site_id": "SYNTHETIC-SITE-01",
+      "organism": "mtbc",
+      "assay": "targeted-amplicon",
+      "specimen_id": "SYNTHETIC-SPECIMEN-001",
+      "collected_at": "2026-03-01",
+      "lineage": "Lineage 1",
+      "subspecies": null,
+      "engine_sample_ids": {},
+      "qc": [
+        {
+          "check": "species_confirmation",
+          "status": "pass",
+          "detail": "Synthetic pass used to exercise the workflow"
+        },
+        {
+          "check": "contamination",
+          "status": "pass",
+          "detail": "Synthetic pass used to exercise the workflow"
+        },
+        {
+          "check": "mapping_quality",
+          "status": "pass",
+          "detail": "Synthetic pass used to exercise the workflow"
+        },
+        {
+          "check": "mixed_infection",
+          "status": "pass",
+          "detail": "Synthetic pass used to exercise the workflow"
+        }
+      ],
+      "erm41_status": "unknown",
+      "erm41_source": null,
+      "rrl_status": "unknown",
+      "rrl_source": null,
+      "rrs_status": "unknown",
+      "rrs_source": null
+    },
+    "policy": {
+      "version": "research-default",
+      "scopes": [],
+      "required_qc": [
+        "species_confirmation",
+        "contamination",
+        "mapping_quality",
+        "mixed_infection"
+      ]
+    },
+    "profile": {
+      "name": "mtbc",
+      "version": "0.2.0-illustrative",
+      "reference_assembly": "NC_000962.3",
+      "drugs": [
+        "isoniazid",
+        "rifampicin",
+        "pyrazinamide",
+        "ethambutol",
+        "moxifloxacin",
+        "amikacin",
+        "bedaquiline",
+        "pretomanid",
+        "linezolid",
+        "clofazimine"
+      ],
+      "drug_loci": {
+        "isoniazid": {
+          "tier1": [
+            "katG",
+            "fabG1",
+            "inhA"
+          ],
+          "tier2": [
+            "ahpC",
+            "ndh"
+          ]
+        },
+        "rifampicin": {
+          "tier1": [
+            "rpoB"
+          ],
+          "tier2": [
+            "rpoA",
+            "rpoC"
+          ]
+        },
+        "pyrazinamide": {
+          "tier1": [
+            "pncA"
+          ],
+          "tier2": [
+            "panD",
+            "rpsA",
+            "clpC1"
+          ]
+        },
+        "ethambutol": {
+          "tier1": [
+            "embB"
+          ],
+          "tier2": [
+            "embA",
+            "embC",
+            "embR",
+            "aftB"
+          ]
+        },
+        "moxifloxacin": {
+          "tier1": [
+            "gyrA",
+            "gyrB"
+          ],
+          "tier2": []
+        },
+        "amikacin": {
+          "tier1": [
+            "rrs"
+          ],
+          "tier2": [
+            "eis",
+            "tlyA"
+          ]
+        },
+        "bedaquiline": {
+          "tier1": [
+            "atpE",
+            "Rv0678"
+          ],
+          "tier2": [
+            "pepQ",
+            "Rv1979c"
+          ]
+        },
+        "pretomanid": {
+          "tier1": [
+            "ddn",
+            "fbiA",
+            "fbiB",
+            "fbiC",
+            "fgd1"
+          ],
+          "tier2": []
+        },
+        "linezolid": {
+          "tier1": [
+            "rplC",
+            "rrl"
+          ],
+          "tier2": []
+        },
+        "clofazimine": {
+          "tier1": [
+            "Rv0678"
+          ],
+          "tier2": [
+            "pepQ",
+            "Rv1979c"
+          ]
+        }
+      },
+      "loci": {
+        "katG": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "fabG1": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "inhA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "ahpC": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "ndh": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rpoB": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rpoA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rpoC": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "pncA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "panD": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rpsA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "clpC1": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "embB": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "embA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "embC": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "embR": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "aftB": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "gyrA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "gyrB": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rrs": {
+          "length_bp": null,
+          "region": "rrna"
+        },
+        "eis": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "tlyA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "atpE": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "Rv0678": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "pepQ": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "Rv1979c": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "ddn": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "fbiA": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "fbiB": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "fbiC": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "fgd1": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rplC": {
+          "length_bp": null,
+          "region": "coding"
+        },
+        "rrl": {
+          "length_bp": null,
+          "region": "rrna"
+        }
+      },
+      "efflux_regulators": {
+        "Rv0678": [
+          "bedaquiline",
+          "clofazimine"
+        ],
+        "mmpR5": [
+          "bedaquiline",
+          "clofazimine"
+        ],
+        "pepQ": [
+          "bedaquiline",
+          "clofazimine"
+        ],
+        "Rv1979c": [
+          "clofazimine"
+        ]
+      },
+      "promoter_loci": {
+        "inhA": [
+          "isoniazid"
+        ],
+        "fabG1": [
+          "isoniazid"
+        ],
+        "ahpC": [
+          "isoniazid"
+        ],
+        "eis": [
+          "amikacin"
+        ]
+      },
+      "regimens": [
+        {
+          "name": "BPaLM",
+          "drugs": [
+            "bedaquiline",
+            "pretomanid",
+            "linezolid",
+            "moxifloxacin"
+          ],
+          "min_required": 3,
+          "note": "6-month regimen for MDR/RR-TB and pre-XDR-TB (WHO 2022)."
+        },
+        {
+          "name": "BPaL",
+          "drugs": [
+            "bedaquiline",
+            "pretomanid",
+            "linezolid"
+          ],
+          "min_required": 3,
+          "note": "Fallback when a fluoroquinolone cannot be used."
+        },
+        {
+          "name": "first-line",
+          "drugs": [
+            "isoniazid",
+            "rifampicin",
+            "pyrazinamide",
+            "ethambutol"
+          ],
+          "min_required": 4,
+          "note": "Standard drug-susceptible TB regimen."
+        }
+      ],
+      "ships_validated": false
+    },
+    "phenotypes": [],
+    "coverage": {
+      "Rv0678": {
+        "locus": "Rv0678",
+        "mean_depth": 48,
+        "callable_fraction": 0.97,
+        "source": "depth-table"
+      },
+      "atpE": {
+        "locus": "atpE",
+        "mean_depth": 78,
+        "callable_fraction": 1.0,
+        "source": "depth-table"
+      },
+      "ddn": {
+        "locus": "ddn",
+        "mean_depth": 66,
+        "callable_fraction": 0.99,
+        "source": "depth-table"
+      },
+      "embB": {
+        "locus": "embB",
+        "mean_depth": 71,
+        "callable_fraction": 0.99,
+        "source": "depth-table"
+      },
+      "fabG1": {
+        "locus": "fabG1",
+        "mean_depth": 74,
+        "callable_fraction": 0.99,
+        "source": "depth-table"
+      },
+      "fbiA": {
+        "locus": "fbiA",
+        "mean_depth": 62,
+        "callable_fraction": 0.98,
+        "source": "depth-table"
+      },
+      "fbiB": {
+        "locus": "fbiB",
+        "mean_depth": 59,
+        "callable_fraction": 0.96,
+        "source": "depth-table"
+      },
+      "fbiC": {
+        "locus": "fbiC",
+        "mean_depth": 55,
+        "callable_fraction": 0.96,
+        "source": "depth-table"
+      },
+      "fgd1": {
+        "locus": "fgd1",
+        "mean_depth": 64,
+        "callable_fraction": 0.99,
+        "source": "depth-table"
+      },
+      "gyrA": {
+        "locus": "gyrA",
+        "mean_depth": 64,
+        "callable_fraction": 0.98,
+        "source": "depth-table"
+      },
+      "gyrB": {
+        "locus": "gyrB",
+        "mean_depth": 58,
+        "callable_fraction": 0.96,
+        "source": "depth-table"
+      },
+      "inhA": {
+        "locus": "inhA",
+        "mean_depth": 69,
+        "callable_fraction": 0.98,
+        "source": "depth-table"
+      },
+      "katG": {
+        "locus": "katG",
+        "mean_depth": 82,
+        "callable_fraction": 1.0,
+        "source": "depth-table"
+      },
+      "pncA": {
+        "locus": "pncA",
+        "mean_depth": 70,
+        "callable_fraction": 0.97,
+        "source": "depth-table"
+      },
+      "rplC": {
+        "locus": "rplC",
+        "mean_depth": 61,
+        "callable_fraction": 1.0,
+        "source": "depth-table"
+      },
+      "rpoB": {
+        "locus": "rpoB",
+        "mean_depth": 75,
+        "callable_fraction": 1.0,
+        "source": "depth-table"
+      },
+      "rrl": {
+        "locus": "rrl",
+        "mean_depth": 57,
+        "callable_fraction": 0.97,
+        "source": "depth-table"
+      }
+    },
+    "depth_floor": 10,
+    "callable_floor": 0.95,
+    "tool_version": "0.2.0",
+    "demo_mode": true,
+    "include_tier2_loci": false,
+    "test_menu": [
+      {
+        "id": "review-v1",
+        "action": "review_variant",
+        "available": true,
+        "cost": 20.0,
+        "currency": "USD",
+        "turnaround_hours": 24
+      },
+      {
+        "id": "phenotype-v1",
+        "action": "confirm_phenotype",
+        "available": true,
+        "cost": 45.0,
+        "currency": "USD",
+        "turnaround_hours": 72
+      },
+      {
+        "id": "coverage-v1",
+        "action": "review_coverage",
+        "available": true,
+        "cost": 5.0,
+        "currency": "USD",
+        "turnaround_hours": 4
+      },
+      {
+        "id": "engine-v1",
+        "action": "review_engine_evidence",
+        "available": true,
+        "cost": 10.0,
+        "currency": "USD",
+        "turnaround_hours": 8
+      }
+    ],
+    "follow_up_budget": 120.0,
+    "population_options": {
+      "enabled": true,
+      "tolerance": 0.05,
+      "lineage_hints": []
+    },
+    "epistasis_table": {
+      "schema": "myconductor.epistasis.v1",
+      "version": "synthetic-2026.1",
+      "illustrative": true,
+      "rules": [
+        {
+          "rule_id": "synthetic-rpob-rpoc-1",
+          "drug": "rifampicin",
+          "primary_variant_key_or_gene": "rpoB",
+          "partner_variant_key_or_gene": "rpoC",
+          "interaction": "compensatory",
+          "note": "Synthetic co-observation used to exercise annotation-only epistasis reporting.",
+          "source": "Synthetic reviewed interaction table",
+          "organism": "mtbc",
+          "reference_assembly": "NC_000962.3",
+          "reviewed_by": "Synthetic curator",
+          "reviewed_at": "2026-04-01",
+          "confidence_adjustment": 0,
+          "status": "active"
+        }
+      ]
+    },
+    "mic_predictions": [
+      {
+        "prediction_id": "SYN-MIC-PRED-001",
+        "sample_id": "MTB-DEMO-001",
+        "isolate_id": "ISO-DEMO-001",
+        "site_id": "SYNTHETIC-SITE-01",
+        "organism": "mtbc",
+        "drug": "pyrazinamide",
+        "value": 2.0,
+        "unit": "mg/L",
+        "method": "Synthetic external MIC model",
+        "model_version": "1.3",
+        "source": "Synthetic model output",
+        "timestamp": "2026-04-01",
+        "critical_concentration": 1.0,
+        "breakpoint_reference": "Synthetic breakpoint table",
+        "interval": [
+          1.4,
+          2.8
+        ],
+        "censoring": "none",
+        "susceptible_inclusive": null,
+        "interval_kind": "prediction",
+        "interval_level": 0.95
+      }
+    ],
+    "structural_annotations": [
+      {
+        "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+        "location": "binding_pocket",
+        "predicted_effect": "Synthetic report of a possible local packing change",
+        "source": "Synthetic structural archive",
+        "organism": "mtbc",
+        "reference_assembly": "NC_000962.3",
+        "source_version": "2026.1",
+        "timestamp": "2026-04-01",
+        "confidence": 0.72,
+        "ligand_distance": 4.8,
+        "distance_unit": "angstrom",
+        "ligand_reference": "Synthetic pyrazinamide analogue",
+        "validation_status": "pending"
+      }
+    ],
+    "regulatory_catalogue": {
+      "schema": "myconductor.regulatory.v1",
+      "version": "synthetic-2026.1",
+      "illustrative": true,
+      "regions": [
+        {
+          "id": "synthetic-eis-promoter-1",
+          "name": "eis upstream regulatory region",
+          "organism": "mtbc",
+          "reference_assembly": "NC_000962.3",
+          "type": "PROMOTER",
+          "target_genes": [
+            "eis"
+          ],
+          "drug_associations": [
+            "amikacin"
+          ],
+          "evidence_tier": "CANDIDATE",
+          "source": "Synthetic regulatory catalogue",
+          "coordinates": null,
+          "variant_labels": [],
+          "status": "active"
+        }
+      ]
+    },
+    "expression_evidence": [
+      {
+        "gene": "Rv0678",
+        "measurement_type": "rna_seq",
+        "expression_level": 7.2,
+        "reference_level": 1.0,
+        "fold_change": 7.2,
+        "provenance": "Synthetic RNA-seq run 11",
+        "sample_id": "MTB-DEMO-001",
+        "observation_id": "SYN-EXP-001",
+        "isolate_id": "ISO-DEMO-001",
+        "site_id": "SYNTHETIC-SITE-01",
+        "organism": "mtbc",
+        "unit": "normalised counts",
+        "timestamp": "2026-04-01",
+        "confidence": 0.88,
+        "reported_conclusion": "elevated",
+        "interpretation_source": "Synthetic analysis plan",
+        "linked_variant_keys": [
+          "NC_000962.3:NC_000962.3:4247429:T>G"
+        ],
+        "linkage_source": "Same synthetic isolate",
+        "measurement_scale": "reported_metric"
+      }
+    ],
+    "in_silico_predictions": [
+      {
+        "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+        "drug": "pyrazinamide",
+        "model_id": "vus-classifier",
+        "model_version": "2.1",
+        "training_data_reference": "synthetic-training/1",
+        "prediction": "resistant",
+        "source": "Synthetic predictions/run-7",
+        "sample_id": "MTB-DEMO-001",
+        "isolate_id": "ISO-DEMO-001",
+        "site_id": "SYNTHETIC-SITE-01",
+        "organism": "mtbc",
+        "timestamp": "2026-04-01",
+        "confidence": 0.91,
+        "feature_attributions": {
+          "conservation": 0.36,
+          "structure": 0.24
+        },
+        "structural_context": null
+      }
+    ],
+    "model_registry": {
+      "schema": "myconductor.model-registry.v1",
+      "ledger": [
+        {
+          "seq": 0,
+          "timestamp_utc": "2026-09-14T12:26:26.119006+00:00",
+          "action": "submitted",
+          "payload": {
+            "model_id": "vus-classifier",
+            "version": "2.1",
+            "model": {
+              "model_id": "vus-classifier",
+              "version": "2.1",
+              "training_data_provenance": "synthetic-training/1",
+              "organism": "mtbc",
+              "validated_cohorts": [
+                "synthetic-independent-evaluation-1",
+                "synthetic-independent-evaluation-2",
+                "synthetic-independent-evaluation-3",
+                "synthetic-independent-evaluation-4"
+              ],
+              "performance": [
+                {
+                  "drug": "pyrazinamide",
+                  "lineage": "Lineage 1",
+                  "cohort": "synthetic-independent-evaluation-1",
+                  "source": "synthetic-evaluation/1",
+                  "independent": true,
+                  "sensitivity": 0.93,
+                  "specificity": 0.96,
+                  "call_rate": 0.95,
+                  "error_rate": 0.04,
+                  "baseline": {
+                    "source": "Synthetic catalogue baseline",
+                    "coverage": 0.91,
+                    "error_rate": 0.08
+                  }
+                },
+                {
+                  "drug": "pyrazinamide",
+                  "lineage": "Lineage 2",
+                  "cohort": "synthetic-independent-evaluation-2",
+                  "source": "synthetic-evaluation/1",
+                  "independent": true,
+                  "sensitivity": 0.92,
+                  "specificity": 0.955,
+                  "call_rate": 0.94,
+                  "error_rate": 0.046,
+                  "baseline": {
+                    "source": "Synthetic catalogue baseline",
+                    "coverage": 0.895,
+                    "error_rate": 0.084
+                  }
+                },
+                {
+                  "drug": "pyrazinamide",
+                  "lineage": "Lineage 3",
+                  "cohort": "synthetic-independent-evaluation-3",
+                  "source": "synthetic-evaluation/1",
+                  "independent": true,
+                  "sensitivity": 0.91,
+                  "specificity": 0.95,
+                  "call_rate": 0.9299999999999999,
+                  "error_rate": 0.052000000000000005,
+                  "baseline": {
+                    "source": "Synthetic catalogue baseline",
+                    "coverage": 0.88,
+                    "error_rate": 0.088
+                  }
+                },
+                {
+                  "drug": "pyrazinamide",
+                  "lineage": "Lineage 4",
+                  "cohort": "synthetic-independent-evaluation-4",
+                  "source": "synthetic-evaluation/1",
+                  "independent": true,
+                  "sensitivity": 0.9,
+                  "specificity": 0.945,
+                  "call_rate": 0.9199999999999999,
+                  "error_rate": 0.058,
+                  "baseline": {
+                    "source": "Synthetic catalogue baseline",
+                    "coverage": 0.865,
+                    "error_rate": 0.092
+                  }
+                }
+              ]
+            },
+            "reviewer": "Synthetic submitter",
+            "rationale": "Exercise governed model intake"
+          },
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "55e4802c3df628b159fd064ce644226d9fa9eb27625cbadab63afdf3aebc3fc3"
+        },
+        {
+          "seq": 1,
+          "timestamp_utc": "2026-09-14T12:26:26.119253+00:00",
+          "action": "reviewed",
+          "payload": {
+            "model_id": "vus-classifier",
+            "version": "2.1",
+            "reviewer": "Synthetic reviewer",
+            "rationale": "Synthetic documentation reviewed"
+          },
+          "prev_hash": "55e4802c3df628b159fd064ce644226d9fa9eb27625cbadab63afdf3aebc3fc3",
+          "entry_hash": "8d171b5edbe0603b4c3927889dd786f999af1081e70fa6592b87ddb2edae5615"
+        },
+        {
+          "seq": 2,
+          "timestamp_utc": "2026-09-14T12:26:26.119380+00:00",
+          "action": "approved",
+          "payload": {
+            "model_id": "vus-classifier",
+            "version": "2.1",
+            "reviewer": "Synthetic reviewer",
+            "rationale": "Synthetic fixture beats its declared baseline"
+          },
+          "prev_hash": "8d171b5edbe0603b4c3927889dd786f999af1081e70fa6592b87ddb2edae5615",
+          "entry_hash": "bbe4ead16e3d7198b21d31f826178b8ca39f572e7516001adc0fb4a9e185a5d0"
+        }
+      ]
+    },
+    "watchlist_enabled": false
+  },
+  "population_structure": {
+    "sample_id": "MTB-DEMO-001",
+    "subpopulations": [
+      {
+        "variant_keys": [
+          "NC_000962.3:NC_000962.3:2155168:G>C",
+          "NC_000962.3:NC_000962.3:2288725:A>C",
+          "NC_000962.3:NC_000962.3:2715342:C>T",
+          "NC_000962.3:NC_000962.3:4247574:A>G",
+          "NC_000962.3:NC_000962.3:761155:C>T"
+        ],
+        "estimated_fraction": 1.0,
+        "lineage": null,
+        "lineage_source": "none",
+        "note": "VAF proximity only; shared cellular origin is unproven.",
+        "linkage_source": null
+      }
+    ],
+    "unclustered_variant_keys": [
+      "NC_000962.3:NC_000962.3:4247429:T>G",
+      "NC_000962.3:NC_000962.3:7570:A>G",
+      "NC_000962.3:NC_000962.3:764817:C>T"
+    ],
+    "classification": "indeterminate",
+    "classification_basis": "VAF groups and shared lineage cannot distinguish clones, same-lineage infection, or within-host evolution.",
+    "data_gaps": [
+      "Frequency proximity does not establish co-occurrence or cellular linkage.",
+      "Fractions are median allele frequencies, not estimated clone proportions.",
+      "No per-subpopulation lineage/linkage evidence supplied; classification requires independent evidence."
+    ],
+    "method": "bounded-span VAF grouping; no haplotype inference",
+    "tolerance": 0.05,
+    "dating": null
+  },
+  "epistasis_notes": [
+    {
+      "rule_id": "synthetic-rpob-rpoc-1",
+      "drug": "rifampicin",
+      "primary_variant_key_or_gene": "rpoB",
+      "partner_variant_key_or_gene": "rpoC",
+      "interaction": "compensatory",
+      "note": "Synthetic co-observation used to exercise annotation-only epistasis reporting.",
+      "source": "Synthetic reviewed interaction table",
+      "organism": "mtbc",
+      "reference_assembly": "NC_000962.3",
+      "reviewed_by": "Synthetic curator",
+      "reviewed_at": "2026-04-01",
+      "confidence_adjustment": 0,
+      "status": "active",
+      "matched_pairs": [
+        [
+          "NC_000962.3:NC_000962.3:761155:C>T",
+          "NC_000962.3:NC_000962.3:764817:C>T"
+        ]
+      ],
+      "table_version": "synthetic-2026.1",
+      "illustrative": true,
+      "effect": "annotation_only",
+      "tier": "inferred",
+      "interpretation": "Co-observed variants match a supplied rule. Interaction, cellular linkage and fitness effects are not established here."
+    }
+  ],
+  "mic_predictions": [
+    {
+      "prediction_id": "SYN-MIC-PRED-001",
+      "sample_id": "MTB-DEMO-001",
+      "isolate_id": "ISO-DEMO-001",
+      "site_id": "SYNTHETIC-SITE-01",
+      "organism": "mtbc",
+      "drug": "pyrazinamide",
+      "value": 2.0,
+      "unit": "mg/L",
+      "method": "Synthetic external MIC model",
+      "model_version": "1.3",
+      "source": "Synthetic model output",
+      "timestamp": "2026-04-01",
+      "critical_concentration": 1.0,
+      "breakpoint_reference": "Synthetic breakpoint table",
+      "interval": [
+        1.4,
+        2.8
+      ],
+      "censoring": "none",
+      "susceptible_inclusive": null,
+      "interval_kind": "prediction",
+      "interval_level": 0.95
+    }
+  ],
+  "quantitative_findings": [
+    {
+      "prediction_id": "SYN-MIC-PRED-001",
+      "sample_id": "MTB-DEMO-001",
+      "isolate_id": "ISO-DEMO-001",
+      "site_id": "SYNTHETIC-SITE-01",
+      "organism": "mtbc",
+      "drug": "pyrazinamide",
+      "value": 2.0,
+      "unit": "mg/L",
+      "method": "Synthetic external MIC model",
+      "model_version": "1.3",
+      "source": "Synthetic model output",
+      "timestamp": "2026-04-01",
+      "critical_concentration": 1.0,
+      "breakpoint_reference": "Synthetic breakpoint table",
+      "interval": [
+        1.4,
+        2.8
+      ],
+      "censoring": "none",
+      "susceptible_inclusive": null,
+      "interval_kind": "prediction",
+      "interval_level": 0.95,
+      "comparison": "resistant",
+      "genomic_call": "indeterminate",
+      "conflict": false,
+      "tier": "predicted",
+      "interpretation": "Supplied quantitative prediction; not a measured phenotype or validated categorical call."
+    }
+  ],
+  "structural_annotations": [
+    {
+      "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+      "location": "binding_pocket",
+      "predicted_effect": "Synthetic report of a possible local packing change",
+      "source": "Synthetic structural archive",
+      "organism": "mtbc",
+      "reference_assembly": "NC_000962.3",
+      "source_version": "2026.1",
+      "timestamp": "2026-04-01",
+      "confidence": 0.72,
+      "ligand_distance": 4.8,
+      "distance_unit": "angstrom",
+      "ligand_reference": "Synthetic pyrazinamide analogue",
+      "validation_status": "pending",
+      "annotation_id": "3cadbae4516d082be48fc11101618c49c73c912bde16edea357a294cd2cbfcf7",
+      "gene": "pncA",
+      "status": "external_claim",
+      "ranking_effect": "none"
+    }
+  ],
+  "regulatory_findings": [
+    {
+      "id": "synthetic-eis-promoter-1",
+      "name": "eis upstream regulatory region",
+      "organism": "mtbc",
+      "reference_assembly": "NC_000962.3",
+      "type": "PROMOTER",
+      "target_genes": [
+        "eis"
+      ],
+      "drug_associations": [
+        "amikacin"
+      ],
+      "evidence_tier": "CANDIDATE",
+      "source": "Synthetic regulatory catalogue",
+      "coordinates": null,
+      "variant_labels": [],
+      "status": "active",
+      "variant_key": "NC_000962.3:NC_000962.3:2715342:C>T",
+      "catalogue_version": "synthetic-2026.1",
+      "illustrative": true
+    }
+  ],
+  "expression_findings": [
+    {
+      "gene": "Rv0678",
+      "measurement_type": "rna_seq",
+      "expression_level": 7.2,
+      "reference_level": 1.0,
+      "fold_change": 7.2,
+      "provenance": "Synthetic RNA-seq run 11",
+      "sample_id": "MTB-DEMO-001",
+      "observation_id": "SYN-EXP-001",
+      "isolate_id": "ISO-DEMO-001",
+      "site_id": "SYNTHETIC-SITE-01",
+      "organism": "mtbc",
+      "unit": "normalised counts",
+      "timestamp": "2026-04-01",
+      "confidence": 0.88,
+      "reported_conclusion": "elevated",
+      "interpretation_source": "Synthetic analysis plan",
+      "linked_variant_keys": [
+        "NC_000962.3:NC_000962.3:4247429:T>G"
+      ],
+      "linkage_source": "Same synthetic isolate",
+      "measurement_scale": "reported_metric",
+      "drugs": [
+        "bedaquiline",
+        "clofazimine"
+      ],
+      "tier": "predicted",
+      "matching_status": "linked",
+      "call_effect": "none"
+    }
+  ],
+  "in_silico_findings": [
+    {
+      "variant_key": "NC_000962.3:NC_000962.3:2288725:A>C",
+      "drug": "pyrazinamide",
+      "model_id": "vus-classifier",
+      "model_version": "2.1",
+      "training_data_reference": "synthetic-training/1",
+      "prediction": "resistant",
+      "source": "Synthetic predictions/run-7",
+      "sample_id": "MTB-DEMO-001",
+      "isolate_id": "ISO-DEMO-001",
+      "site_id": "SYNTHETIC-SITE-01",
+      "organism": "mtbc",
+      "timestamp": "2026-04-01",
+      "confidence": 0.91,
+      "feature_attributions": {
+        "conservation": 0.36,
+        "structure": 0.24
+      },
+      "structural_context": null,
+      "tier": "predicted",
+      "call_effect": "none",
+      "ranking_effect": "none",
+      "baseline_basis": {
+        "drug": "pyrazinamide",
+        "lineage": "Lineage 1",
+        "cohort": "synthetic-independent-evaluation-1",
+        "baseline": "Synthetic catalogue baseline",
+        "basis": "answers 95% versus 91% and errs on 4.0% versus 8.0% against Synthetic catalogue baseline",
+        "caveat": "Beating the catalogue on an evaluation cohort is not calibration and not clinical validation; this prediction still cannot establish resistance."
+      },
+      "interpretation": "Externally supplied prediction and attributions; approval does not calibrate confidence or establish drug response."
+    }
+  ],
+  "discordance_tickets": [],
+  "panel": {
+    "name": "Synthetic comprehensive TB panel",
+    "version": "2026.1",
+    "assay": "targeted-amplicon",
+    "source": "Synthetic manufacturer declaration",
+    "verified": false,
+    "n_loci": 20,
+    "kept": [
+      "Rv0678",
+      "atpE",
+      "ddn",
+      "embB",
+      "fabG1",
+      "fbiA",
+      "fbiB",
+      "fbiC",
+      "fgd1",
+      "gyrA",
+      "gyrB",
+      "inhA",
+      "katG",
+      "pncA",
+      "rplC",
+      "rpoB",
+      "rrl"
+    ],
+    "discarded": [],
+    "note": "Synthetic comprehensive TB panel 2026.1: every mask locus is on the panel (17 locus/loci)",
+    "unsupported_drugs": {},
+    "off_panel_variants": []
+  },
+  "report_sha256": "7353f774b9e2324cd633f036aabe03eefd6f37b8502a58a25c5d51c4b2b655ed"
+}

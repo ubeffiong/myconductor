@@ -299,6 +299,14 @@ class CohortInputTests(unittest.TestCase):
         self.assertEqual(payload["watchlist"], [])
         self.assertTrue(payload["mutation_index"])
 
+    def test_advanced_workflow_views_are_present_and_empty_without_evidence(self):
+        html = render_html(demo_report())
+        payload = payload_of(html)
+        self.assertIn('id="workflow-evidence"', html)
+        for key in ("population", "mic", "structural", "regulatory",
+                    "expression", "models", "panels"):
+            self.assertEqual(payload["workflows"][key], [], key)
+
 
 class ExportBarTests(unittest.TestCase):
     """The page must be able to hand its data back.

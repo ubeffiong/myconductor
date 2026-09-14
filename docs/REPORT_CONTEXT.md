@@ -36,3 +36,11 @@ mechanisms, epistasis notes, watch-list aggregates and variants of uncertain
 significance remain unable to establish resistance. The loader rejects unknown
 fields and incorrectly typed collections so misspellings cannot silently empty
 a panel.
+
+For a populated, deterministic inspection fixture, run
+`python -m myconductor demo --full-report artifacts/full-synthetic-demo`.
+The generated context is explicitly synthetic and is loaded back through this
+validator before the HTML is rendered. The fixture renders a 12-isolate cohort
+and writes both primary-sample JSON and `myconductor-full-synthetic-demo.cohort.json`,
+so it is useful for visual review, report payload inspection and end-to-end
+contract testing.

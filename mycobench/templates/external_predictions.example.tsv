@@ -1,0 +1,5 @@
+isolate_id	drug	predicted	confidence
+cr_ERR251123	rifampicin	resistant	0.97
+cr_ERR251124	rifampicin	susceptible	0.92
+cr_ERR251125	rifampicin	abstain	0.10
+cr_ERR251126	isoniazid	R	0.88

@@ -163,6 +163,13 @@ def _run_analyze(args: argparse.Namespace) -> int:
 
 
 def _run_demo(args: argparse.Namespace) -> int:
+    if args.full_report:
+        from .full_demo import write_full_demo
+        written = write_full_demo(args.full_report)
+        print("Myconductor full synthetic demonstration written:")
+        for name, path in written.items():
+            print(f"  {name}: {path}")
+        return 0
     print(f"Myconductor demo — {_DEMO_INPUT.name} with {_DEMO_MASK.name}\n")
     print("The bundled input and catalogue are illustrative. This demonstrates "
           "the evidence flow, not a validated analysis.\n")
@@ -392,6 +399,8 @@ def build_parser() -> argparse.ArgumentParser:
     a.set_defaults(func=_run_analyze)
 
     d = sub.add_parser("demo", help="Run the bundled illustrative demo.")
+    d.add_argument("--full-report", metavar="DIRECTORY",
+                   help="Generate a full multi-sample synthetic HTML report plus cohort JSON, primary JSON, FHIR, JSON-LD and validated report-context artifacts.")
     d.set_defaults(func=_run_demo)
 
     i = sub.add_parser("ingest-catalogue",

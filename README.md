@@ -78,6 +78,27 @@ catalogue's published `.xlsx`.
 python -m myconductor demo
 ```
 
+Generate the full deterministic synthetic workflow demonstration, including a
+multi-sample self-contained HTML cohort report, per-sample cohort JSON, primary
+sample JSON, FHIR, JSON-LD, and validated report-context companions:
+
+```bash
+python -m myconductor demo --full-report artifacts/full-synthetic-demo
+```
+
+Every value and source in this fixture is labelled synthetic. The command
+currently generates 12 analysed isolates across four synthetic sites and four
+lineages, then renders the same dense cohort views shown in the mock report:
+drug performance, isolate-by-drug call states, locus callability, lineage
+strata, mutation search, validation history, federated contribution summaries,
+and audit history. It exercises the production analysis path for coverage gating, external-engine
+discordance, heteroresistance, population structure, annotation-only
+epistasis, quantitative MIC comparison, structural and regulatory evidence,
+expression evidence, governed model output, assay-panel scope, investigation
+planning, interoperability exports, and the cohort-level report views.  It is
+intended for UI and integration testing and carries no clinical performance
+claim.
+
 Analyse your own data. Note that `--mask` is what permits susceptible calls:
 
 ```bash

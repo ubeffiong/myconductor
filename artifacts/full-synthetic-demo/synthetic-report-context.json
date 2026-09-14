@@ -1,0 +1,930 @@
+{
+  "schema": "myconductor.report-context.v1",
+  "baseline_rows": [
+    {
+      "drug": "rifampicin",
+      "estimable": "yes",
+      "n_isolates": "360",
+      "n_answered": "360",
+      "coverage": "1.0000",
+      "error_rate": "0.0056",
+      "n_false_susceptible": "0",
+      "n_false_resistant": "2",
+      "sensitivity": "1.0000",
+      "specificity": "0.9922",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.9100",
+      "npv": "0.9800",
+      "resistance_prevalence": "0.2889",
+      "sensitivity_basis_n": "104",
+      "specificity_basis_n": "256",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "isoniazid",
+      "estimable": "yes",
+      "n_isolates": "343",
+      "n_answered": "341",
+      "coverage": "0.9942",
+      "error_rate": "0.0117",
+      "n_false_susceptible": "1",
+      "n_false_resistant": "3",
+      "sensitivity": "0.9897",
+      "specificity": "0.9878",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8980",
+      "npv": "0.9740",
+      "resistance_prevalence": "0.2828",
+      "sensitivity_basis_n": "97",
+      "specificity_basis_n": "246",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "moxifloxacin",
+      "estimable": "yes",
+      "n_isolates": "326",
+      "n_answered": "322",
+      "coverage": "0.9877",
+      "error_rate": "0.0186",
+      "n_false_susceptible": "2",
+      "n_false_resistant": "4",
+      "sensitivity": "0.9778",
+      "specificity": "0.9831",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8860",
+      "npv": "0.9680",
+      "resistance_prevalence": "0.2761",
+      "sensitivity_basis_n": "90",
+      "specificity_basis_n": "236",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "bedaquiline",
+      "estimable": "yes",
+      "n_isolates": "309",
+      "n_answered": "303",
+      "coverage": "0.9806",
+      "error_rate": "0.0099",
+      "n_false_susceptible": "3",
+      "n_false_resistant": "0",
+      "sensitivity": "0.9639",
+      "specificity": "1.0000",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8740",
+      "npv": "0.9620",
+      "resistance_prevalence": "0.2686",
+      "sensitivity_basis_n": "83",
+      "specificity_basis_n": "226",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "linezolid",
+      "estimable": "yes",
+      "n_isolates": "292",
+      "n_answered": "284",
+      "coverage": "0.9726",
+      "error_rate": "0.0035",
+      "n_false_susceptible": "0",
+      "n_false_resistant": "1",
+      "sensitivity": "1.0000",
+      "specificity": "0.9954",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8620",
+      "npv": "0.9560",
+      "resistance_prevalence": "0.2603",
+      "sensitivity_basis_n": "76",
+      "specificity_basis_n": "216",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "pyrazinamide",
+      "estimable": "yes",
+      "n_isolates": "275",
+      "n_answered": "265",
+      "coverage": "0.9636",
+      "error_rate": "0.0113",
+      "n_false_susceptible": "1",
+      "n_false_resistant": "2",
+      "sensitivity": "0.9855",
+      "specificity": "0.9903",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8500",
+      "npv": "0.9500",
+      "resistance_prevalence": "0.2509",
+      "sensitivity_basis_n": "69",
+      "specificity_basis_n": "206",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "ethambutol",
+      "estimable": "yes",
+      "n_isolates": "258",
+      "n_answered": "246",
+      "coverage": "0.9535",
+      "error_rate": "0.0203",
+      "n_false_susceptible": "2",
+      "n_false_resistant": "3",
+      "sensitivity": "0.9677",
+      "specificity": "0.9847",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8380",
+      "npv": "0.9440",
+      "resistance_prevalence": "0.2403",
+      "sensitivity_basis_n": "62",
+      "specificity_basis_n": "196",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "amikacin",
+      "estimable": "yes",
+      "n_isolates": "241",
+      "n_answered": "227",
+      "coverage": "0.9419",
+      "error_rate": "0.0308",
+      "n_false_susceptible": "3",
+      "n_false_resistant": "4",
+      "sensitivity": "0.9455",
+      "specificity": "0.9785",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8260",
+      "npv": "0.9380",
+      "resistance_prevalence": "0.2282",
+      "sensitivity_basis_n": "55",
+      "specificity_basis_n": "186",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "clofazimine",
+      "estimable": "yes",
+      "n_isolates": "224",
+      "n_answered": "208",
+      "coverage": "0.9286",
+      "error_rate": "0.0000",
+      "n_false_susceptible": "0",
+      "n_false_resistant": "0",
+      "sensitivity": "1.0000",
+      "specificity": "1.0000",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8140",
+      "npv": "0.9320",
+      "resistance_prevalence": "0.2143",
+      "sensitivity_basis_n": "48",
+      "specificity_basis_n": "176",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    },
+    {
+      "drug": "pretomanid",
+      "estimable": "yes",
+      "n_isolates": "207",
+      "n_answered": "189",
+      "coverage": "0.9130",
+      "error_rate": "0.0106",
+      "n_false_susceptible": "1",
+      "n_false_resistant": "1",
+      "sensitivity": "0.9756",
+      "specificity": "0.9940",
+      "sensitivity_ci": "synthetic demonstration interval",
+      "specificity_ci": "synthetic demonstration interval",
+      "ppv": "0.8020",
+      "npv": "0.9260",
+      "resistance_prevalence": "0.1981",
+      "sensitivity_basis_n": "41",
+      "specificity_basis_n": "166",
+      "notes": "Synthetic workflow fixture; no clinical performance claim."
+    }
+  ],
+  "lineage_rows": [
+    {
+      "drug": "rifampicin",
+      "lineage": "Lineage 1",
+      "n_called": "42",
+      "sensitivity": "0.940",
+      "specificity": "0.970",
+      "vme_rate": "0.020",
+      "me_rate": "0.030",
+      "powered": "yes"
+    },
+    {
+      "drug": "rifampicin",
+      "lineage": "Lineage 2",
+      "n_called": "49",
+      "sensitivity": "0.932",
+      "specificity": "0.973",
+      "vme_rate": "0.023",
+      "me_rate": "0.030",
+      "powered": "yes"
+    },
+    {
+      "drug": "rifampicin",
+      "lineage": "Lineage 3",
+      "n_called": "56",
+      "sensitivity": "0.924",
+      "specificity": "0.976",
+      "vme_rate": "0.026",
+      "me_rate": "0.030",
+      "powered": "yes"
+    },
+    {
+      "drug": "rifampicin",
+      "lineage": "Lineage 4",
+      "n_called": "63",
+      "sensitivity": "0.916",
+      "specificity": "0.979",
+      "vme_rate": "0.029",
+      "me_rate": "0.030",
+      "powered": "yes"
+    },
+    {
+      "drug": "isoniazid",
+      "lineage": "Lineage 1",
+      "n_called": "46",
+      "sensitivity": "0.928",
+      "specificity": "0.962",
+      "vme_rate": "0.024",
+      "me_rate": "0.033",
+      "powered": "yes"
+    },
+    {
+      "drug": "isoniazid",
+      "lineage": "Lineage 2",
+      "n_called": "53",
+      "sensitivity": "0.920",
+      "specificity": "0.965",
+      "vme_rate": "0.027",
+      "me_rate": "0.033",
+      "powered": "yes"
+    },
+    {
+      "drug": "isoniazid",
+      "lineage": "Lineage 3",
+      "n_called": "60",
+      "sensitivity": "0.912",
+      "specificity": "0.968",
+      "vme_rate": "0.030",
+      "me_rate": "0.033",
+      "powered": "yes"
+    },
+    {
+      "drug": "isoniazid",
+      "lineage": "Lineage 4",
+      "n_called": "67",
+      "sensitivity": "0.904",
+      "specificity": "0.971",
+      "vme_rate": "0.033",
+      "me_rate": "0.033",
+      "powered": "yes"
+    },
+    {
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 1",
+      "n_called": "50",
+      "sensitivity": "0.916",
+      "specificity": "0.954",
+      "vme_rate": "0.028",
+      "me_rate": "0.036",
+      "powered": "yes"
+    },
+    {
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 2",
+      "n_called": "57",
+      "sensitivity": "0.908",
+      "specificity": "0.957",
+      "vme_rate": "0.031",
+      "me_rate": "0.036",
+      "powered": "yes"
+    },
+    {
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 3",
+      "n_called": "64",
+      "sensitivity": "0.900",
+      "specificity": "0.960",
+      "vme_rate": "0.034",
+      "me_rate": "0.036",
+      "powered": "yes"
+    },
+    {
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 4",
+      "n_called": "71",
+      "sensitivity": "0.892",
+      "specificity": "0.963",
+      "vme_rate": "0.037",
+      "me_rate": "0.036",
+      "powered": "yes"
+    },
+    {
+      "drug": "bedaquiline",
+      "lineage": "Lineage 1",
+      "n_called": "54",
+      "sensitivity": "0.904",
+      "specificity": "0.946",
+      "vme_rate": "0.032",
+      "me_rate": "0.039",
+      "powered": "yes"
+    },
+    {
+      "drug": "bedaquiline",
+      "lineage": "Lineage 2",
+      "n_called": "61",
+      "sensitivity": "0.896",
+      "specificity": "0.949",
+      "vme_rate": "0.035",
+      "me_rate": "0.039",
+      "powered": "yes"
+    },
+    {
+      "drug": "bedaquiline",
+      "lineage": "Lineage 3",
+      "n_called": "68",
+      "sensitivity": "0.888",
+      "specificity": "0.952",
+      "vme_rate": "0.038",
+      "me_rate": "0.039",
+      "powered": "yes"
+    },
+    {
+      "drug": "bedaquiline",
+      "lineage": "Lineage 4",
+      "n_called": "75",
+      "sensitivity": "0.880",
+      "specificity": "0.955",
+      "vme_rate": "0.041",
+      "me_rate": "0.039",
+      "powered": "yes"
+    },
+    {
+      "drug": "linezolid",
+      "lineage": "Lineage 1",
+      "n_called": "58",
+      "sensitivity": "0.892",
+      "specificity": "0.938",
+      "vme_rate": "0.036",
+      "me_rate": "0.042",
+      "powered": "yes"
+    },
+    {
+      "drug": "linezolid",
+      "lineage": "Lineage 2",
+      "n_called": "65",
+      "sensitivity": "0.884",
+      "specificity": "0.941",
+      "vme_rate": "0.039",
+      "me_rate": "0.042",
+      "powered": "yes"
+    },
+    {
+      "drug": "linezolid",
+      "lineage": "Lineage 3",
+      "n_called": "72",
+      "sensitivity": "0.876",
+      "specificity": "0.944",
+      "vme_rate": "0.042",
+      "me_rate": "0.042",
+      "powered": "yes"
+    },
+    {
+      "drug": "linezolid",
+      "lineage": "Lineage 4",
+      "n_called": "79",
+      "sensitivity": "0.868",
+      "specificity": "0.947",
+      "vme_rate": "0.045",
+      "me_rate": "0.042",
+      "powered": "yes"
+    },
+    {
+      "drug": "pyrazinamide",
+      "lineage": "Lineage 1",
+      "n_called": "62",
+      "sensitivity": "0.880",
+      "specificity": "0.930",
+      "vme_rate": "0.040",
+      "me_rate": "0.045",
+      "powered": "yes"
+    },
+    {
+      "drug": "pyrazinamide",
+      "lineage": "Lineage 2",
+      "n_called": "69",
+      "sensitivity": "0.872",
+      "specificity": "0.933",
+      "vme_rate": "0.043",
+      "me_rate": "0.045",
+      "powered": "yes"
+    },
+    {
+      "drug": "pyrazinamide",
+      "lineage": "Lineage 3",
+      "n_called": "76",
+      "sensitivity": "0.864",
+      "specificity": "0.936",
+      "vme_rate": "0.046",
+      "me_rate": "0.045",
+      "powered": "yes"
+    },
+    {
+      "drug": "pyrazinamide",
+      "lineage": "Lineage 4",
+      "n_called": "83",
+      "sensitivity": "0.856",
+      "specificity": "0.939",
+      "vme_rate": "0.049",
+      "me_rate": "0.045",
+      "powered": "yes"
+    },
+    {
+      "drug": "ethambutol",
+      "lineage": "Lineage 1",
+      "n_called": "66",
+      "sensitivity": "0.868",
+      "specificity": "0.922",
+      "vme_rate": "0.044",
+      "me_rate": "0.048",
+      "powered": "yes"
+    },
+    {
+      "drug": "ethambutol",
+      "lineage": "Lineage 2",
+      "n_called": "73",
+      "sensitivity": "0.860",
+      "specificity": "0.925",
+      "vme_rate": "0.047",
+      "me_rate": "0.048",
+      "powered": "yes"
+    },
+    {
+      "drug": "ethambutol",
+      "lineage": "Lineage 3",
+      "n_called": "80",
+      "sensitivity": "0.852",
+      "specificity": "0.928",
+      "vme_rate": "0.050",
+      "me_rate": "0.048",
+      "powered": "yes"
+    },
+    {
+      "drug": "ethambutol",
+      "lineage": "Lineage 4",
+      "n_called": "87",
+      "sensitivity": "0.844",
+      "specificity": "0.931",
+      "vme_rate": "0.053",
+      "me_rate": "0.048",
+      "powered": "yes"
+    },
+    {
+      "drug": "amikacin",
+      "lineage": "Lineage 1",
+      "n_called": "70",
+      "sensitivity": "0.856",
+      "specificity": "0.914",
+      "vme_rate": "0.048",
+      "me_rate": "0.051",
+      "powered": "yes"
+    },
+    {
+      "drug": "amikacin",
+      "lineage": "Lineage 2",
+      "n_called": "77",
+      "sensitivity": "0.848",
+      "specificity": "0.917",
+      "vme_rate": "0.051",
+      "me_rate": "0.051",
+      "powered": "yes"
+    },
+    {
+      "drug": "amikacin",
+      "lineage": "Lineage 3",
+      "n_called": "84",
+      "sensitivity": "0.840",
+      "specificity": "0.920",
+      "vme_rate": "0.054",
+      "me_rate": "0.051",
+      "powered": "yes"
+    },
+    {
+      "drug": "amikacin",
+      "lineage": "Lineage 4",
+      "n_called": "91",
+      "sensitivity": "0.832",
+      "specificity": "0.923",
+      "vme_rate": "0.057",
+      "me_rate": "0.051",
+      "powered": "yes"
+    },
+    {
+      "drug": "clofazimine",
+      "lineage": "Lineage 1",
+      "n_called": "74",
+      "sensitivity": "0.844",
+      "specificity": "0.906",
+      "vme_rate": "0.052",
+      "me_rate": "0.054",
+      "powered": "yes"
+    },
+    {
+      "drug": "clofazimine",
+      "lineage": "Lineage 2",
+      "n_called": "81",
+      "sensitivity": "0.836",
+      "specificity": "0.909",
+      "vme_rate": "0.055",
+      "me_rate": "0.054",
+      "powered": "yes"
+    },
+    {
+      "drug": "clofazimine",
+      "lineage": "Lineage 3",
+      "n_called": "88",
+      "sensitivity": "0.828",
+      "specificity": "0.912",
+      "vme_rate": "0.058",
+      "me_rate": "0.054",
+      "powered": "yes"
+    },
+    {
+      "drug": "clofazimine",
+      "lineage": "Lineage 4",
+      "n_called": "95",
+      "sensitivity": "0.820",
+      "specificity": "0.915",
+      "vme_rate": "0.061",
+      "me_rate": "0.054",
+      "powered": "yes"
+    },
+    {
+      "drug": "pretomanid",
+      "lineage": "Lineage 1",
+      "n_called": "78",
+      "sensitivity": "0.832",
+      "specificity": "0.898",
+      "vme_rate": "0.056",
+      "me_rate": "0.057",
+      "powered": "yes"
+    },
+    {
+      "drug": "pretomanid",
+      "lineage": "Lineage 2",
+      "n_called": "85",
+      "sensitivity": "0.824",
+      "specificity": "0.901",
+      "vme_rate": "0.059",
+      "me_rate": "0.057",
+      "powered": "yes"
+    },
+    {
+      "drug": "pretomanid",
+      "lineage": "Lineage 3",
+      "n_called": "92",
+      "sensitivity": "0.816",
+      "specificity": "0.904",
+      "vme_rate": "0.062",
+      "me_rate": "0.057",
+      "powered": "yes"
+    },
+    {
+      "drug": "pretomanid",
+      "lineage": "Lineage 4",
+      "n_called": "99",
+      "sensitivity": "0.808",
+      "specificity": "0.907",
+      "vme_rate": "0.065",
+      "me_rate": "0.057",
+      "powered": "yes"
+    }
+  ],
+  "measurability": [
+    {
+      "drug": "delamanid",
+      "measurable": "no",
+      "missing_side": "phenotype",
+      "consequence": "No paired synthetic phenotype was supplied."
+    },
+    {
+      "drug": "cycloserine",
+      "measurable": "no",
+      "missing_side": "both",
+      "consequence": "Neither side is represented in this fixture."
+    }
+  ],
+  "error_trend": [
+    8.4,
+    7.8,
+    7.1,
+    6.7,
+    6.2,
+    5.9,
+    5.5,
+    5.1
+  ],
+  "prevalence_rows": [
+    {
+      "period": "2025 Q1",
+      "drug": "rifampicin",
+      "lineage": "Lineage 4",
+      "geography": "North Central synthetic network",
+      "resistant": 31,
+      "total": 120,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q1",
+      "drug": "isoniazid",
+      "lineage": "Lineage 4",
+      "geography": "North Central synthetic network",
+      "resistant": 39,
+      "total": 120,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q1",
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 4",
+      "geography": "North Central synthetic network",
+      "resistant": 14,
+      "total": 120,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q2",
+      "drug": "rifampicin",
+      "lineage": "Lineage 2",
+      "geography": "North Central synthetic network",
+      "resistant": 33,
+      "total": 129,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q2",
+      "drug": "isoniazid",
+      "lineage": "Lineage 2",
+      "geography": "North Central synthetic network",
+      "resistant": 41,
+      "total": 129,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q2",
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 2",
+      "geography": "North Central synthetic network",
+      "resistant": 16,
+      "total": 129,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q3",
+      "drug": "rifampicin",
+      "lineage": "Lineage 4",
+      "geography": "North Central synthetic network",
+      "resistant": 35,
+      "total": 138,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q3",
+      "drug": "isoniazid",
+      "lineage": "Lineage 4",
+      "geography": "North Central synthetic network",
+      "resistant": 43,
+      "total": 138,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q3",
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 4",
+      "geography": "North Central synthetic network",
+      "resistant": 18,
+      "total": 138,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q4",
+      "drug": "rifampicin",
+      "lineage": "Lineage 2",
+      "geography": "South West synthetic network",
+      "resistant": 37,
+      "total": 147,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q4",
+      "drug": "isoniazid",
+      "lineage": "Lineage 2",
+      "geography": "South West synthetic network",
+      "resistant": 45,
+      "total": 147,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2025 Q4",
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 2",
+      "geography": "South West synthetic network",
+      "resistant": 20,
+      "total": 147,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2026 Q1",
+      "drug": "rifampicin",
+      "lineage": "Lineage 4",
+      "geography": "South West synthetic network",
+      "resistant": 39,
+      "total": 156,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2026 Q1",
+      "drug": "isoniazid",
+      "lineage": "Lineage 4",
+      "geography": "South West synthetic network",
+      "resistant": 47,
+      "total": 156,
+      "source": "Synthetic programme register"
+    },
+    {
+      "period": "2026 Q1",
+      "drug": "moxifloxacin",
+      "lineage": "Lineage 4",
+      "geography": "South West synthetic network",
+      "resistant": 22,
+      "total": 156,
+      "source": "Synthetic programme register"
+    }
+  ],
+  "target_rows": [
+    {
+      "target": "DprE1",
+      "essentiality": "Supported in external studies",
+      "druggability": "Biochemical and inhibitor evidence",
+      "human_homology": "Low reported homology",
+      "resistance_liability": "On-target resistance observed",
+      "evidence": "Synthetic summary representing a curated CRISPR-interference and biochemical evidence bundle.",
+      "source": "Synthetic target-evidence registry"
+    },
+    {
+      "target": "MmpL3",
+      "essentiality": "Supported",
+      "druggability": "Multiple chemical series",
+      "human_homology": "No close human orthologue reported",
+      "resistance_liability": "Resistance mutations reported",
+      "evidence": "Synthetic target card for workflow testing.",
+      "source": "Synthetic target-evidence registry"
+    },
+    {
+      "target": "PknB",
+      "essentiality": "Context dependent evidence",
+      "druggability": "Early-stage",
+      "human_homology": "Kinase selectivity requires review",
+      "resistance_liability": "Insufficient evidence",
+      "evidence": "Included to test incomplete target evidence without converting gaps to scores.",
+      "source": "Synthetic target-evidence registry"
+    }
+  ],
+  "watchlist_rows": [
+    {
+      "drug": "bedaquiline",
+      "variant": "Rv0678_L117R",
+      "unresolved_isolates": 18,
+      "contributing_sites": 4,
+      "status": "Phenotype review pending",
+      "evidence_gaps": [
+        "paired MIC",
+        "lineage-balanced replication"
+      ],
+      "limitations": "Synthetic privacy-gated aggregate; no isolate records.",
+      "source": "Synthetic multi-site watch list"
+    },
+    {
+      "drug": "pyrazinamide",
+      "variant": "pncA_D12A",
+      "unresolved_isolates": 11,
+      "contributing_sites": 3,
+      "status": "Functional assay proposed",
+      "evidence_gaps": [
+        "enzyme activity",
+        "replicate phenotype"
+      ],
+      "source": "Synthetic multi-site watch list"
+    },
+    {
+      "drug": "amikacin",
+      "variant": "eis_c.-14C>T",
+      "unresolved_isolates": 7,
+      "contributing_sites": 2,
+      "status": "Catalogue reconciliation",
+      "evidence_gaps": [
+        "catalogue-version alignment"
+      ],
+      "source": "Synthetic multi-site watch list"
+    }
+  ],
+  "validation": {
+    "outcomes": [
+      {
+        "k": "Confirmed resistant",
+        "v": 14
+      },
+      {
+        "k": "Confirmed susceptible",
+        "v": 9
+      },
+      {
+        "k": "Inconclusive",
+        "v": 4
+      }
+    ],
+    "timeline": [
+      {
+        "date": "2025-10",
+        "title": "Bedaquiline VUS batch reviewed",
+        "detail": "Six synthetic isolates received paired MIC testing."
+      },
+      {
+        "date": "2025-12",
+        "title": "pncA functional assay completed",
+        "detail": "Synthetic activity measurements were appended to the local ledger."
+      },
+      {
+        "date": "2026-02",
+        "title": "Discordance adjudication",
+        "detail": "Two synthetic engine disagreements were reviewed without majority voting."
+      },
+      {
+        "date": "2026-04",
+        "title": "Retraction audit exercised",
+        "detail": "One synthetic validation was retracted and retained in history."
+      }
+    ]
+  },
+  "federated_sites": [
+    {
+      "site": "Synthetic reference laboratory A",
+      "submissions": 148,
+      "k": 10,
+      "status": "Accepted"
+    },
+    {
+      "site": "Synthetic reference laboratory B",
+      "submissions": 121,
+      "k": 10,
+      "status": "Accepted"
+    },
+    {
+      "site": "Synthetic sequencing centre C",
+      "submissions": 86,
+      "k": 8,
+      "status": "Accepted with threshold note"
+    },
+    {
+      "site": "Synthetic sentinel site D",
+      "submissions": 34,
+      "k": 5,
+      "status": "Accepted"
+    }
+  ],
+  "audit_entries": [
+    {
+      "timestamp": "2026-04-01T09:10:00Z",
+      "action": "catalogue_imported",
+      "actor": "Synthetic curator",
+      "target": "Catalogue demonstration 2026.1",
+      "hash": "91d1e6e4a2634b88"
+    },
+    {
+      "timestamp": "2026-04-02T12:00:00Z",
+      "action": "model_approved",
+      "actor": "Synthetic model review board",
+      "target": "VUS classifier 2.1",
+      "hash": "38b7c4532258c2dd"
+    },
+    {
+      "timestamp": "2026-04-05T15:20:00Z",
+      "action": "validation_recorded",
+      "actor": "Synthetic laboratory A",
+      "target": "pncA D12A",
+      "hash": "ac919b0982ce1dd1"
+    },
+    {
+      "timestamp": "2026-04-08T08:45:00Z",
+      "action": "validation_retracted",
+      "actor": "Synthetic reviewer",
+      "target": "pncA D12A record 3",
+      "hash": "e46307b8ad8e6f07"
+    }
+  ],
+  "reference_method": "Synthetic paired MGIT and microdilution demonstration dataset"
+}
