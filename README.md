@@ -95,6 +95,25 @@ python -m myconductor analyze sample.vcf --mask sample.callable.tsv \
     --mykrobe sample.mykrobe.json
 ```
 
+Write the single self-contained HTML report and attach optional cohort and
+discovery evidence to that same file:
+
+```bash
+python -m myconductor analyze sample.vcf --mask sample.callable.tsv \
+    --html sample-report.html \
+    --report-context programme-context.json
+```
+
+The report's charts, search, drill-downs, and exports use embedded local assets
+and make no CDN or API request. The context can carry benchmarks, lineage
+strata, resistance prevalence, target evidence, privacy-gated watch-list
+aggregates, site-local validation, federated aggregates, and audit events. The
+run itself can also surface annotation-only epistasis matches when an epistasis
+table is supplied. See the
+[report-context contract](docs/REPORT_CONTEXT.md) and
+[empty template](examples/report_context.empty.json). Missing cohort data is
+shown as unavailable; the renderer does not generate substitute observations.
+
 Ingest a real catalogue in place of the bundled subset:
 
 ```bash

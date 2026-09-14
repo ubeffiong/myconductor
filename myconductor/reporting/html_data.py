@@ -89,6 +89,15 @@ def _int(value: Any, default: int = 0) -> int:
         return default
 
 
+def _optional_int(value: Any) -> Optional[int]:
+    if value is None or value == "":
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 # -- benchmark ------------------------------------------------------------
 def drugs_from_baseline(rows: Iterable[dict]) -> list[dict]:
     """Per-drug benchmark cards from ``mycobench baseline`` rows.
@@ -313,7 +322,7 @@ def vus_items(reports: Sequence[dict]) -> list[dict]:
                 "rank": rank,
                 "variant": variant_name(item.get("variant_label", "")),
                 "gene": item.get("gene", ""),
-                "drug": code_for(item.get("drug") or ""),
+                "drug": humanise(item.get("drug") or ""),
                 # The workbench's own word, not a number invented here. A
                 # score of None means it declined to rank, and the card says so.
                 "priority": humanise(item.get("priority", "insufficient-data")),
@@ -417,3 +426,246 @@ def audit_events(entries: Iterable[dict]) -> list[dict]:
             "hash": (entry.get("hash") or entry.get("entry_hash") or "")[:8],
         })
     return out
+
+
+def mutation_index(alignment: dict, vus: Sequence[dict]) -> list[dict]:
+    """Searchable, deduplicated mutation records from measured report data."""
+    records: dict[tuple, dict] = {}
+    for gene, locus in alignment.items():
+        for item in locus.get("positions", []):
+            key = (gene, item.get("pos"), item.get("ref"), item.get("alt"))
+            records[key] = {
+                "gene": gene,
+                "variant": (variant_name(item.get("label")) if item.get("label")
+                            else (f"{item.get('ref', '')} to {item.get('alt', '')} "
+                                  f"at genomic position {item.get('pos', '')}")),
+                "position": item.get("pos"),
+                "reference": item.get("ref"),
+                "alternate": item.get("alt"),
+                "drugs": [humanise(d) for d in item.get("drugs", [])],
+                "classification": ("Catalogued resistance-associated" if
+                                   item.get("catalogued") else
+                                   "Not established by the catalogue"),
+                "source": "Called variant evidence",
+            }
+    for item in vus:
+        key = (item.get("gene"), None, item.get("variant"), None)
+        if key not in records:
+            records[key] = {
+                "gene": item.get("gene") or "Unresolved locus",
+                "variant": item.get("variant") or "Unlabelled variant",
+                "position": None, "reference": None, "alternate": None,
+                "drugs": [item.get("drug")] if item.get("drug") else [],
+                "classification": "Variant of uncertain significance",
+                "source": "Laboratory validation queue",
+            }
+    return sorted(records.values(), key=lambda r: (
+        str(r["gene"]).lower(), r["position"] is None,
+        r["position"] or 0, str(r["variant"])))
+
+
+def prevalence_series(rows: Iterable[dict]) -> list[dict]:
+    """Normalise supplied cohort prevalence; never infer a denominator."""
+    out = []
+    for row in rows or []:
+        raw_total = row.get("total") if row.get("total") is not None else row.get("n_tested")
+        raw_resistant = (row.get("resistant") if row.get("resistant") is not None
+                         else row.get("n_resistant"))
+        total = _optional_int(raw_total)
+        resistant = _optional_int(raw_resistant)
+        rate = _float(row.get("prevalence") or row.get("rate"))
+        if rate is not None and rate <= 1:
+            rate *= 100
+        if rate is None and total and resistant is not None:
+            rate = 100 * resistant / total
+        out.append({
+            "period": str(row.get("period") or row.get("date") or "Unspecified"),
+            "drug": humanise(row.get("drug") or "All reported drugs"),
+            "lineage": humanise(row.get("lineage") or "All lineages"),
+            "geography": str(row.get("geography") or row.get("site") or
+                             "All participating sites"),
+            "resistant": resistant, "total": total, "rate": rate,
+            "source": str(row.get("source") or "Report context dataset"),
+        })
+    return out
+
+
+def target_evidence(rows: Iterable[dict]) -> list[dict]:
+    """Normalise externally supplied target-liability evidence for review."""
+    out = []
+    for row in rows or []:
+        name = row.get("target") or row.get("gene")
+        if not name:
+            continue
+        out.append({
+            "target": str(name),
+            "essentiality": humanise(row.get("essentiality") or "Not supplied"),
+            "druggability": humanise(row.get("druggability") or "Not supplied"),
+            "human_homology": humanise(row.get("human_homology") or "Not supplied"),
+            "resistance_liability": humanise(
+                row.get("resistance_liability") or "Not supplied"),
+            "evidence": str(row.get("evidence") or row.get("rationale") or
+                            "No supporting evidence supplied"),
+            "source": str(row.get("source") or "Report context dataset"),
+        })
+    return out
+
+
+def epistasis_notes(reports: Sequence[dict]) -> list[dict]:
+    """Render supplied co-observation rules without changing call confidence."""
+    out = []
+    for report in reports:
+        for item in report.get("epistasis_notes", []) or []:
+            pairs = item.get("matched_pairs") or []
+            variants = []
+            for pair in pairs:
+                variants.append(" + ".join(variant_name(v) for v in pair))
+            out.append({
+                "drug": humanise(item.get("drug") or "Drug not recorded"),
+                "interaction": humanise(item.get("interaction") or "annotation only"),
+                "primary": variant_name(item.get("primary_variant_key_or_gene") or ""),
+                "partner": variant_name(item.get("partner_variant_key_or_gene") or ""),
+                "matched_pairs": variants,
+                "note": str(item.get("note") or item.get("interpretation") or
+                            "Co-observed variants matched a supplied rule."),
+                "source": str(item.get("source") or "Supplied epistasis table"),
+                "rule_id": str(item.get("rule_id") or ""),
+                "table_version": str(item.get("table_version") or ""),
+                "effect": "Annotation only",
+            })
+    return out
+
+
+def watchlist_rows(rows: Iterable[dict]) -> list[dict]:
+    """Normalise privacy-gated collaborative watch-list aggregates."""
+    out = []
+    for row in rows or []:
+        drug = row.get("drug")
+        if not drug:
+            continue
+        out.append({
+            "drug": humanise(drug),
+            "variant": variant_name(row.get("variant") or
+                                    row.get("variant_label") or "Aggregate drug-level signal"),
+            "unresolved_isolates": _optional_int(row.get("unresolved_isolates") or
+                                                 row.get("isolate_count") or
+                                                 row.get("n_isolates")),
+            "contributing_sites": _optional_int(row.get("contributing_sites") or
+                                                row.get("site_count") or
+                                                row.get("n_sites")),
+            "status": humanise(row.get("status") or "Under investigation"),
+            "evidence_gaps": humanise_all(row.get("evidence_gaps") or []) or
+                             str(row.get("evidence_gap") or "Not supplied"),
+            "source": str(row.get("source") or "Privacy-gated report context"),
+            "limitations": str(row.get("limitations") or
+                               "Aggregate counts only; no isolate, patient or site identifier is exported."),
+        })
+    return out
+
+
+def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
+    """Shape advanced evidence produced by the analysis pipeline.
+
+    These records used to survive only in the JSON report.  Keeping the
+    transformation here gives the HTML a small, human-readable view model and
+    prevents internal field names from leaking into visible tables.
+    """
+    shaped = {key: [] for key in (
+        "population", "mic", "structural", "regulatory", "expression",
+        "models", "panels")}
+    for report in reports:
+        population = report.get("population_structure")
+        if population:
+            shaped["population"].append({
+                "sample": report.get("sample_id") or "Unknown sample",
+                "classification": humanise(population.get("classification") or "indeterminate"),
+                "basis": str(population.get("classification_basis") or "No classification basis supplied"),
+                "method": str(population.get("method") or "Not supplied"),
+                "groups": [{
+                    "fraction": _float(group.get("estimated_fraction")),
+                    "lineage": humanise(group.get("lineage") or "Not assigned"),
+                    "variants": [variant_name(v) for v in group.get("variant_keys", [])],
+                    "linkage": str(group.get("linkage_source") or "No molecular linkage supplied"),
+                    "note": str(group.get("note") or "Frequency group only; not a reconstructed clone."),
+                } for group in population.get("subpopulations", [])],
+                "unclustered": [variant_name(v) for v in population.get("unclustered_variant_keys", [])],
+                "gaps": humanise_all(population.get("data_gaps", [])),
+            })
+        for row in report.get("quantitative_findings", []) or []:
+            interval = row.get("interval")
+            shaped["mic"].append({
+                "drug": humanise(row.get("drug")), "value": row.get("value"),
+                "unit": row.get("unit"), "interval": interval,
+                "comparison": humanise(row.get("comparison")),
+                "critical_concentration": row.get("critical_concentration"),
+                "method": str(row.get("method") or "Not supplied"),
+                "source": str(row.get("source") or "Not supplied"),
+                "conflict": bool(row.get("conflict")),
+                "interpretation": str(row.get("interpretation") or ""),
+            })
+        for row in report.get("structural_annotations", []) or []:
+            distance = None
+            if row.get("ligand_distance") is not None:
+                distance = f"{row['ligand_distance']} {row.get('distance_unit') or ''}".strip()
+            shaped["structural"].append({
+                "variant": variant_name(row.get("variant_key") or ""),
+                "gene": str(row.get("gene") or "Not supplied"),
+                "location": humanise(row.get("location") or "unknown"),
+                "effect": str(row.get("predicted_effect") or "Not supplied"),
+                "distance": distance or "Not measured",
+                "status": humanise(row.get("validation_status") or row.get("status") or "unknown"),
+                "source": str(row.get("source") or "Not supplied"),
+                "ranking_effect": humanise(row.get("ranking_effect") or "none"),
+            })
+        for row in report.get("regulatory_findings", []) or []:
+            shaped["regulatory"].append({
+                "name": str(row.get("name") or "Unnamed region"),
+                "variant": variant_name(row.get("variant_key") or ""),
+                "type": humanise(row.get("type") or "unknown"),
+                "targets": humanise_all(row.get("target_genes", [])),
+                "drugs": humanise_all(row.get("drug_associations", [])),
+                "tier": humanise(row.get("evidence_tier") or "unknown"),
+                "source": str(row.get("source") or "Not supplied"),
+                "interpretation": "Region membership is contextual evidence and does not establish expression or resistance.",
+            })
+        for row in report.get("expression_findings", []) or []:
+            shaped["expression"].append({
+                "gene": str(row.get("gene") or "Not supplied"),
+                "measurement": humanise(row.get("measurement_type") or "unknown"),
+                "fold_change": row.get("fold_change"), "unit": row.get("unit"),
+                "conclusion": humanise(row.get("reported_conclusion") or "uncertain"),
+                "matching": humanise(row.get("matching_status") or "unlinked"),
+                "source": str(row.get("provenance") or "Not supplied"),
+                "interpretation": str(row.get("interpretation") or "Expression evidence is contextual and does not independently establish a drug call."),
+            })
+        for row in report.get("in_silico_findings", []) or []:
+            basis = row.get("baseline_basis") or {}
+            shaped["models"].append({
+                "variant": variant_name(row.get("variant_key") or ""),
+                "drug": humanise(row.get("drug")),
+                "prediction": humanise(row.get("prediction") or "uncertain"),
+                "confidence": row.get("confidence"),
+                "model": f"{row.get('model_id', 'Unknown model')} {row.get('model_version', '')}".strip(),
+                "cohort": str(basis.get("cohort") or "Not supplied"),
+                "baseline": str(basis.get("baseline") or "Not supplied"),
+                "basis": str(basis.get("basis") or "No governed comparison supplied"),
+                "effect": "No call or ranking effect",
+                "interpretation": str(row.get("interpretation") or ""),
+            })
+        panel = report.get("panel") or {}
+        if panel:
+            shaped["panels"].append({
+                "name": str(panel.get("name") or "Unnamed panel"),
+                "version": str(panel.get("version") or "Not supplied"),
+                "assay": humanise(panel.get("assay") or "unknown"),
+                "verified": bool(panel.get("verified")),
+                "loci": panel.get("n_loci"),
+                "kept": humanise_all(panel.get("kept", [])),
+                "discarded": humanise_all(panel.get("discarded", [])),
+                "unsupported": [{"drug": humanise(drug), "missing": humanise_all(missing)}
+                                for drug, missing in sorted((panel.get("unsupported_drugs") or {}).items())],
+                "off_panel": humanise_all(panel.get("off_panel_variants", [])),
+                "note": str(panel.get("note") or ""),
+                "source": str(panel.get("source") or "Not supplied"),
+            })
+    return shaped

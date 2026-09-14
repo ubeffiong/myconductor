@@ -1,0 +1,14 @@
+{
+  "schema": "myconductor.report-context.v1",
+  "baseline_rows": [],
+  "lineage_rows": [],
+  "measurability": [],
+  "audit_entries": [],
+  "validation": {"outcomes": [], "timeline": []},
+  "federated_sites": [],
+  "error_trend": [],
+  "prevalence_rows": [],
+  "target_rows": [],
+  "watchlist_rows": [],
+  "reference_method": ""
+}

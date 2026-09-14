@@ -56,6 +56,8 @@ def _engine_reports(args: argparse.Namespace) -> list:
 
 
 def _run_analyze(args: argparse.Namespace) -> int:
+    if args.report_context and not args.html:
+        raise ValueError("--report-context requires --html")
     if bool(args.compare_catalogue) != bool(args.change_impact):
         raise ValueError("catalogue replay requires both --compare-catalogue and --change-impact")
     if args.case_store and not args.reviewer:
@@ -129,8 +131,12 @@ def _run_analyze(args: argparse.Namespace) -> int:
         atomic_json(args.json, report_dict(report))
     if args.html:
         from .reporting.html_report import render_html
+        from .reporting.report_context import load_report_context
+        report_context = (load_report_context(args.report_context)
+                          if args.report_context else {})
         Path(args.html).parent.mkdir(parents=True, exist_ok=True)
-        Path(args.html).write_text(render_html(report), encoding="utf-8")
+        Path(args.html).write_text(render_html(report, **report_context),
+                                   encoding="utf-8")
     if args.case_store:
         if not args.reviewer:
             raise ValueError("--case-store requires --reviewer")
@@ -372,6 +378,11 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--follow-up-budget", type=float, help="Budget in the menu's single currency.")
     a.add_argument("--json", help="Write versioned evidence/review JSON.")
     a.add_argument("--html", help="Write an offline HTML review report.")
+    a.add_argument(
+        "--report-context", metavar="JSON",
+        help="Optional myconductor.report-context.v1 dataset for the same HTML "
+             "report (benchmark, lineage, prevalence, target, validation, "
+             "federated and audit views). Requires --html.")
     a.add_argument("--case-store", help="Open an auditable local review case.")
     a.add_argument("--reviewer", help="Reviewer identity for opening a case.")
     a.add_argument("--ntm-profiler", help="NTM-Profiler results JSON.")

@@ -28,6 +28,7 @@ additions, not replacements.
 from __future__ import annotations
 
 import json
+import re
 from html import escape
 from pathlib import Path
 from typing import Any, Iterable, Optional, Sequence
@@ -60,10 +61,10 @@ def _review_rows(data: dict) -> str:
             humanise(result.get("genomic_call")) or "Unavailable",
             humanise(result.get("phenotypic_call")) or "Not measured",
             humanise(result.get("assay_status", "")),
-            result.get("reason") or "",
+            _prose(result.get("reason") or ""),
         ]
         evidence = "".join(
-            "<li>" + _esc(item.get("rationale", "")) + " <small>"
+            "<li>" + _esc(_prose(item.get("rationale", ""))) + " <small>"
             + _esc((item.get("evidence_id") or "")[:16]) + "</small></li>"
             for item in result.get("evidence", []))
         call_class = shape.CALL_CLASS.get(result.get("call"), "na")
@@ -133,6 +134,8 @@ def _prose(text) -> str:
     for token in sorted(EXPLICIT, key=len, reverse=True):
         if "_" in token and token in out:
             out = out.replace(token, EXPLICIT[token].lower())
+    out = re.sub(r"\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9cC.>\-]+",
+                 lambda match: variant_name(match.group(0)), out)
     return out
 
 # -- generated commentary -------------------------------------------------
@@ -422,14 +425,16 @@ def _summary(payload: dict, reports: Sequence[dict],
         "__SUMMARY_DESC__": desc,
         "__CALLS_NOTE__": (f"n = {n_calls} call(s) ({n_samples} sample(s) "
                            f"× {len(drugs)} drug(s))"),
-        "__TREND_NOTE__": ("rolling error across the cohort"
+        "__TREND_NOTE__": ("ordered error series from the cohort dataset"
                            if payload["error_trend"] else "no series in this run"),
         "__TREND_PROSE__": (
-            "A rolling error rate needs a cohort processed in order. This run "
-            "did not produce one, so the panel is empty rather than smoothed."
+            "An error trend needs an ordered cohort series from the "
+            "report-context dataset. This run did not supply one, so the "
+            "panel is empty rather than smoothed."
             if not payload["error_trend"] else
-            "Early volatility in a rolling window reflects small n per window, "
-            "not a change in behaviour. Read the curve only where it flattens."),
+            "Each point is one ordered cohort-window value supplied to the "
+            "renderer. Interpret movement using the source dataset's window "
+            "size, ordering, and denominator; none is inferred from the values."),
         "__SCATTER_PROSE__": (
             "Each point pairs a drug's coverage with its error rate. A drug in "
             "the low-coverage corner is not necessarily a tool failure: its "
@@ -510,6 +515,9 @@ def render_html(report,
                 validation: Optional[dict] = None,
                 federated_sites: Optional[Iterable[dict]] = None,
                 error_trend: Optional[Sequence[float]] = None,
+                prevalence_rows: Optional[Iterable[dict]] = None,
+                target_rows: Optional[Iterable[dict]] = None,
+                watchlist_rows: Optional[Iterable[dict]] = None,
                 extra_reports: Sequence[Any] = (),
                 reference_method: Optional[str] = None) -> str:
     """Render one self-contained HTML report.
@@ -546,6 +554,9 @@ def render_html(report,
 
     lineages, strata = shape.lineage_strata(lineage_rows or [])
     provenance = data.get("provenance", {})
+    alignment = shape.alignment_loci(reports)
+    vus = shape.vus_items(reports)
+    workflows = shape.implemented_workflows(reports)
     payload = {
         # The run's real identity, so an exported file names the analysis it
         # came from. The mock shipped a fixed string here.
@@ -567,9 +578,15 @@ def render_html(report,
         "isolates": shape.isolate_rows(reports, drugs),
         "tiers": shape.tier_composition(reports, drugs),
         "discordance": shape.discordance_rows(reports),
-        "vus": shape.vus_items(reports),
+        "vus": vus,
         "mechanisms": shape.mechanism_cards(reports),
-        "alignment_loci": shape.alignment_loci(reports),
+        "alignment_loci": alignment,
+        "mutation_index": shape.mutation_index(alignment, vus),
+        "prevalence": shape.prevalence_series(prevalence_rows or []),
+        "targets": shape.target_evidence(target_rows or []),
+        "epistasis": shape.epistasis_notes(reports),
+        "watchlist": shape.watchlist_rows(watchlist_rows or []),
+        "workflows": workflows,
         "audit": shape.audit_events(audit_entries or []),
         "validation_outcomes": (validation or {}).get("outcomes", []),
         "validation_timeline": (validation or {}).get("timeline", []),

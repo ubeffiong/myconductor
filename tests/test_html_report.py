@@ -243,6 +243,62 @@ class CohortInputTests(unittest.TestCase):
         self.assertEqual(payload["audit"][0]["event"], "Call promoted")
         self.assertEqual(payload["audit"][0]["hash"], "a3f9c2e1")
 
+    def test_discovery_context_populates_the_same_report(self):
+        html = render_html(
+            demo_report(),
+            prevalence_rows=[{
+                "period": "2026 Q1", "drug": "rifampicin", "lineage": "L2",
+                "geography": "Site A", "resistant": 7, "total": 20,
+                "source": "Programme register",
+            }],
+            target_rows=[{
+                "target": "DprE1", "essentiality": "supported",
+                "druggability": "experimental evidence",
+                "human_homology": "low", "resistance_liability": "under review",
+                "evidence": "CRISPR interference and biochemical assay",
+                "source": "Curated local evidence",
+            }],
+            watchlist_rows=[{
+                "drug": "rifampicin", "variant": "rpoB_S450L",
+                "unresolved_isolates": 4, "contributing_sites": 2,
+                "evidence_gaps": ["phenotypic discordance review"],
+                "source": "Privacy-gated watch list",
+            }])
+        payload = payload_of(html)
+        self.assertEqual(payload["prevalence"][0]["rate"], 35.0)
+        self.assertEqual(payload["targets"][0]["target"], "DprE1")
+        self.assertEqual(payload["watchlist"][0]["drug"], "Rifampicin")
+        self.assertIn('id="mutation-explorer"', html)
+        self.assertIn('id="epistasis"', html)
+        self.assertIn('id="prevalence"', html)
+        self.assertIn('id="watchlist"', html)
+        self.assertIn('id="targets"', html)
+        self.assertIn('id="data-guide"', html)
+
+    def test_epistasis_notes_are_annotation_only(self):
+        report = demo_report()
+        report.epistasis_notes = [{
+            "rule_id": "epi-1", "drug": "rifampicin",
+            "interaction": "compensatory",
+            "primary_variant_key_or_gene": "rpoB_C761155T",
+            "partner_variant_key_or_gene": "rpoC",
+            "matched_pairs": [["rpoB_C761155T", "rpoC_G123A"]],
+            "note": "May affect fitness; does not change the resistance call.",
+            "source": "Curated epistasis table",
+            "table_version": "2026.1",
+        }]
+        payload = payload_of(render_html(report))
+        self.assertEqual(payload["epistasis"][0]["effect"], "Annotation only")
+        self.assertEqual(payload["epistasis"][0]["drug"], "Rifampicin")
+
+    def test_absent_discovery_context_is_empty(self):
+        payload = payload_of(render_html(demo_report()))
+        self.assertEqual(payload["prevalence"], [])
+        self.assertEqual(payload["targets"], [])
+        self.assertEqual(payload["epistasis"], [])
+        self.assertEqual(payload["watchlist"], [])
+        self.assertTrue(payload["mutation_index"])
+
 
 class ExportBarTests(unittest.TestCase):
     """The page must be able to hand its data back.
@@ -318,8 +374,6 @@ class ReadableLabelTests(unittest.TestCase):
 
     def test_no_snake_case_identifier_is_displayed(self):
         leaked = sorted(set(re.findall(r"\b[a-z]+_[a-z_]+\b", self.text)))
-        # A variant name such as eis_c.-10G>A is an identifier, not a label.
-        leaked = [t for t in leaked if not t.endswith("_c")]
         self.assertEqual(leaked, [], leaked)
 
     def test_no_screaming_enum_is_displayed(self):
@@ -398,6 +452,8 @@ class DrillPanelTests(unittest.TestCase):
 
     def test_the_drill_panel_exists_to_receive_them(self):
         self.assertIn('id="drillPanel"', self.html)
+        self.assertEqual(self.html.count('id="drillPanel"'), 1)
+        self.assertEqual(self.html.count('id="tooltip"'), 1)
         self.assertIn('id="drillBody"', self.html)
 
 

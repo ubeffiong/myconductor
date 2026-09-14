@@ -8,6 +8,12 @@ const LINEAGES = DATA.lineages || [];
 const COVERAGE_LOCI = DATA.coverage_loci || [];
 const VUS_ITEMS = DATA.vus || [];
 const MECH_CARDS = DATA.mechanisms || [];
+const MUTATIONS = DATA.mutation_index || [];
+const PREVALENCE = DATA.prevalence || [];
+const TARGETS = DATA.targets || [];
+const EPISTASIS = DATA.epistasis || [];
+const WATCHLIST = DATA.watchlist || [];
+const WORKFLOWS = DATA.workflows || {};
 const DISCORDANCE_ROWS = DATA.discordance || [];
 const AUDIT_EVENTS = DATA.audit || [];
 
@@ -119,45 +125,48 @@ function describeCall(k){
 function renderTrend(){
   const series = DATA.error_trend || [];
   if(series.length < 2){
-    return emptyState('trendChart', 'No cumulative error series',
-      'A rolling error rate needs a cohort processed in order. This run did not produce one.');
+    return emptyState('trendChart', 'No ordered error series',
+      'An error trend needs an ordered cohort series from the report-context dataset. This run did not supply one.');
   }
   const w=520, h=200, pad={t:16,r:16,b:34,l:44};
   const n = series.length;
   const pts = series.map((v, i) => ({ x:i+1, y:v }));
-  const xMax = n, yMax = 12;
+  const xMax = Math.max(1, n), observedMax = Math.max.apply(null, series.map(Number));
+  const yMax = Math.max(5, Math.ceil(observedMax / 5) * 5);
   const sx = v => pad.l + (v/xMax)*(w-pad.l-pad.r);
   const sy = v => h-pad.b - (v/yMax)*(h-pad.t-pad.b);
   let path='M';
   pts.forEach((p,i)=> path += `${i?'L':' '}${sx(p.x)} ${sy(p.y)}`);
   let grid='';
-  for(let v=0;v<=12;v+=3){
+  const yStep = yMax / 4;
+  for(let j=0;j<=4;j++){
+    const v = j * yStep;
     grid += `<line x1="${pad.l}" x2="${w-pad.r}" y1="${sy(v)}" y2="${sy(v)}" class="grid-line" />
-      <text x="${pad.l-8}" y="${sy(v)+4}" text-anchor="end" class="axis-label">${v}%</text>`;
+      <text x="${pad.l-8}" y="${sy(v)+4}" text-anchor="end" class="axis-label">${v.toFixed(v%1?1:0)}%</text>`;
   }
   let xLabels='';
-  for(let i=0;i<=n;i+=10){
-    if(i===0) continue;
-    xLabels += `<text x="${sx(i)}" y="${h-12}" text-anchor="middle" class="axis-label">${i*10}</text>`;
+  const xStep = Math.max(1, Math.ceil(n/5));
+  for(let i=1;i<=n;i+=xStep){
+    xLabels += `<text x="${sx(i)}" y="${h-12}" text-anchor="middle" class="axis-label">${i}</text>`;
   }
   let dots = pts.map(p => `<circle cx="${sx(p.x)}" cy="${sy(p.y)}" r="2.5"
     fill="var(--accent)" class="point"
-    onmouseover="trendHover(event,${p.x*10},${p.y.toFixed(2)})" onmouseout="hideTip()" />`).join('');
+    onmouseover="trendHover(event,${p.x},${p.y.toFixed(2)})" onmouseout="hideTip()" />`).join('');
   document.getElementById('trendChart').innerHTML = `
     <svg viewBox="0 0 ${w} ${h}" class="chart-svg">
       ${grid}
       <path d="${path}" class="line" stroke="var(--accent)" />
       ${dots}
-      <text x="${w/2}" y="${h-2}" text-anchor="middle" class="axis-label">isolates processed</text>
+      <text x="${w/2}" y="${h-2}" text-anchor="middle" class="axis-label">ordered cohort window</text>
       <text x="12" y="${h/2}" text-anchor="middle" transform="rotate(-90 12 ${h/2})" class="axis-label">cumulative error</text>
       ${xLabels}
     </svg>`;
 }
 function trendHover(e, n, v){
-  showTip(e, `<div class="tt-head"><div class="tt-title">Window at isolate ${n}</div><div class="tt-sub">rolling 50-isolate window</div></div>
+  showTip(e, `<div class="tt-head"><div class="tt-title">Cohort window ${n}</div><div class="tt-sub">supplied ordered series</div></div>
     <div class="tt-body">
       <div class="tt-row"><span class="tt-k">Cumulative error</span><span class="tt-v">${v}%</span></div>
-      <div class="tt-section"><div class="tt-note">Rolling error rate stabilises after ~200 isolates. Early window variance reflects small n.</div></div>
+      <div class="tt-section"><div class="tt-note">Interpret this point using the window definition and ordering used by the source dataset.</div></div>
     </div>`);
 }
 
@@ -1188,7 +1197,12 @@ function downloadReport(kind){
         call_distribution: DATA.call_distribution || [],
         alignment: DATA.alignment_loci || {}, tiers: DATA.tiers || {},
         mechanisms: MECH_CARDS, measurability: DATA.measurability || [],
-        lineage_strata: DATA.lineage || {}
+        lineage_strata: DATA.lineage || {}, mutation_index: MUTATIONS,
+        prevalence: PREVALENCE, targets: TARGETS, epistasis: EPISTASIS,
+        watchlist: WATCHLIST, implemented_workflows: WORKFLOWS,
+        validation_outcomes: DATA.validation_outcomes || [],
+        validation_timeline: DATA.validation_timeline || [],
+        federated_sites: DATA.federated_sites || []
       }, null, 2);
     },
 
@@ -1314,6 +1328,262 @@ function vusMatches(v){
 }
 
 /* ==========================================================
+   MUTATION EXPLORER AND DISCOVERY CONTEXT
+   ========================================================== */
+function safeText(value){
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function searchMutations(query){
+  const target = document.getElementById('mutationResults');
+  if(!MUTATIONS.length){
+    return emptyState('mutationResults', 'No observed mutations',
+      'This report contains no coordinate-resolved variant or validation-queue record to search.');
+  }
+  const q = String(query || '').trim().toLowerCase();
+  const found = MUTATIONS.filter(function(m){
+    return !q || [m.gene,m.variant,m.classification,m.source].concat(m.drugs || [])
+      .join(' ').toLowerCase().indexOf(q) >= 0;
+  });
+  if(!found.length){
+    return emptyState('mutationResults', 'No matching mutation',
+      'Try a gene, variant label, drug, or evidence classification present in this report.');
+  }
+  target.innerHTML = found.slice(0,24).map(function(m){
+    const coordinate = m.position === null || m.position === undefined
+      ? 'Coordinate not resolved' : 'Position ' + Number(m.position).toLocaleString();
+    const drugs = (m.drugs || []).length ? m.drugs.join(', ') : 'No linked drug recorded';
+    return `<article class="result-item">
+      <div><div class="result-gene">${safeText(m.gene)}</div>
+      <div class="result-name">${safeText(m.variant)}</div></div>
+      <div class="result-copy"><strong>${safeText(m.classification)}</strong><br>
+      ${safeText(coordinate)} · ${safeText(drugs)}<br>
+      <span>${safeText(m.source)}</span></div></article>`;
+  }).join('') + (found.length > 24
+    ? `<div class="result-more">Showing 24 of ${found.length} matches. Refine the search to narrow the list.</div>` : '');
+}
+
+function renderMutationAtlas(){
+  if(!MUTATIONS.length){
+    return emptyState('mutationAtlas', 'No mutation atlas',
+      'An atlas needs observed variants. No atlas values are generated for an empty run.');
+  }
+  const groups = {};
+  MUTATIONS.forEach(function(m){
+    const key = m.gene || 'Unresolved locus';
+    if(!groups[key]) groups[key] = {all:0, catalogued:0, uncertain:0};
+    groups[key].all += 1;
+    if(String(m.classification).toLowerCase().indexOf('catalogued') >= 0){ groups[key].catalogued += 1; }
+    if(String(m.classification).toLowerCase().indexOf('uncertain') >= 0){ groups[key].uncertain += 1; }
+  });
+  const rows = Object.keys(groups).sort(function(a,b){ return groups[b].all-groups[a].all; });
+  const max = Math.max.apply(null, rows.map(function(k){ return groups[k].all; }));
+  document.getElementById('mutationAtlas').innerHTML = `<div class="atlas-list">${rows.map(function(g){
+    const d=groups[g];
+    return `<div class="atlas-row"><div class="atlas-label">${safeText(g)}</div>
+      <div class="atlas-track"><span style="width:${100*d.all/max}%"></span></div>
+      <div class="atlas-value">${d.all}</div>
+      <div class="atlas-note">${d.catalogued} catalogued · ${d.uncertain} uncertain</div></div>`;
+  }).join('')}</div>`;
+}
+
+function renderMechanismLandscape(){
+  const known = MUTATIONS.filter(function(m){
+    return String(m.classification).toLowerCase().indexOf('catalogued') >= 0;
+  }).length;
+  const rows = [
+    {label:'Catalogued associations', value:known, tone:'res', detail:'May establish resistance when the complete evidence rule is met.'},
+    {label:'Candidate mechanisms', value:MECH_CARDS.length, tone:'ind', detail:'Biologically plausible, with named evidence gaps.'},
+    {label:'Uncertain variants', value:VUS_ITEMS.length, tone:'na', detail:'Prioritised for validation; no resistance prediction is made.'}
+  ];
+  if(!rows.some(function(r){ return r.value; })){
+    return emptyState('mechanismLandscape', 'No mechanism evidence',
+      'No catalogued association, candidate mechanism, or uncertain variant was recorded.');
+  }
+  document.getElementById('mechanismLandscape').innerHTML = rows.map(function(r){
+    return `<div class="mechanism-level ${r.tone}"><div class="mechanism-count">${r.value}</div>
+      <div><strong>${r.label}</strong><p>${r.detail}</p></div></div>`;
+  }).join('');
+}
+
+function renderEpistasis(){
+  if(!EPISTASIS.length){
+    return emptyState('epistasisTable', 'No epistasis annotation',
+      'No supplied co-observation rule matched this run. No interaction effect is inferred.');
+  }
+  document.getElementById('epistasisTable').innerHTML = `<div class="card table-scroll" style="padding:0"><table class="disc-table">
+    <thead><tr><th>Drug</th><th>Interaction</th><th>Observed pair</th><th>Interpretation</th><th>Source</th><th>Effect on call</th></tr></thead>
+    <tbody>${EPISTASIS.map(function(e){
+      const pair = (e.matched_pairs || []).length ? e.matched_pairs.join('; ') : [e.primary,e.partner].filter(Boolean).join(' + ');
+      return `<tr><td>${safeText(e.drug)}</td><td>${safeText(e.interaction)}</td>
+        <td>${safeText(pair || 'Matched variants not named')}</td><td>${safeText(e.note)}</td>
+        <td>${safeText(e.source)}<div class="muted-source">${safeText(e.rule_id || e.table_version)}</div></td>
+        <td>${safeText(e.effect || 'Annotation only')}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+let prevalenceState = {drug:'All', lineage:'All', geography:'All'};
+function uniqueValues(field){
+  return Array.from(new Set(PREVALENCE.map(function(r){ return r[field]; }).filter(Boolean))).sort();
+}
+function setPrevalence(field, value){ prevalenceState[field]=value; renderPrevalence(); }
+function renderPrevalence(){
+  if(!PREVALENCE.length){
+    emptyState('prevalenceChart', 'No prevalence dataset',
+      'Supply cohort periods with resistant and tested denominators in the report-context dataset.');
+    document.getElementById('prevalenceFilters').innerHTML = '';
+    document.getElementById('prevalenceTable').innerHTML = '';
+    renderGeographySummary([]);
+    return;
+  }
+  const fields = [['drug','Drug'],['lineage','Lineage'],['geography','Geography']];
+  document.getElementById('prevalenceFilters').innerHTML = fields.map(function(pair){
+    const field=pair[0], label=pair[1];
+    return `<label>${label}<select onchange="setPrevalence('${field}',this.value)">
+      <option>All</option>${uniqueValues(field).map(function(v){ return `<option${prevalenceState[field]===v?' selected':''}>${safeText(v)}</option>`; }).join('')}
+      </select></label>`;
+  }).join('');
+  const rows = PREVALENCE.filter(function(r){
+    return fields.every(function(pair){ return prevalenceState[pair[0]]==='All' || r[pair[0]]===prevalenceState[pair[0]]; });
+  });
+  const max = Math.max.apply(null, rows.map(function(r){ return Number(r.rate)||0; }).concat([1]));
+  document.getElementById('prevalenceChart').innerHTML = rows.length ? `<div class="prevalence-bars">${rows.map(function(r){
+    return `<div class="prevalence-row"><div class="prevalence-period">${safeText(r.period)}</div>
+      <div class="prevalence-track"><span style="width:${100*(Number(r.rate)||0)/max}%"></span></div>
+      <div class="prevalence-value">${r.rate===null||r.rate===undefined?'—':Number(r.rate).toFixed(1)+'%'}</div></div>`;
+  }).join('')}</div>` : '<div class="empty-state"><div class="empty-title">No matching observations</div><div class="empty-detail">Change one or more filters.</div></div>';
+  document.getElementById('prevalenceTable').innerHTML = rows.length ? `<table class="disc-table"><thead><tr>
+    <th>Period</th><th>Drug</th><th>Lineage</th><th>Geography</th><th>Resistant</th><th>Tested</th><th>Prevalence</th><th>Source</th>
+    </tr></thead><tbody>${rows.map(function(r){ return `<tr><td>${safeText(r.period)}</td><td>${safeText(r.drug)}</td>
+    <td>${safeText(r.lineage)}</td><td>${safeText(r.geography)}</td><td>${num(r.resistant)}</td><td>${num(r.total)}</td>
+    <td>${r.rate===null||r.rate===undefined?'—':Number(r.rate).toFixed(1)+'%'}</td><td>${safeText(r.source)}</td></tr>`; }).join('')}</tbody></table>` : '';
+  renderGeographySummary(rows);
+}
+
+function renderGeographySummary(rows){
+  const target = document.getElementById('geographySummary');
+  if(!target) return;
+  if(!rows.length){
+    return emptyState('geographySummary', 'No geographic coverage',
+      'Geographic summaries require prevalence rows with explicit geography and source fields.');
+  }
+  const groups = {};
+  rows.forEach(function(r){
+    const key = r.geography || 'Unspecified geography';
+    if(!groups[key]) groups[key] = {rows:0, drugs:new Set(), periods:new Set(), sources:new Set()};
+    groups[key].rows += 1;
+    groups[key].drugs.add(r.drug);
+    groups[key].periods.add(r.period);
+    groups[key].sources.add(r.source);
+  });
+  target.innerHTML = `<div class="geo-grid">${Object.keys(groups).sort().map(function(g){
+    const d = groups[g];
+    return `<div class="geo-card"><strong>${safeText(g)}</strong>
+      <span>${d.rows} observation row${d.rows===1?'':'s'}</span>
+      <span>${Array.from(d.drugs).sort().join(', ')}</span>
+      <span>${Array.from(d.periods).sort().join(', ')}</span>
+      <small>${Array.from(d.sources).sort().join(', ')}</small></div>`;
+  }).join('')}</div><p class="chart-explanation">Rows are grouped to show source coverage only. Counts are not summed across drugs or periods because the populations may overlap.</p>`;
+}
+
+function renderTargets(){
+  if(!TARGETS.length){
+    return emptyState('targetEvidence', 'No target-evidence dataset',
+      'Supply evidence-backed target records in the report-context dataset. Scores are never invented from a gene name.');
+  }
+  document.getElementById('targetEvidence').innerHTML = `<div class="card table-scroll" style="padding:0"><table class="disc-table">
+    <thead><tr><th>Target</th><th>Essentiality</th><th>Druggability</th><th>Human homology</th><th>Resistance liability</th><th>Evidence and source</th></tr></thead>
+    <tbody>${TARGETS.map(function(t){ return `<tr><td><strong>${safeText(t.target)}</strong></td><td>${safeText(t.essentiality)}</td>
+      <td>${safeText(t.druggability)}</td><td>${safeText(t.human_homology)}</td><td>${safeText(t.resistance_liability)}</td>
+      <td>${safeText(t.evidence)}<div class="muted-source">${safeText(t.source)}</div></td></tr>`; }).join('')}</tbody></table></div>`;
+}
+
+function renderWatchlist(){
+  if(!WATCHLIST.length){
+    return emptyState('watchlistSummary', 'No watch-list aggregate',
+      'Supply privacy-gated aggregate rows when a multi-site signal is ready for follow-up.');
+  }
+  document.getElementById('watchlistSummary').innerHTML = `<div class="watch-grid">${WATCHLIST.map(function(w){
+    return `<article class="watch-card"><div class="watch-head">
+      <strong>${safeText(w.drug)}</strong><span>${safeText(w.status)}</span></div>
+      <div class="watch-variant">${safeText(w.variant)}</div>
+      <div class="watch-metrics"><div><b>${num(w.unresolved_isolates)}</b><span>unresolved isolates</span></div>
+      <div><b>${num(w.contributing_sites)}</b><span>contributing sites</span></div></div>
+      <p>${safeText(w.evidence_gaps)}</p>
+      <small>${safeText(w.limitations)} Source: ${safeText(w.source)}</small></article>`;
+  }).join('')}</div>`;
+}
+
+function workflowEmpty(id, title){
+  return emptyState(id, 'No ' + title.toLowerCase() + ' supplied',
+    'This analysis produced no attributed records for this workflow. The absence is preserved rather than replaced with demonstration values.');
+}
+function workflowItem(title, badge, pairs, caveat){
+  return `<article class="workflow-item"><span class="workflow-badge">${safeText(badge)}</span>
+    <h4>${safeText(title)}</h4><dl>${pairs.map(function(pair){
+      return `<dt>${safeText(pair[0])}</dt><dd>${safeText(pair[1])}</dd>`;
+    }).join('')}</dl>${caveat ? `<p class="workflow-caveat">${safeText(caveat)}</p>` : ''}</article>`;
+}
+function renderWorkflowEvidence(){
+  const definitions = [
+    ['population','Population groups'], ['mic','MIC records'], ['structural','Structural records'],
+    ['regulatory','Regulatory records'], ['expression','Expression records'],
+    ['models','Governed predictions'], ['panels','Assay panels']
+  ];
+  document.getElementById('workflowIndex').innerHTML = definitions.map(function(d){
+    return `<div class="workflow-kpi"><b>${(WORKFLOWS[d[0]] || []).length}</b><span>${d[1]}</span></div>`;
+  }).join('');
+
+  const population = WORKFLOWS.population || [];
+  if(!population.length) workflowEmpty('populationWorkflow','Population-structure analysis');
+  else document.getElementById('populationWorkflow').innerHTML = `<div class="workflow-grid">${population.map(function(p){
+    const groups = (p.groups || []).map(function(g, i){
+      return `Group ${i+1}: ${g.fraction === null ? 'unknown' : (g.fraction*100).toFixed(1)+'%'} median allele frequency; ${g.lineage}; ${(g.variants||[]).join(', ')}`;
+    }).join(' | ');
+    return workflowItem(p.sample, p.classification, [['Classification basis',p.basis],['Method',p.method],['Frequency groups',groups || 'None'],['Unclustered variants',(p.unclustered||[]).join(', ') || 'None'],['Evidence gaps',p.gaps || 'None recorded']], 'Frequency proximity does not prove cellular linkage, clone identity, transmission, or microevolution.');
+  }).join('')}</div>`;
+
+  const mic = WORKFLOWS.mic || [];
+  if(!mic.length) workflowEmpty('micWorkflow','Quantitative MIC evidence');
+  else document.getElementById('micWorkflow').innerHTML = `<div class="workflow-grid">${mic.map(function(m){
+    const interval = m.interval ? m.interval.join('–') + ' ' + m.unit : 'No interval supplied';
+    return workflowItem(m.drug, m.conflict ? 'Conflict requires review' : m.comparison, [['Prediction',m.value+' '+m.unit],['Interval',interval],['Critical concentration',m.critical_concentration+' '+m.unit],['Method',m.method],['Source',m.source]], m.interpretation);
+  }).join('')}</div>`;
+
+  const structural = WORKFLOWS.structural || [];
+  if(!structural.length) workflowEmpty('structuralWorkflow','Structural annotation');
+  else document.getElementById('structuralWorkflow').innerHTML = `<div class="workflow-grid">${structural.map(function(s){
+    return workflowItem(s.variant, s.location, [['Gene',s.gene],['Reported effect',s.effect],['Ligand distance',s.distance],['Review status',s.status],['Source',s.source],['Ranking effect',s.ranking_effect]], 'An imported structural claim does not establish drug response and does not alter the VUS rank.');
+  }).join('')}</div>`;
+
+  const regulatory = WORKFLOWS.regulatory || [];
+  if(!regulatory.length) workflowEmpty('regulatoryWorkflow','Regulatory-region evidence');
+  else document.getElementById('regulatoryWorkflow').innerHTML = `<div class="workflow-grid">${regulatory.map(function(r){
+    return workflowItem(r.name, r.tier, [['Observed variant',r.variant],['Region type',r.type],['Target genes',r.targets],['Associated drugs',r.drugs],['Source',r.source]], r.interpretation);
+  }).join('')}</div>`;
+
+  const expression = WORKFLOWS.expression || [];
+  if(!expression.length) workflowEmpty('expressionWorkflow','Expression evidence');
+  else document.getElementById('expressionWorkflow').innerHTML = `<div class="workflow-grid">${expression.map(function(e){
+    return workflowItem(e.gene, e.conclusion, [['Measurement',e.measurement],['Reported fold change',e.fold_change+'×'],['Unit',e.unit],['Variant linkage',e.matching],['Source',e.source]], e.interpretation);
+  }).join('')}</div>`;
+
+  const models = WORKFLOWS.models || [];
+  if(!models.length) workflowEmpty('modelWorkflow','Governed model output');
+  else document.getElementById('modelWorkflow').innerHTML = `<div class="workflow-grid">${models.map(function(m){
+    return workflowItem(m.variant, m.prediction, [['Drug',m.drug],['Model',m.model],['Reported confidence',m.confidence === null ? 'Not supplied' : m.confidence],['Evaluation cohort',m.cohort],['Incumbent baseline',m.baseline],['Approval basis',m.basis],['Effect on report',m.effect]], m.interpretation);
+  }).join('')}</div>`;
+
+  const panels = WORKFLOWS.panels || [];
+  if(!panels.length) workflowEmpty('panelWorkflow','Assay-panel declaration');
+  else document.getElementById('panelWorkflow').innerHTML = `<div class="workflow-grid">${panels.map(function(p){
+    const unsupported = (p.unsupported||[]).map(function(x){ return x.drug + (x.missing ? ' — missing '+x.missing : ''); }).join(' | ');
+    return workflowItem(p.name+' '+p.version, p.verified ? 'Verified declaration' : 'Unverified declaration', [['Assay',p.assay],['Declared loci',p.loci],['Callable loci retained',p.kept || 'None'],['Coverage claims discarded',p.discarded || 'None'],['Unsupported drugs',unsupported || 'None'],['Off-panel observed variants',p.off_panel || 'None'],['Source',p.source]], p.note);
+  }).join('')}</div>`;
+}
+
+/* ==========================================================
    NAV ACTIVE
    ========================================================== */
 function initNav(){
@@ -1344,6 +1614,14 @@ renderCoverage();
 renderLineage();
 renderRadar();
 renderTierStack();
+searchMutations('');
+renderMutationAtlas();
+renderMechanismLandscape();
+renderEpistasis();
+renderPrevalence();
+renderWatchlist();
+renderTargets();
+renderWorkflowEvidence();
 renderAliView();
 renderDiscordance();
 renderVUS();

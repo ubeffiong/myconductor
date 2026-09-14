@@ -5,10 +5,16 @@
   <a href="#coverage">Coverage</a>
   <a href="#lineage">Lineage</a>
   <a href="#evidence">Evidence</a>
+  <a href="#mutation-explorer">Mutation explorer</a>
+  <a href="#epistasis">Epistasis</a>
+  <a href="#prevalence">Prevalence</a>
+  <a href="#watchlist">Watch list</a>
+  <a href="#targets">Target evidence</a>
   <a href="#alignment">Alignment</a>
   <a href="#discordance">Discordance</a>
   <a href="#vus">VUS Workbench</a>
   <a href="#mechanisms">Mechanisms</a>
+  <a href="#workflow-evidence">Workflow evidence</a>
   <a href="#validation">Validation</a>
   <a href="#federated">Federated</a>
   <a href="#audit">Audit</a>
@@ -17,6 +23,7 @@
   <a href="#followup">Follow-up</a>
   <a href="#qc">QC</a>
   <a href="#methods">Methods</a>
+  <a href="#data-guide">Data guide</a>
 </nav>
 
 <main>
@@ -49,13 +56,96 @@
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title">Cumulative error rate by isolate order</div>
+        <div class="card-title">Error rate across supplied cohort windows</div>
         <div class="card-note">__TREND_NOTE__</div>
       </div>
       <div id="trendChart"></div>
       <p style="font-size:11.5px; color:var(--text-2); margin-top:12px; line-height:1.6">__TREND_PROSE__</p>
     </div>
   </div>
+</section>
+
+<!-- ============ DISCOVERY: MUTATION EXPLORER ============ -->
+<section id="mutation-explorer">
+  <div class="section-head">
+    <div class="section-kicker">Discovery view · Mutation explorer</div>
+    <h2 class="section-title">Find a mutation and inspect the evidence around it</h2>
+    <p class="section-desc">Search by gene, mutation, drug, or classification. Results come only from variants observed in this report. A catalogue association is stated separately from an uncertain or mechanistic signal, so a research lead cannot be mistaken for a resistance call.</p>
+  </div>
+  <div class="lookup-card">
+    <label for="mutationSearch">Mutation or gene</label>
+    <div class="lookup-row">
+      <input id="mutationSearch" type="search" autocomplete="off" placeholder="For example: rpoB, S450L, rifampicin" oninput="searchMutations(this.value)">
+      <button class="mini-btn" onclick="searchMutations(document.getElementById('mutationSearch').value)">Search report</button>
+    </div>
+    <div class="lookup-help">This search does not query an external database. It searches the evidence embedded in this offline report.</div>
+  </div>
+  <div id="mutationResults" class="result-list"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Observed mutation landscape by gene</div><div class="card-note">real coordinate-resolved calls</div></div>
+      <div id="mutationAtlas"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Mechanism confidence</div><div class="card-note">classification, not a probability</div></div>
+      <div id="mechanismLandscape"></div>
+      <p class="chart-explanation">Known means supported by catalogued evidence in this report. Candidate mechanisms and variants of uncertain significance remain research hypotheses and cannot establish resistance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DISCOVERY: EPISTASIS ============ -->
+<section id="epistasis">
+  <div class="section-head">
+    <div class="section-kicker">Discovery view · Co-observation annotations</div>
+    <h2 class="section-title">Epistasis and compensatory context</h2>
+    <p class="section-desc">This view shows supplied co-observation rules that matched the variants in this report. A match is an annotation only: it does not increase confidence, change a six-state drug call, or substitute for lineage-aware phenotypic evidence.</p>
+  </div>
+  <div id="epistasisTable"></div>
+</section>
+
+<!-- ============ DISCOVERY: PREVALENCE ============ -->
+<section id="prevalence">
+  <div class="section-head">
+    <div class="section-kicker">Discovery view · Cohort prevalence</div>
+    <h2 class="section-title">How resistance observations vary over time and place</h2>
+    <p class="section-desc">This view requires explicit resistant and tested denominators from a cohort dataset. Filter by drug, lineage, and geography. It does not estimate prevalence from the single sample or from a catalogue.</p>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Resistance prevalence observations</div>
+      <div class="filter-row" id="prevalenceFilters"></div>
+    </div>
+    <div id="prevalenceChart"></div>
+    <div id="prevalenceTable" class="table-scroll"></div>
+  </div>
+  <div class="card" style="margin-top:18px">
+    <div class="card-head">
+      <div class="card-title">Geographic data availability</div>
+      <div class="card-note">source coverage, not a prevalence estimate</div>
+    </div>
+    <div id="geographySummary"></div>
+  </div>
+</section>
+
+<!-- ============ DISCOVERY: WATCH LIST ============ -->
+<section id="watchlist">
+  <div class="section-head">
+    <div class="section-kicker">Discovery view · Collaborative watch list</div>
+    <h2 class="section-title">Signals that need multi-site follow-up</h2>
+    <p class="section-desc">The watch list accepts only privacy-gated aggregate rows. It is designed for AMR surveillance and VUS resolution across laboratories without exposing isolate-level records in the report.</p>
+  </div>
+  <div id="watchlistSummary"></div>
+</section>
+
+<!-- ============ DISCOVERY: TARGET EVIDENCE ============ -->
+<section id="targets">
+  <div class="section-head">
+    <div class="section-kicker">Discovery view · Target evidence</div>
+    <h2 class="section-title">Drug-target evidence and resistance liability</h2>
+    <p class="section-desc">A target is shown only when a supplied dataset documents its essentiality, druggability, human homology, and resistance liability. These fields support research triage; they are not generated from the isolate and do not change any call.</p>
+  </div>
+  <div id="targetEvidence"></div>
 </section>
 
 <!-- ============ §2 BENCHMARK ============ -->
@@ -271,11 +361,7 @@
       <div class="av-toolbar">
         <label>Locus</label>
         <select id="avLocus" onchange="renderAliView()">
-          <option value="katG">katG · codon 315 window</option>
-          <option value="rpoB">rpoB · RRDR (507–533)</option>
-          <option value="pncA">pncA · promoter + CDS</option>
-          <option value="gyrA">gyrA · QRDR (88–94)</option>
-          <option value="Rv0678">Rv0678 · efflux repressor</option>
+          <option value="">Loading observed loci…</option>
         </select>
         <label>Isolates</label>
         <select id="avCount" onchange="renderAliView()">
@@ -355,6 +441,25 @@
   </div>
 
   <div class="mech-grid" id="mechGrid"></div>
+</section>
+
+<!-- ============ ADVANCED IMPLEMENTATION WORKFLOWS ============ -->
+<section id="workflow-evidence">
+  <div class="section-head">
+    <div class="section-kicker">Implementation view · End-to-end evidence workflows</div>
+    <h2 class="section-title">Advanced evidence remains attributed, bounded, and reviewable</h2>
+    <p class="section-desc">This section exposes evidence paths that previously appeared only in machine-readable output: within-isolate population structure, quantitative MIC predictions, structural and regulatory annotation, expression measurements, governed model output, and assay-panel scope. Each card states what the evidence can and cannot change.</p>
+  </div>
+  <div class="workflow-index" id="workflowIndex"></div>
+  <div class="workflow-stack">
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Within-isolate population structure</div><div class="card-note">frequency groups, not reconstructed clones</div></div><div id="populationWorkflow"></div></article>
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Quantitative MIC evidence</div><div class="card-note">supplied predictions and breakpoint comparisons</div></div><div id="micWorkflow"></div></article>
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Structural annotation</div><div class="card-note">external claims; no automatic reranking</div></div><div id="structuralWorkflow"></div></article>
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Regulatory-region evidence</div><div class="card-note">region membership is contextual</div></div><div id="regulatoryWorkflow"></div></article>
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Expression evidence</div><div class="card-note">measured molecular context</div></div><div id="expressionWorkflow"></div></article>
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Governed model output</div><div class="card-note">approved provenance; no call or ranking effect</div></div><div id="modelWorkflow"></div></article>
+    <article class="card workflow-card"><div class="card-head"><div class="card-title">Assay-panel scope</div><div class="card-note">physical coverage limits before callability</div></div><div id="panelWorkflow"></div></article>
+  </div>
 </section>
 
 <!-- ============ §11 VALIDATION ============ -->
@@ -490,14 +595,33 @@
   <div class="method-grid">__METHODS__</div>
 </section>
 
-</main>
-
-<div class="tooltip" id="tooltip"></div>
-
-<aside class="drill-panel" id="drillPanel">
-  <div class="drill-head">
-    <h3 id="drillTitle">—</h3>
-    <button class="drill-close" id="drillClose">✕</button>
+<!-- ============ DATA GUIDE ============ -->
+<section id="data-guide">
+  <div class="section-head">
+    <div class="section-kicker">Data guide · Human and machine use</div>
+    <h2 class="section-title">What each downloadable dataset contains</h2>
+    <p class="section-desc">The main report presents evidence as cards, tables, charts, and explanations. Downloads retain stable field names for machines. No private endpoint or external content is required to read or export this report.</p>
   </div>
-  <div class="drill-body" id="drillBody"></div>
-</aside>
+  <div class="method-grid">
+    <div class="method-item"><h4>Full report (JSON)</h4><p>Run identity, six-state calls, evidence composition, callable loci, observed variants, validation context, cohort context, and audit events. Missing measurements remain null or absent.</p></div>
+    <div class="method-item"><h4>Call matrix (CSV)</h4><p>One row per sample and one column per drug. Values retain the six states. Susceptible is valid only when the report records callable resistance loci.</p></div>
+    <div class="method-item"><h4>Benchmark (CSV)</h4><p>Coverage, errors, sensitivity, specificity, predictive values, denominators, and estimability by drug. Blank metrics mean the cohort could not support that estimate.</p></div>
+    <div class="method-item"><h4>Variants (VCF)</h4><p>Only coordinate-resolved variants observed in the evidence. The exporter never creates positions for variants that lack genomic coordinates.</p></div>
+    <div class="method-item"><h4>Coverage and discordance</h4><p>Tab-separated tables preserve callable-locus fractions and engine disagreements. Discordant calls remain visible and are never reconciled by majority vote.</p></div>
+    <div class="method-item"><h4>Audit ledger (JSONL)</h4><p>One append-only event per line, including actor, target, timestamp, and hash preview. An empty ledger is explicitly marked rather than represented as a successful audit.</p></div>
+  </div>
+  <details class="schema-details"><summary>Report-context dataset collections</summary>
+    <div class="schema-grid">
+      <div><strong>Benchmark rows</strong><span>Per-drug diagnostic metrics and their denominators.</span></div>
+      <div><strong>Lineage rows</strong><span>Drug performance within explicitly recorded lineage strata.</span></div>
+      <div><strong>Prevalence rows</strong><span>Period, drug, lineage, geography, resistant count, and tested count.</span></div>
+      <div><strong>Target rows</strong><span>Essentiality, druggability, human homology, resistance liability, evidence, and source.</span></div>
+      <div><strong>Epistasis notes</strong><span>Annotation-only co-observation rules produced by the run when a supplied table matches observed variants.</span></div>
+      <div><strong>Watch-list rows</strong><span>Privacy-gated aggregate signals for multi-site follow-up; no isolate-level record is exported.</span></div>
+      <div><strong>Validation and audit</strong><span>Site-local outcomes, activity timeline, and append-only evidence events.</span></div>
+      <div><strong>Federated sites</strong><span>Privacy-gated aggregate contributions; no isolate-level records.</span></div>
+    </div>
+  </details>
+</section>
+
+</main>
