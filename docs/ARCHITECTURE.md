@@ -191,6 +191,49 @@ more dangerous than a gap:
   gated behind `acknowledged=True`, does not solve pairwise key agreement or
   dropout tolerance, and is not wired into `transport.py`. See its own module
   docstring before reading its presence here as more than that.
+- **No model training, feature extraction, or protein folding.** This is the
+  boundary most often mistaken for a gap, so the reasoning is recorded here
+  rather than rediscovered. Myconductor *governs* model output; it does not
+  produce it. Four reasons, none of them conservatism:
+
+  1. **A model could not change a single call even if it were perfect.**
+     Model output enters at `Tier.PREDICTED`, and
+     `Tier.may_establish_resistance` is false for it — enforced in
+     `DrugEvidence.__post_init__`, not by convention. The most capable
+     classifier imaginable can only withhold susceptibility and raise a
+     hypothesis, which is exactly what the rule-based lanes already do. An
+     in-repo XGBoost or HANN would add a large dependency tree and buy zero
+     additional clinical calls.
+  2. **There is no measured baseline to improve on.** No accuracy figure has
+     ever been produced for this tool. Training a model before measuring the
+     incumbent means never being able to say whether the model helped.
+  3. **The zero-dependency core is CI-enforced** and is why this installs
+     anywhere. XGBoost, SHAP and AlphaFold are gigabytes plus GPU and database
+     infrastructure.
+  4. **AlphaFold for *M. tuberculosis* is already precomputed.** The proteome
+     is in AlphaFold DB. The useful artefact is an attributed *import* —
+     `modules/structural_annotation.py` — not a folding run.
+
+  What exists instead is the seam: `core/models.py::InSilicoPrediction`
+  carries the prediction, its feature attributions (the SHAP layer) and its
+  structural context; `modules/in_silico.py` admits it without letting it call
+  or rank; and `federated/model_registry.py` decides whether it may be used at
+  all. A repo that trains one model competes with every other model. Governing
+  all of them is the part nobody else does.
+
+- **No approval on reported performance alone.** A performance number with
+  nothing to compare it against says only that someone measured it: sensitivity
+  0.40 and 0.95 both satisfy a paperwork check. Every registered scope must
+  therefore name the incumbent it was measured against — for TB-AMR that is the
+  catalogue, which answers where it holds a graded entry and abstains elsewhere
+  — and `ModelRegistry` refuses approval unless the model answers at least as
+  often *and* errs no more often. The comparison is two-sided on purpose: a
+  model can always buy a better error rate by abstaining more, and abstention
+  is not free when the incumbent would have answered. `evidence_for()` returns
+  that basis so a report states what was beaten rather than asserting approval.
+  The full risk-coverage form of this test, evaluated at the baseline's own
+  coverage, is `mycobench.analysis.selective`.
+
 - **No bundled minority-allele calibration or resistance prior.**
   `modules/calibration.py::CalibrationTable` ships empty and
   `NullPriorSource` is the default; a deployment supplies its own

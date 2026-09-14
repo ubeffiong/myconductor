@@ -24,11 +24,14 @@ def reconcile_in_silico_predictions(priorities, predictions, context, registry):
         for name in ("sample_id", "isolate_id", "site_id", "organism"):
             if getattr(prediction, name) != getattr(context, name):
                 raise ValueError(f"in-silico {name} differs from current context")
-        registry.require_approved(prediction, context.lineage)
+        # Not just "approved": the incumbent it beat, on which cohort, by how
+        # much. A reader should be able to judge the basis, not the verdict.
+        basis = registry.evidence_for(prediction, context.lineage)
         matching = [p for p in priorities if p.variant_key == prediction.variant_key and p.drug == prediction.drug]
         if not matching:
             raise ValueError("prediction does not match a current VUS/drug")
         finding = dict(asdict(prediction), tier=Tier.PREDICTED.value, call_effect="none", ranking_effect="none",
+                       baseline_basis=basis,
                        interpretation="Externally supplied prediction and attributions; approval does not calibrate confidence or establish drug response.")
         findings.append(finding)
         for priority in matching:
