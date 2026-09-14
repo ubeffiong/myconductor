@@ -447,8 +447,9 @@ def prefetch_vcfs(paths: Sequence[str], cache_dir: str | Path, jobs: int = 4,
     if not missing:
         return 0
 
-    print(f"[genotypes] fetching {len(missing)} VCF(s) with {jobs} worker(s)",
-          flush=True)
+    if progress_every:
+        print(f"[genotypes] fetching {len(missing)} VCF(s) with "
+              f"{jobs} worker(s)", flush=True)
     done = 0
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         futures = {pool.submit(fetch_vcf, path, cache_dir): path
@@ -510,8 +511,9 @@ def load_genotypes(rows: Iterable[dict], index: CoordinateIndex,
         # Sort first: the draw must not depend on the order rows arrived in.
         eligible.sort(key=lambda item: item[0])
         eligible = random.Random(sample_seed).sample(eligible, limit)
-        print(f"[genotypes] sampled {limit} isolate(s) with seed {sample_seed}",
-              flush=True)
+        if progress_every:
+            print(f"[genotypes] sampled {limit} isolate(s) with seed "
+                  f"{sample_seed}", flush=True)
     selected = eligible
 
     if jobs > 1 and not cached_only and selected:
