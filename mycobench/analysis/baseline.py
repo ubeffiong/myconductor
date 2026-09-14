@@ -206,6 +206,25 @@ def measure_drug(drug: str, isolates: Sequence[Isolate],
         baseline.notes.append(
             "no resistant isolate in this sample, so the error rate says "
             "nothing about sensitivity")
+
+    # A namespace mismatch abstains on everything and looks exactly like a
+    # cohort nobody sequenced deeply. It is not: it means the determinant set
+    # and the isolate data are keyed differently — labels against coordinate
+    # keys, say — so nothing could ever match. That failed silently once and
+    # produced a whole baseline table of plausible-looking wrong numbers.
+    if determinants and isolates and baseline.n_answered == 0:
+        seen = set()
+        for isolate in isolates:
+            seen |= set(isolate.genotype)
+            if isolate.assessed_variants:
+                seen |= set(isolate.assessed_variants)
+        if seen and not (seen & determinants):
+            baseline.notes.append(
+                f"no isolate carried or assessed ANY of the {len(determinants)} "
+                f"determinant(s) for this drug; the determinant set and the "
+                f"isolate data appear to be keyed differently (e.g. gene "
+                f"labels against coordinate keys) rather than the cohort "
+                f"genuinely lacking coverage")
     return baseline
 
 
@@ -231,8 +250,15 @@ def measure(isolates: Sequence[Isolate], rows: Iterable[dict],
             truth = _truth_for(row, code)
             if truth is not None:
                 truths[isolate.isolate_id] = truth
-        determinants = (index.by_drug_label.get(drug, set())
-                        | index.by_drug_coordinate.get(drug, set()))
+        # Labels only, and deliberately not unioned with the coordinate keys.
+        # ``DeterminantIndex`` carries both spellings of every determinant, but
+        # ``load_genotypes`` produces label-keyed genotypes and assessed sets,
+        # so mixing the namespaces inflates the denominator without adding a
+        # single matchable entry: isoniazid holds 143 labels against 3,517
+        # coordinate keys, which would cap the achievable assessed fraction at
+        # about 4% and abstain on every isolate. The determinant set must be in
+        # the same namespace as the isolate data being measured.
+        determinants = index.by_drug_label.get(drug, set())
         results[drug] = measure_drug(drug, isolates, truths, determinants,
                                      assessed_fraction)
     return results

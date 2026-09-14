@@ -208,6 +208,47 @@ class MeasureAcrossDrugsTests(unittest.TestCase):
         # NA is not a phenotype, so isoniazid was never asked.
         self.assertEqual(results["isoniazid"].n_isolates, 0)
 
+    def test_a_namespace_mismatch_is_named_not_reported_as_no_coverage(self):
+        """Labels against coordinate keys abstains on everything, silently.
+
+        That looks identical to a cohort nobody sequenced deeply, and it
+        produced an entire table of plausible wrong numbers once. The
+        determinant set here is coordinate-keyed while the isolates are
+        label-keyed, so nothing can ever match.
+        """
+        coordinate_keys = {"NC_000962.3:Chromosome:761155:C>T"}
+        isolates = [isolate(f"s{i}", assessed=DETERMINANTS) for i in range(12)]
+        truths = {f"s{i}": "S" for i in range(12)}
+        result = baseline.measure_drug(DRUG, isolates, truths, coordinate_keys)
+        self.assertEqual(result.n_answered, 0)
+        self.assertTrue(any("keyed differently" in n for n in result.notes))
+
+    def test_genuine_absence_of_coverage_is_not_blamed_on_namespaces(self):
+        # Determinants and isolates share a namespace; the cohort simply was
+        # not examined. No mismatch note should appear.
+        isolates = [isolate(f"s{i}", assessed=set()) for i in range(12)]
+        truths = {f"s{i}": "S" for i in range(12)}
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertEqual(result.n_answered, 0)
+        self.assertFalse(any("keyed differently" in n for n in result.notes))
+
+    def test_measure_uses_labels_not_the_coordinate_union(self):
+        """The bug this guards: unioning namespaces caps the achievable
+        assessed fraction and abstains on everything."""
+        index = DeterminantIndex(
+            by_drug_label={"rifampicin": {"rpoB_S450L"}},
+            by_drug_coordinate={"rifampicin": {
+                "NC_000962.3:Chromosome:761155:C>T",
+                "NC_000962.3:Chromosome:761140:A>G"}})
+        isolates = [isolate(f"cr_ERR{i}", assessed={"rpoB_S450L"})
+                    for i in range(12)]
+        rows = [{"ENA_RUN": f"ERR{i}", "RIF_BINARY_PHENOTYPE": "S"}
+                for i in range(12)]
+        results = baseline.measure(isolates, rows, index, drugs=["rifampicin"])
+        # With the union the denominator would be 3 and nothing would answer.
+        self.assertEqual(results["rifampicin"].n_answered, 12)
+        self.assertEqual(results["rifampicin"].coverage, 1.0)
+
     def test_the_caveat_names_the_shared_isolate_problem(self):
         self.assertIn("share underlying isolates", baseline.CAVEAT)
         self.assertIn("not an independent accuracy estimate", baseline.CAVEAT)
