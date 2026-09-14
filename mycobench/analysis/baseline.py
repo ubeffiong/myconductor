@@ -68,6 +68,12 @@ ASSESSED_FRACTION_FOR_SUSCEPTIBLE = 0.95
 #: Truth labels accepted from the reuse table. Anything else is not a phenotype.
 TRUTH_LABELS = {"R": "R", "S": "S"}
 
+#: Below this many isolates on one side of the truth, the point estimate that
+#: side supports is not readable on its own. Sensitivity rests only on the
+#: resistant isolates and specificity only on the susceptible ones, so a large
+#: cohort says nothing about whether either is well determined.
+MIN_FOR_DIRECTIONAL_CLAIM = 10
+
 #: Reasons the catalogue declined to answer, counted per drug.
 ABSTAIN_INCOMPLETE = "loci not fully examined"
 ABSTAIN_NO_DETERMINANTS = "no graded determinant for this drug"
@@ -272,6 +278,22 @@ def measure_drug(drug: str, isolates: Sequence[Isolate],
         by_lineage=by_lineage,
     )
     baseline.notes.extend(accuracy.notes)
+
+    # ``powered`` in metrics.py asks whether the *cohort* is large enough. It
+    # does not ask whether the resistant isolates within it are, and sensitivity
+    # rests only on those. Bedaquiline here has four: a sensitivity of 0% over
+    # four isolates carries a 95% interval reaching 49%, which is a different
+    # statement from the same 0% over twenty-one. Both would otherwise read
+    # "powered: yes" beside a headline figure.
+    if 0 < accuracy.n_phenotype_resistant < MIN_FOR_DIRECTIONAL_CLAIM:
+        baseline.notes.append(
+            f"sensitivity and VME rest on {accuracy.n_phenotype_resistant} "
+            f"resistant isolate(s); read the interval, not the point estimate")
+    if 0 < accuracy.n_phenotype_susceptible < MIN_FOR_DIRECTIONAL_CLAIM:
+        baseline.notes.append(
+            f"specificity and ME rest on "
+            f"{accuracy.n_phenotype_susceptible} susceptible isolate(s); read "
+            f"the interval, not the point estimate")
     if not baseline.estimable:
         baseline.notes.append(
             f"only {len(answered)} answered quer(ies); an error rate over "
@@ -348,7 +370,11 @@ BASELINE_COLUMNS = (
     "ppv", "npv", "vme_rate", "me_rate",
     "n_false_susceptible", "n_false_resistant",
     "n_resistant_truth", "n_susceptible_truth", "resistance_prevalence",
-    "abstained_resistant", "n_determinants", "estimable", "powered",
+    "abstained_resistant", "n_determinants", "estimable", "cohort_powered",
+    # Sensitivity rests only on resistant isolates and specificity only on
+    # susceptible ones, so cohort size says nothing about whether either is
+    # well determined. Both counts are shown beside the rates they support.
+    "sensitivity_basis_n", "specificity_basis_n",
     "abstained", "notes",
 )
 
@@ -398,7 +424,13 @@ def baseline_rows(results: dict[str, DrugBaseline]) -> list[dict]:
                                     if accuracy else 0),
             "n_determinants": b.n_determinants,
             "estimable": "yes" if b.estimable else "no",
-            "powered": ("yes" if accuracy and accuracy.powered else "no"),
+            # Renamed from "powered": it asks about the cohort, not about the
+            # side of the truth each rate actually rests on.
+            "cohort_powered": ("yes" if accuracy and accuracy.powered else "no"),
+            "sensitivity_basis_n": (accuracy.n_phenotype_resistant
+                                    if accuracy else 0),
+            "specificity_basis_n": (accuracy.n_phenotype_susceptible
+                                    if accuracy else 0),
             "abstained": "; ".join(f"{k}: {v}" for k, v in sorted(b.abstained.items())),
             "notes": " | ".join(b.notes),
         })

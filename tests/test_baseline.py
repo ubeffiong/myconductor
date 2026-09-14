@@ -288,7 +288,7 @@ class DiagnosticMetricTests(unittest.TestCase):
         rows = baseline.baseline_rows({DRUG: result})
         self.assertTrue(rows[0]["sensitivity_ci"])
         self.assertIn("-", rows[0]["sensitivity_ci"])
-        self.assertEqual(rows[0]["powered"], "yes")
+        self.assertEqual(rows[0]["cohort_powered"], "yes")
 
     def test_no_interval_is_offered_on_an_underpowered_sample(self):
         """An interval from too few observations is a lie about precision."""
@@ -297,7 +297,7 @@ class DiagnosticMetricTests(unittest.TestCase):
         self.assertFalse(result.accuracy.powered)
         rows = baseline.baseline_rows({DRUG: result})
         self.assertEqual(rows[0]["sensitivity_ci"], "")
-        self.assertEqual(rows[0]["powered"], "no")
+        self.assertEqual(rows[0]["cohort_powered"], "no")
         # The point estimate is still shown; only the precision claim is not.
         self.assertTrue(rows[0]["sensitivity"])
 
