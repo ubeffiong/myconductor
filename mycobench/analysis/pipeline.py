@@ -46,7 +46,8 @@ MIN_CARRIERS = 5
 EFFECT_COLUMNS = (
     "variant", "drug", "verdict", "delta", "ci_low", "ci_high",
     "pvalue", "pvalue_holm", "survives_fdr", "n_carriers",
-    "n_informative_strata", "lineage_diversity", "top_cooccurrence",
+    "n_informative_strata", "n_decidable_pairs", "n_possible_pairs",
+    "lineage_diversity", "top_cooccurrence",
     "top_cooccurrence_fraction", "warnings", "reasons",
 )
 PANEL_COLUMNS = ("drug", "n_isolates", "n_exact", "left_censored",
@@ -111,6 +112,9 @@ class AnalysisResult:
     discriminator: Optional[mechanism.DiscriminatorResult] = None
     n_candidates: int = 0
     n_tested: int = 0
+    #: The threshold actually applied, not the module default. A summary that
+    #: prints the default while a different one was used misdescribes the run.
+    min_carriers: int = MIN_CARRIERS
     skipped: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     elapsed_seconds: float = 0.0
@@ -151,6 +155,10 @@ class AnalysisResult:
                                  else "yes" if effect.survives_fdr else "no"),
                 "n_carriers": effect.n_carriers,
                 "n_informative_strata": effect.n_informative_strata,
+                # The information behind the estimate: a delta of -1.000 over
+                # 40 decidable pairs is not the same claim as over 4,000.
+                "n_decidable_pairs": effect.n_decidable_pairs,
+                "n_possible_pairs": effect.n_possible_pairs,
                 # Empty, never "1.00", when lineage was never typed.
                 "lineage_diversity": ("" if effect.lineage_diversity is None
                                       else f"{effect.lineage_diversity:.2f}"),
@@ -171,7 +179,7 @@ class AnalysisResult:
             f"{len(self.panels)} drug panel(s); median identifiable for "
             f"{len(usable)} ({', '.join(sorted(usable)) or 'none'})")
         lines.append(f"{self.n_candidates} candidate variant(s) with at least "
-                     f"{MIN_CARRIERS} carrier(s); {self.n_tested} "
+                     f"{self.min_carriers} carrier(s); {self.n_tested} "
                      f"variant-drug pair(s) tested")
         if self.scan:
             lines.append(self.scan.describe())
@@ -238,7 +246,7 @@ def run(inputs: AnalysisInputs) -> AnalysisResult:
     """Run the whole analysis. Every refusal is recorded, not silent."""
     started = time.monotonic()
     inputs.validate()
-    result = AnalysisResult()
+    result = AnalysisResult(min_carriers=inputs.min_carriers)
 
     coordinate_index = CoordinateIndex.from_catalogue(inputs.catalogue)
     determinant_index = DeterminantIndex.from_catalogue(inputs.catalogue)

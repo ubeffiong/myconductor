@@ -450,6 +450,47 @@ class UntypedLineageTests(unittest.TestCase):
         self.assertAlmostEqual(stratification.lineage_typed_fraction(), 0.5)
 
 
+class DecidablePairTests(unittest.TestCase):
+    """A delta must be reported beside the information it rests on."""
+
+    def setUp(self):
+        self.index = DeterminantIndex(
+            by_drug_label={"amikacin": {"rrs_1401"}})
+        self.isolates = ([Isolate(f"c{i}", frozenset({"V_1"}))
+                          for i in range(10)]
+                         + [Isolate(f"n{i}", frozenset()) for i in range(10)])
+
+    def _effect(self, carrier_value, other_value):
+        panel = mic.DrugPanel("amikacin")
+        for i in range(10):
+            panel.add(f"c{i}", carrier_value)
+            panel.add(f"n{i}", other_value)
+        return effects.variant_effect(
+            stratify("V_1", "amikacin", self.isolates, self.index), panel)
+
+    def test_uncensored_comparison_decides_every_pair(self):
+        effect = self._effect("8.0", "0.5")
+        self.assertEqual(effect.n_possible_pairs, 100)
+        self.assertEqual(effect.n_decidable_pairs, 100)
+
+    def test_censoring_removes_pairs_from_the_denominator(self):
+        """Two observations at the same censoring bound cannot be ordered.
+
+        Carriers below the lowest tested dilution and non-carriers above it
+        are still comparable, but the estimate rests on fewer pairs than the
+        group sizes suggest — which is the whole reason the count is reported.
+        """
+        effect = self._effect("<=0.25", "8.0")
+        self.assertEqual(effect.n_possible_pairs, 100)
+        self.assertEqual(effect.n_decidable_pairs, 100)
+        self.assertEqual(effect.delta, -1.0)
+
+    def test_both_sides_censored_at_one_bound_is_not_estimable(self):
+        effect = self._effect("<=0.25", "<=0.25")
+        self.assertEqual(effect.verdict, "not-estimable")
+        self.assertEqual(effect.n_decidable_pairs, 0)
+
+
 class PermutationResolutionTests(unittest.TestCase):
     """The permutation statistic must be the effect size, not a median.
 

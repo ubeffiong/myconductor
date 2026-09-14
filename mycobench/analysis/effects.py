@@ -88,6 +88,27 @@ class VariantEffect:
     reasons: list[str] = field(default_factory=list)
 
     @property
+    def n_decidable_pairs(self) -> int:
+        """Carrier/non-carrier pairs the censoring actually let us order.
+
+        The information the estimate rests on, and it must be reported beside
+        the estimate. Under heavy left-censoring most pairs are undecidable —
+        two observations both recorded as "<=0.25" cannot be ordered — so a
+        delta of exactly -1.000 with an interval of (-1.000, -1.000) can come
+        from a few dozen decidable pairs rather than thousands. Both look
+        identical in the delta column. On this release amikacin is 69%
+        left-censored and delamanid 77%, so this is the common case for
+        precisely the drugs whose resistance is rarest and most interesting.
+        """
+        return sum(s.weight for s in self.strata if s.usable)
+
+    @property
+    def n_possible_pairs(self) -> int:
+        """Pairs there would have been without censoring."""
+        return sum(s.n_carriers * s.n_non_carriers
+                   for s in self.strata if s.usable)
+
+    @property
     def significant(self) -> bool:
         return self.verdict == "evidence-of-effect"
 
