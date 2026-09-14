@@ -91,6 +91,30 @@ def render_text(report: AnalysisReport) -> str:
             for cov in r.coverage:
                 lines.append(f"          ~ {cov.describe()}")
 
+    # -- assay coverage ----------------------------------------------------
+    if report.panel:
+        panel = report.panel
+        lines += ["", " ASSAY COVERAGE", _THIN]
+        status = "verified" if panel.get("verified") else "UNVERIFIED locus list"
+        lines.append(f"   {panel['name']} {panel['version']} "
+                     f"({panel['assay']}, {panel['n_loci']} locus/loci; {status})")
+        if not panel.get("verified"):
+            lines.append("   ! This panel's locus list has not been checked "
+                         "against the manufacturer's")
+            lines.append("     design. Confirm it before clinical reporting.")
+        unsupported = panel.get("unsupported_drugs") or {}
+        if unsupported:
+            lines.append("")
+            lines.append("   Not covered by this assay — reported NOT_ASSESSED "
+                         "because the loci were")
+            lines.append("   never amplified, not because the run failed:")
+            for drug, missing in sorted(unsupported.items()):
+                detail = ", ".join(missing) if missing else "no loci declared"
+                lines.append(f"     - {drug}: {detail}")
+        if panel.get("discarded"):
+            lines.append("")
+            lines.append(f"   {_wrap(panel['note'], 3)}")
+
     # -- discordance -------------------------------------------------------
     if report.discordances:
         lines += ["", " DISCORDANT EVIDENCE", _THIN]

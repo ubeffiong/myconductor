@@ -142,6 +142,8 @@ class Myconductor:
         input_path: str | Path,
         mask: Optional[CallableMask] = None,
         mask_path: Optional[str | Path] = None,
+        panel=None,
+        panel_path: Optional[str | Path] = None,
         sample: Optional[str] = None,
         platform: Optional[str] = None,
         engine_reports: Sequence[EngineReport] = (),
@@ -171,6 +173,18 @@ class Myconductor:
         if mask is None and mask_path is not None:
             mask = self._mask_from_path(mask_path)
         mask = mask or CallableMask.absent()
+
+        # A targeted assay cannot call a locus it never amplified, whatever a
+        # coverage file claims. Restriction happens here, before the mask
+        # reaches the callable gate, so no downstream path can see the
+        # unrestricted version.
+        panel_restriction = None
+        if panel is None and panel_path is not None:
+            from ..io.panel import Panel
+            panel = Panel.load(panel_path)
+        if panel is not None:
+            from ..io.panel import restrict, unsupported_drugs
+            mask, panel_restriction = restrict(mask, panel)
 
         if context is not None and context.sample_id != adapted.sample_id:
             raise ValueError("context sample_id does not match variant input")
@@ -367,7 +381,25 @@ class Myconductor:
             generated_utc=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         )
 
+        panel_summary = {}
+        if panel_restriction is not None:
+            declared = panel_restriction.panel
+            panel_summary = {
+                "name": declared.name, "version": declared.version,
+                "assay": declared.assay, "source": declared.source,
+                "verified": declared.verified,
+                "n_loci": len(declared.loci),
+                "kept": panel_restriction.kept,
+                "discarded": panel_restriction.discarded,
+                "note": panel_restriction.describe(),
+                "unsupported_drugs": unsupported_drugs(
+                    declared,
+                    {drug: self.profile.required_loci(drug)
+                     for drug in self.profile.drugs}),
+            }
+
         report = AnalysisReport(
+            panel=panel_summary,
             expression_findings=expression_findings,
             in_silico_findings=in_silico_findings,
             regulatory_findings=regulatory_findings,

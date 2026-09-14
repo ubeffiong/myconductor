@@ -1,0 +1,10 @@
+{
+  "name": "First-line core",
+  "version": "example-0",
+  "assay": "targeted-amplicon",
+  "organism": "mtbc",
+  "source": "illustrative minimal panel, for demonstrating panel restriction",
+  "verified": false,
+  "note": "ILLUSTRATIVE. A deliberately narrow panel covering only rifampicin, isoniazid and ethambutol determinants, used to show that every other drug becomes NOT_ASSESSED rather than susceptible.",
+  "loci": ["rpoB", "katG", "fabG1", "inhA", "embB"]
+}

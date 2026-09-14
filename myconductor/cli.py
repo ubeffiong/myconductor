@@ -99,6 +99,7 @@ def _run_analyze(args: argparse.Namespace) -> int:
     analysis_args = dict(
         mask=mask,
         mask_path=args.mask,
+        panel_path=args.panel,
         sample=args.sample,
         engine_reports=_engine_reports(args), context=context,
         phenotypes=load_phenotypes(args.phenotypes) if args.phenotypes else (),
@@ -308,6 +309,11 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Callable-locus evidence (.tsv depth table or .bed "
                         "mask). Without it, no drug can be reported "
                         "susceptible.")
+    a.add_argument("--panel", metavar="PATH",
+                   help="Targeted-panel declaration (JSON). Coverage claimed "
+                        "for a locus the panel does not target is discarded: "
+                        "a targeted assay cannot call a locus it never "
+                        "amplified, whatever a coverage file says.")
     a.add_argument("--bam", metavar="PATH",
                    help="Derive the callable-locus mask directly from this "
                         "BAM via mosdepth/samtools (requires --bed). "

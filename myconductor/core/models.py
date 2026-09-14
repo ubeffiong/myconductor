@@ -655,6 +655,13 @@ class AnalysisReport:
     expression_findings: list[dict] = field(default_factory=list)
     in_silico_findings: list[dict] = field(default_factory=list)
     discordance_tickets: list[dict] = field(default_factory=list)
+    #: Present when a targeted panel narrowed the callable mask. Carries the
+    #: panel's identity, whether its locus list was verified against the
+    #: manufacturer's design, and which loci were discarded — a reader must be
+    #: able to tell "this assay does not cover pyrazinamide" apart from "the
+    #: pyrazinamide locus failed QC", because only one of those is a fact about
+    #: the run.
+    panel: dict = field(default_factory=dict)
 
     @property
     def resistant_drugs(self) -> list[str]:

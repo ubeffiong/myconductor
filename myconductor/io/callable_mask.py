@@ -235,6 +235,16 @@ class CallableMask:
     def is_present(self) -> bool:
         return bool(self._loci)
 
+    @property
+    def loci(self) -> frozenset[str]:
+        """Which loci this mask carries evidence for.
+
+        Read-only: callers that need to narrow a mask build a new one (see
+        ``io.panel.restrict``) rather than mutating this one, so a mask's
+        source string always describes the loci it actually holds.
+        """
+        return frozenset(self._loci)
+
     def coverage_for(self, locus: str) -> LocusCoverage:
         return self._loci.get(locus, LocusCoverage(locus=locus, source="absent"))
 

@@ -1,0 +1,13 @@
+{
+  "name": "Deeplex Myc-TB",
+  "version": "example-0",
+  "assay": "targeted-amplicon",
+  "organism": "mtbc",
+  "source": "reconstructed from published descriptions of the assay's gene targets",
+  "verified": false,
+  "note": "ILLUSTRATIVE. This locus list has NOT been checked against the manufacturer's design document for any specific product version, and it is restricted to loci the bundled mtbc profile names. Replace it with your laboratory's own declaration before reporting. An over-declared panel asserts that the assay examined a locus it never amplified, which is what allows a drug to reach SUSCEPTIBLE.",
+  "loci": [
+    "rpoB", "katG", "fabG1", "inhA", "ahpC", "embB", "pncA",
+    "gyrA", "gyrB", "rrs", "rrl", "rplC", "eis", "tlyA", "Rv0678", "atpE"
+  ]
+}
