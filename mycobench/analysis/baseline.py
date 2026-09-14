@@ -47,8 +47,18 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Iterable, Optional, Sequence
 
+from ..metrics import AccuracyResult, score_accuracy, score_accuracy_stratified
 from .selective import MIN_COVERED_FOR_RISK, Prediction, catalogue_baseline
 from .strata import DeterminantIndex, Isolate
+
+#: Myconductor call values the catalogue's R/S answers correspond to, so the
+#: baseline can be scored by the same code as any engine. Reusing
+#: ``metrics.score_accuracy`` rather than recomputing here is deliberate: it
+#: already excludes abstained-resistant isolates from sensitivity and says so,
+#: which is the difference between an honest sensitivity and one inflated by
+#: declining the hard cases.
+_CALL_FOR = {"R": "resistant", "S": "susceptible"}
+_ABSTAINED = "not_assessed"
 
 #: Share of a drug's graded resistant coordinates that must have been examined
 #: before "no resistant variant found" is allowed to mean susceptible. Below
@@ -81,6 +91,15 @@ class DrugBaseline:
     #: a drug wrongly cleared for use, which is the failure mode this whole
     #: codebase is built to avoid.
     errors_by_kind: dict[str, int] = field(default_factory=dict)
+    #: Sensitivity, specificity, PPV, NPV, VME and ME with Wilson intervals,
+    #: scored by the same code that scores any engine. A single composite error
+    #: rate cannot distinguish a tool that misses resistance from one that
+    #: over-calls it, and those have opposite clinical consequences.
+    accuracy: Optional[AccuracyResult] = None
+    #: The same, split by lineage. Empty when no isolate carries one — the
+    #: CRyPTIC reuse table has no lineage column, so this stays empty unless
+    #: lineages are supplied from outside.
+    by_lineage: dict[str, AccuracyResult] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
 
     @property
@@ -168,14 +187,34 @@ def catalogue_predictions(
     return predictions, abstained
 
 
+def _scored(drug: str, predictions: Sequence[Prediction],
+            lineages: Optional[dict[str, str]] = None
+            ) -> tuple[AccuracyResult, dict[str, AccuracyResult]]:
+    """Score the catalogue's answers as if it were any other predictor."""
+    pairs = [(_CALL_FOR.get(p.predicted, _ABSTAINED), p.truth)
+             for p in predictions]
+    pooled = score_accuracy(pairs, drug)
+    if not lineages:
+        return pooled, {}
+    triples = [(_CALL_FOR.get(p.predicted, _ABSTAINED), p.truth,
+                lineages.get(p.key, "unknown")) for p in predictions]
+    stratified = score_accuracy_stratified(triples, drug)
+    # A single "unknown" bucket is not stratification, it is the absence of it.
+    if set(stratified) <= {"unknown"}:
+        return pooled, {}
+    return pooled, stratified
+
+
 def measure_drug(drug: str, isolates: Sequence[Isolate],
                  truths: dict[str, str], determinants: Iterable[str],
-                 assessed_fraction: float = ASSESSED_FRACTION_FOR_SUSCEPTIBLE
+                 assessed_fraction: float = ASSESSED_FRACTION_FOR_SUSCEPTIBLE,
+                 lineages: Optional[dict[str, str]] = None
                  ) -> DrugBaseline:
     determinants = set(determinants)
     predictions, abstained = catalogue_predictions(
         isolates, truths, determinants, assessed_fraction)
     coverage, error_rate = catalogue_baseline(predictions)
+    accuracy, by_lineage = _scored(drug, predictions, lineages)
 
     answered = [p for p in predictions if p.answerable]
     kinds: dict[str, int] = {}
@@ -196,7 +235,10 @@ def measure_drug(drug: str, isolates: Sequence[Isolate],
         error_rate=error_rate if len(answered) >= MIN_COVERED_FOR_RISK else 0.0,
         abstained=abstained,
         errors_by_kind=kinds,
+        accuracy=accuracy,
+        by_lineage=by_lineage,
     )
+    baseline.notes.extend(accuracy.notes)
     if not baseline.estimable:
         baseline.notes.append(
             f"only {len(answered)} answered quer(ies); an error rate over "
@@ -230,12 +272,15 @@ def measure_drug(drug: str, isolates: Sequence[Isolate],
 
 def measure(isolates: Sequence[Isolate], rows: Iterable[dict],
             index: DeterminantIndex, drugs: Optional[Iterable[str]] = None,
-            assessed_fraction: float = ASSESSED_FRACTION_FOR_SUSCEPTIBLE
+            assessed_fraction: float = ASSESSED_FRACTION_FOR_SUSCEPTIBLE,
+            lineages: Optional[dict[str, str]] = None
             ) -> dict[str, DrugBaseline]:
     """Measure the catalogue across every drug with a binary phenotype."""
     from ..phenotypes import DRUG_CODES
 
     wanted = set(drugs) if drugs else set(DRUG_CODES.values())
+    if lineages is None:
+        lineages = {i.isolate_id: i.lineage for i in isolates if i.lineage}
     by_run = {f"cr_{(r.get('ENA_RUN') or '').strip()}": r for r in rows}
     results: dict[str, DrugBaseline] = {}
 
@@ -260,35 +305,204 @@ def measure(isolates: Sequence[Isolate], rows: Iterable[dict],
         # the same namespace as the isolate data being measured.
         determinants = index.by_drug_label.get(drug, set())
         results[drug] = measure_drug(drug, isolates, truths, determinants,
-                                     assessed_fraction)
+                                     assessed_fraction, lineages)
     return results
 
 
 BASELINE_COLUMNS = (
     "drug", "n_isolates", "n_answered", "coverage", "n_errors", "error_rate",
-    "n_false_susceptible", "n_resistant_truth", "n_susceptible_truth",
-    "n_determinants", "estimable", "abstained", "notes",
+    "sensitivity", "sensitivity_ci", "specificity", "specificity_ci",
+    "ppv", "npv", "vme_rate", "me_rate",
+    "n_false_susceptible", "n_false_resistant",
+    "n_resistant_truth", "n_susceptible_truth", "resistance_prevalence",
+    "abstained_resistant", "n_determinants", "estimable", "powered",
+    "abstained", "notes",
 )
+
+
+def _rate(value: Optional[float]) -> str:
+    return "" if value is None else f"{value:.4f}"
+
+
+def _interval(result: Optional[AccuracyResult], name: str) -> str:
+    if result is None:
+        return ""
+    span = result.interval(name)
+    return "" if span is None else f"{span[0]:.4f}-{span[1]:.4f}"
 
 
 def baseline_rows(results: dict[str, DrugBaseline]) -> list[dict]:
     rows = []
     for drug, b in sorted(results.items()):
+        accuracy = b.accuracy
+        prevalence = (b.n_resistant_truth / b.n_isolates
+                      if b.n_isolates else None)
         rows.append({
             "drug": drug, "n_isolates": b.n_isolates,
             "n_answered": b.n_answered,
             "coverage": f"{b.coverage:.4f}",
             "n_errors": b.n_errors,
             "error_rate": (f"{b.error_rate:.4f}" if b.estimable else ""),
+            "sensitivity": _rate(accuracy.sensitivity if accuracy else None),
+            "sensitivity_ci": _interval(accuracy, "sensitivity"),
+            "specificity": _rate(accuracy.specificity if accuracy else None),
+            "specificity_ci": _interval(accuracy, "specificity"),
+            # Prevalence-dependent, and this cohort is not a clinical
+            # population; the manifest carries the caveat alongside.
+            "ppv": _rate(accuracy.ppv if accuracy else None),
+            "npv": _rate(accuracy.npv if accuracy else None),
+            "vme_rate": _rate(accuracy.vme_rate if accuracy else None),
+            "me_rate": _rate(accuracy.me_rate if accuracy else None),
             "n_false_susceptible": b.n_false_susceptible,
+            "n_false_resistant": (accuracy.false_positive if accuracy else 0),
             "n_resistant_truth": b.n_resistant_truth,
             "n_susceptible_truth": b.n_susceptible_truth,
+            "resistance_prevalence": _rate(prevalence),
+            # Resistant isolates the catalogue declined. Excluded from
+            # sensitivity by construction, so shown beside it: a predictor can
+            # always look sensitive by abstaining on the hard ones.
+            "abstained_resistant": (accuracy.abstained_resistant
+                                    if accuracy else 0),
             "n_determinants": b.n_determinants,
             "estimable": "yes" if b.estimable else "no",
+            "powered": ("yes" if accuracy and accuracy.powered else "no"),
             "abstained": "; ".join(f"{k}: {v}" for k, v in sorted(b.abstained.items())),
             "notes": " | ".join(b.notes),
         })
     return rows
+
+
+LINEAGE_COLUMNS = (
+    "drug", "lineage", "n_evaluable", "n_called", "sensitivity",
+    "specificity", "vme_rate", "me_rate", "n_phenotype_resistant",
+    "n_phenotype_susceptible", "powered",
+)
+
+
+def lineage_rows(results: dict[str, DrugBaseline]) -> list[dict]:
+    """Per-lineage performance, where lineages were supplied.
+
+    A pooled figure can be carried entirely by one lineage, and a tool that
+    works on Lineage 2 and fails on Lineage 4 is a different product in each
+    setting. Empty when no lineage is known, which is itself the finding: the
+    CRyPTIC reuse table carries no lineage column, so this stays empty unless
+    lineages are supplied from a metadata file.
+    """
+    rows = []
+    for drug, baseline in sorted(results.items()):
+        for lineage, score in sorted(baseline.by_lineage.items()):
+            rows.append({
+                "drug": drug, "lineage": lineage,
+                "n_evaluable": score.n_evaluable, "n_called": score.n_called,
+                "sensitivity": _rate(score.sensitivity),
+                "specificity": _rate(score.specificity),
+                "vme_rate": _rate(score.vme_rate),
+                "me_rate": _rate(score.me_rate),
+                "n_phenotype_resistant": score.n_phenotype_resistant,
+                "n_phenotype_susceptible": score.n_phenotype_susceptible,
+                "powered": "yes" if score.powered else "no",
+            })
+    return rows
+
+
+PPV_NPV_CAVEAT = (
+    "PPV and NPV depend on the prevalence of resistance in the population "
+    "tested, and this cohort is not a clinical population: CRyPTIC was "
+    "assembled to contain resistance, so its prevalence is far above what a "
+    "routine diagnostic service sees. Sensitivity and specificity transfer "
+    "between populations; PPV and NPV do not. The prevalence each pair was "
+    "computed at is in resistance_prevalence, and they must be recomputed at "
+    "a setting's own prevalence before they mean anything there."
+)
+
+
+#: Drugs worth reporting on even when this pairing cannot measure them. A
+#: benchmark that silently lists only what it happens to cover reads as a
+#: complete panel; naming the absences, and which side each is missing from,
+#: is the difference between a gap and an oversight. BPaL/M components are
+#: here because they are the backbone of modern drug-resistant TB treatment
+#: and are exactly where genomic prediction is weakest.
+DRUGS_OF_INTEREST = (
+    "bedaquiline", "pretomanid", "linezolid", "moxifloxacin",   # BPaL/M
+    "clofazimine", "delamanid",
+    "rifampicin", "isoniazid", "ethambutol", "pyrazinamide",
+    "levofloxacin", "amikacin", "kanamycin", "streptomycin",
+    "capreomycin", "ethionamide", "cycloserine", "rifabutin",
+)
+
+MEASURABILITY_COLUMNS = ("drug", "in_catalogue", "in_phenotype_source",
+                         "measurable", "missing_side", "consequence")
+
+
+def measurability(catalogue_drugs: Iterable[str],
+                  phenotype_drugs: Iterable[str],
+                  drugs: Iterable[str] = DRUGS_OF_INTEREST) -> list[dict]:
+    """Which drugs this pairing can evaluate at all, and which side is missing.
+
+    Measuring the catalogue needs both a **genotypic** side (graded
+    determinants to make a call from) and a **phenotypic** side (a laboratory
+    result to score it against). A drug missing either cannot be evaluated,
+    and the two absences have different remedies: no catalogue entry means
+    nothing can be predicted; no phenotype means a prediction cannot be
+    checked. Reporting them apart tells a reader which problem to go and solve.
+
+    Pretomanid is the case that motivates this. It is absent from the WHO
+    catalogue's fifteen drugs *and* from CRyPTIC's thirteen MIC columns, so no
+    pairing of these two sources can say anything about it — yet it is a
+    quarter of the BPaL regimen. Omitting it silently reads as an oversight;
+    naming it reads as the infrastructure gap it is.
+    """
+    catalogue_drugs = {d.lower() for d in catalogue_drugs}
+    phenotype_drugs = {d.lower() for d in phenotype_drugs}
+    rows = []
+    for drug in sorted(set(drugs)):
+        genotypic = drug.lower() in catalogue_drugs
+        phenotypic = drug.lower() in phenotype_drugs
+        if genotypic and phenotypic:
+            missing, consequence = "", "measurable from these two sources"
+        elif genotypic:
+            missing, consequence = (
+                "phenotype",
+                "a call can be made but not scored; supply a phenotype source")
+        elif phenotypic:
+            missing, consequence = (
+                "catalogue",
+                "a phenotype exists but nothing predicts it; supply graded "
+                "determinants")
+        else:
+            missing, consequence = (
+                "both",
+                "no pairing of these sources can evaluate this drug at all")
+        rows.append({
+            "drug": drug,
+            "in_catalogue": "yes" if genotypic else "no",
+            "in_phenotype_source": "yes" if phenotypic else "no",
+            "measurable": "yes" if (genotypic and phenotypic) else "no",
+            "missing_side": missing,
+            "consequence": consequence,
+        })
+    return rows
+
+
+def isolates_needed(baseline: "DrugBaseline",
+                    min_resistant: int = MIN_COVERED_FOR_RISK) -> Optional[int]:
+    """Roughly how many more isolates would make this drug estimable.
+
+    Extrapolated from the resistance prevalence observed in this sample, so it
+    is an order-of-magnitude planning figure, not a power calculation. Returned
+    rather than a bare "not estimable" because "collect about 1,200 more" is
+    something a site can act on.
+    """
+    if baseline.estimable or not baseline.n_isolates:
+        return None
+    prevalence = baseline.n_resistant_truth / baseline.n_isolates
+    if prevalence <= 0:
+        return None
+    answered_rate = baseline.n_answered / baseline.n_isolates
+    if answered_rate <= 0:
+        return None
+    needed = (min_resistant / prevalence) / answered_rate
+    return max(0, int(needed) - baseline.n_isolates)
 
 
 CAVEAT = (

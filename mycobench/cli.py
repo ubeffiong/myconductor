@@ -360,6 +360,7 @@ def _run_baseline(args) -> int:
     from datetime import datetime, timezone
 
     from .analysis import baseline as baseline_module
+    from .phenotypes import DRUG_CODES
     from .analysis.genotypes import CoordinateIndex, load_genotypes
     from .analysis.pipeline import _read_reuse_rows
     from .analysis.strata import DeterminantIndex
@@ -399,6 +400,23 @@ def _run_baseline(args) -> int:
     written = [write_rows(out_dir / "catalogue_baseline.tsv",
                           baseline_module.baseline_rows(results),
                           baseline_module.BASELINE_COLUMNS)]
+
+    # Which drugs this pairing cannot evaluate at all, and which side is
+    # missing. A benchmark listing only what it happens to cover reads as a
+    # complete panel.
+    catalogue_drugs = sorted({d for entry in json.loads(
+        catalogue.read_text(encoding="utf-8")).get("variants", [])
+        for d in entry.get("drugs", [])})
+    written.append(write_rows(
+        out_dir / "measurability.tsv",
+        baseline_module.measurability(catalogue_drugs, DRUG_CODES.values()),
+        baseline_module.MEASURABILITY_COLUMNS))
+
+    lineage_table = baseline_module.lineage_rows(results)
+    if lineage_table:
+        written.append(write_rows(out_dir / "baseline_by_lineage.tsv",
+                                  lineage_table,
+                                  baseline_module.LINEAGE_COLUMNS))
     payload = {
         "provenance": {
             "mycobench_version": __version__,
@@ -416,6 +434,14 @@ def _run_baseline(args) -> int:
             for drug, measured in sorted(results.items())
         },
         "caveat": baseline_module.CAVEAT,
+        "ppv_npv_caveat": baseline_module.PPV_NPV_CAVEAT,
+        "unmeasurable": [r for r in baseline_module.measurability(
+            catalogue_drugs, DRUG_CODES.values()) if r["measurable"] == "no"],
+        "isolates_needed": {
+            drug: baseline_module.isolates_needed(measured)
+            for drug, measured in sorted(results.items())
+            if baseline_module.isolates_needed(measured) is not None},
+        "lineage_stratified": bool(lineage_table),
     }
     manifest = out_dir / "catalogue_baseline.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)

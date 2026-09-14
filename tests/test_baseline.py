@@ -195,6 +195,220 @@ class RegistryHandoffTests(unittest.TestCase):
             self.assertIn(column, rows[0])
 
 
+class DiagnosticMetricTests(unittest.TestCase):
+    """A composite error rate cannot say which way a tool is wrong.
+
+    Missing resistance and over-calling it have opposite clinical
+    consequences — one puts a patient on a failing drug, the other withholds a
+    working one — and a single error rate averages them together. These come
+    from ``metrics.score_accuracy``, the same code that scores any engine,
+    rather than a second implementation that could drift from it.
+    """
+
+    def _cohort(self, tp=8, fn=2, tn=8, fp=2):
+        """Carriers are called R, non-carriers with full coverage are called S."""
+        isolates, truths = [], {}
+        for i in range(tp):
+            isolates.append(isolate(f"tp{i}", carries={"rpoB_S450L"},
+                                    assessed=DETERMINANTS))
+            truths[f"tp{i}"] = "R"
+        for i in range(fp):
+            isolates.append(isolate(f"fp{i}", carries={"rpoB_S450L"},
+                                    assessed=DETERMINANTS))
+            truths[f"fp{i}"] = "S"
+        for i in range(tn):
+            isolates.append(isolate(f"tn{i}", assessed=DETERMINANTS))
+            truths[f"tn{i}"] = "S"
+        for i in range(fn):
+            isolates.append(isolate(f"fn{i}", assessed=DETERMINANTS))
+            truths[f"fn{i}"] = "R"
+        return isolates, truths
+
+    def test_sensitivity_and_specificity_are_separated(self):
+        isolates, truths = self._cohort(tp=8, fn=2, tn=8, fp=2)
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertAlmostEqual(result.accuracy.sensitivity, 0.8)
+        self.assertAlmostEqual(result.accuracy.specificity, 0.8)
+
+    def test_vme_and_me_are_derived_not_declared(self):
+        """VME is 1 - sensitivity and ME is 1 - specificity, by construction."""
+        isolates, truths = self._cohort(tp=9, fn=1, tn=7, fp=3)
+        accuracy = baseline.measure_drug(DRUG, isolates, truths,
+                                         DETERMINANTS).accuracy
+        self.assertAlmostEqual(accuracy.vme_rate, 1 - accuracy.sensitivity)
+        self.assertAlmostEqual(accuracy.me_rate, 1 - accuracy.specificity)
+
+    def test_a_false_susceptible_is_a_very_major_error(self):
+        isolates, truths = self._cohort(tp=9, fn=1, tn=10, fp=0)
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertEqual(result.n_false_susceptible, 1)
+        self.assertEqual(result.accuracy.false_negative, 1)
+        self.assertGreater(result.accuracy.vme_rate, 0)
+
+    def test_a_false_resistant_is_a_major_error_and_counted_apart(self):
+        isolates, truths = self._cohort(tp=10, fn=0, tn=7, fp=3)
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertEqual(result.accuracy.false_positive, 3)
+        self.assertEqual(result.n_false_susceptible, 0)
+        self.assertEqual(result.accuracy.vme_rate, 0.0)
+
+    def test_intervals_accompany_the_point_estimates_when_powered(self):
+        # rifampicin's pre-registered target requires 30 evaluable isolates.
+        isolates, truths = self._cohort(tp=16, fn=4, tn=16, fp=4)
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertTrue(result.accuracy.powered)
+        rows = baseline.baseline_rows({DRUG: result})
+        self.assertTrue(rows[0]["sensitivity_ci"])
+        self.assertIn("-", rows[0]["sensitivity_ci"])
+        self.assertEqual(rows[0]["powered"], "yes")
+
+    def test_no_interval_is_offered_on_an_underpowered_sample(self):
+        """An interval from too few observations is a lie about precision."""
+        isolates, truths = self._cohort(tp=4, fn=1, tn=4, fp=1)
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertFalse(result.accuracy.powered)
+        rows = baseline.baseline_rows({DRUG: result})
+        self.assertEqual(rows[0]["sensitivity_ci"], "")
+        self.assertEqual(rows[0]["powered"], "no")
+        # The point estimate is still shown; only the precision claim is not.
+        self.assertTrue(rows[0]["sensitivity"])
+
+    def test_abstained_resistant_isolates_are_shown_beside_sensitivity(self):
+        """A predictor can always look sensitive by declining the hard ones."""
+        isolates, truths = self._cohort()
+        for i in range(5):
+            isolates.append(isolate(f"skip{i}", assessed=set()))
+            truths[f"skip{i}"] = "R"
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertEqual(result.accuracy.abstained_resistant, 5)
+        # Excluded from sensitivity, and the exclusion is stated.
+        self.assertEqual(result.accuracy.n_phenotype_resistant, 10)
+        self.assertTrue(any("excluded from sensitivity" in n
+                            for n in result.notes))
+
+    def test_ppv_and_npv_carry_the_prevalence_they_assume(self):
+        isolates, truths = self._cohort()
+        rows = baseline.baseline_rows(
+            {DRUG: baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)})
+        self.assertTrue(rows[0]["ppv"])
+        self.assertTrue(rows[0]["resistance_prevalence"])
+        self.assertIn("do not", baseline.PPV_NPV_CAVEAT)
+        self.assertIn("recomputed at", baseline.PPV_NPV_CAVEAT)
+
+
+class LineageStratificationTests(unittest.TestCase):
+    """A pooled figure can be carried entirely by one lineage."""
+
+    def _cohort(self):
+        isolates, truths, lineages = [], {}, {}
+        for i in range(10):
+            name = f"l2r{i}"
+            isolates.append(isolate(name, carries={"rpoB_S450L"},
+                                    assessed=DETERMINANTS))
+            truths[name] = "R"
+            lineages[name] = "L2"
+        for i in range(10):
+            name = f"l4s{i}"
+            isolates.append(isolate(name, assessed=DETERMINANTS))
+            truths[name] = "S"
+            lineages[name] = "L4"
+        return isolates, truths, lineages
+
+    def test_lineages_are_reported_separately_when_supplied(self):
+        isolates, truths, lineages = self._cohort()
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS,
+                                       lineages=lineages)
+        self.assertEqual(sorted(result.by_lineage), ["L2", "L4"])
+        self.assertEqual(result.by_lineage["L2"].n_phenotype_resistant, 10)
+        self.assertEqual(result.by_lineage["L4"].n_phenotype_susceptible, 10)
+
+    def test_a_single_unknown_bucket_is_not_stratification(self):
+        """CRyPTIC has no lineage column, so this is the common case."""
+        isolates, truths, _ = self._cohort()
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertEqual(result.by_lineage, {})
+
+    def test_lineage_rows_render_only_where_lineages_exist(self):
+        isolates, truths, lineages = self._cohort()
+        with_lineage = baseline.measure_drug(DRUG, isolates, truths,
+                                             DETERMINANTS, lineages=lineages)
+        without = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertEqual(len(baseline.lineage_rows({DRUG: with_lineage})), 2)
+        self.assertEqual(baseline.lineage_rows({DRUG: without}), [])
+        for column in baseline.LINEAGE_COLUMNS:
+            self.assertIn(column, baseline.lineage_rows({DRUG: with_lineage})[0])
+
+
+class MeasurabilityTests(unittest.TestCase):
+    """Which drugs this pairing cannot evaluate, and which side is missing."""
+
+    CATALOGUE = ("rifampicin", "isoniazid", "capreomycin", "bedaquiline")
+    PHENOTYPE = ("rifampicin", "isoniazid", "bedaquiline", "rifabutin")
+
+    def _row(self, drug):
+        rows = baseline.measurability(self.CATALOGUE, self.PHENOTYPE)
+        return {r["drug"]: r for r in rows}[drug]
+
+    def test_a_drug_in_both_sources_is_measurable(self):
+        row = self._row("rifampicin")
+        self.assertEqual(row["measurable"], "yes")
+        self.assertEqual(row["missing_side"], "")
+
+    def test_a_catalogued_drug_with_no_phenotype_names_that_side(self):
+        row = self._row("capreomycin")
+        self.assertEqual(row["measurable"], "no")
+        self.assertEqual(row["missing_side"], "phenotype")
+        self.assertIn("not scored", row["consequence"])
+
+    def test_a_phenotyped_drug_with_no_catalogue_entry_names_that_side(self):
+        row = self._row("rifabutin")
+        self.assertEqual(row["missing_side"], "catalogue")
+        self.assertIn("nothing predicts it", row["consequence"])
+
+    def test_pretomanid_is_absent_from_both_and_says_so(self):
+        """A quarter of the BPaL regimen, unmeasurable from these sources."""
+        row = self._row("pretomanid")
+        self.assertEqual(row["missing_side"], "both")
+        self.assertIn("no pairing of these sources", row["consequence"])
+
+    def test_every_bpalm_component_is_reported_on(self):
+        drugs = {r["drug"] for r in baseline.measurability(self.CATALOGUE,
+                                                           self.PHENOTYPE)}
+        for component in ("bedaquiline", "pretomanid", "linezolid",
+                          "moxifloxacin", "clofazimine"):
+            self.assertIn(component, drugs)
+
+
+class IsolatesNeededTests(unittest.TestCase):
+    """"Collect about N more" beats "not estimable"."""
+
+    def test_an_estimable_drug_needs_none(self):
+        isolates = [isolate(f"s{i}", assessed=DETERMINANTS) for i in range(12)]
+        truths = {f"s{i}": "S" for i in range(12)}
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertIsNone(baseline.isolates_needed(result))
+
+    def test_a_rare_resistance_drug_reports_a_planning_figure(self):
+        isolates, truths = [], {}
+        for i in range(8):
+            isolates.append(isolate(f"s{i}", assessed=DETERMINANTS))
+            truths[f"s{i}"] = "S"
+        isolates.append(isolate("r0", carries={"rpoB_S450L"},
+                                assessed=DETERMINANTS))
+        truths["r0"] = "R"
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertFalse(result.estimable)
+        needed = baseline.isolates_needed(result)
+        self.assertIsNotNone(needed)
+        self.assertGreater(needed, 0)
+
+    def test_a_cohort_with_no_resistance_cannot_be_extrapolated_from(self):
+        isolates = [isolate(f"s{i}", assessed=DETERMINANTS) for i in range(5)]
+        truths = {f"s{i}": "S" for i in range(5)}
+        result = baseline.measure_drug(DRUG, isolates, truths, DETERMINANTS)
+        self.assertIsNone(baseline.isolates_needed(result))
+
+
 class MeasureAcrossDrugsTests(unittest.TestCase):
     def test_binary_phenotypes_are_read_per_drug_code(self):
         index = DeterminantIndex(by_drug_label={"rifampicin": {"rpoB_S450L"}})
