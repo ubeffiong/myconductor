@@ -353,6 +353,84 @@ def _run_report(args) -> int:
 
 
 # -- analyse --------------------------------------------------------------
+
+def _run_baseline(args) -> int:
+    """Measure what the incumbent catalogue achieves on this cohort."""
+    import json
+    from datetime import datetime, timezone
+
+    from .analysis import baseline as baseline_module
+    from .analysis.genotypes import CoordinateIndex, load_genotypes
+    from .analysis.pipeline import _read_reuse_rows
+    from .analysis.strata import DeterminantIndex
+    from .cohort import write_rows
+
+    catalogue = Path(args.catalogue)
+    print(f"[baseline] catalogue  {catalogue}")
+    print(f"[baseline] VCF cache  {args.cache_dir}")
+
+    rows = _read_reuse_rows(Path(args.reuse_table))
+    coordinates = CoordinateIndex.from_catalogue(catalogue)
+    determinants = DeterminantIndex.from_catalogue(catalogue)
+    load = load_genotypes(
+        rows, coordinates, Path(args.cache_dir), limit=args.limit,
+        sample_seed=args.sample_seed, jobs=args.jobs,
+        **({"cached_only": True} if args.cached_only else {}))
+    if not load.isolates:
+        raise SystemExit(
+            "error: no isolate was genotyped; nothing can be measured")
+
+    isolates = list(load.isolates.values())
+    results = baseline_module.measure(
+        isolates, rows, determinants,
+        drugs=tuple(args.drug) if args.drug else None,
+        assessed_fraction=args.assessed_fraction)
+
+    print()
+    print(load.describe())
+    print()
+    for drug in sorted(results):
+        measured = results[drug]
+        print(f"  {measured.describe()}")
+        for note in measured.notes:
+            print(f"      note: {note}")
+
+    out_dir = Path(args.out_dir)
+    written = [write_rows(out_dir / "catalogue_baseline.tsv",
+                          baseline_module.baseline_rows(results),
+                          baseline_module.BASELINE_COLUMNS)]
+    payload = {
+        "provenance": {
+            "mycobench_version": __version__,
+            "generated_at": datetime.now(timezone.utc).strftime(
+                "%Y-%m-%dT%H:%M:%SZ"),
+            "catalogue": str(catalogue),
+            "reuse_table": str(args.reuse_table),
+            "limit": args.limit,
+            "sample_seed": args.sample_seed,
+            "assessed_fraction": args.assessed_fraction,
+            "n_isolates_genotyped": load.n_loaded,
+        },
+        "baselines": {
+            drug: measured.as_registry_baseline(args.source)
+            for drug, measured in sorted(results.items())
+        },
+        "caveat": baseline_module.CAVEAT,
+    }
+    manifest = out_dir / "catalogue_baseline.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    written.append(manifest)
+    for path in written:
+        print(f"Wrote {path}")
+
+    print()
+    print("These blocks are what a model must beat to be approved; paste one")
+    print("into a registered model's performance row as its 'baseline'.")
+    print(baseline_module.CAVEAT)
+    return 0
+
+
 def _run_analyse(args) -> int:
     from .analysis.pipeline import AnalysisError, AnalysisInputs, run, write_outputs
 
@@ -375,7 +453,9 @@ def _run_analyse(args) -> int:
         print(f"[analyse] limited to the first {args.limit} isolate(s)")
     else:
         print("[analyse] no --limit: every isolate in the reuse table will be "
-              "genotyped, which downloads ~0.3 GB of VCFs on a first run")
+              "genotyped. Measured, that is ~20 MB per isolate and ~248 GB "
+              "for the full compendium, so use --limit unless the storage is "
+              "provisioned")
 
     try:
         result = run(inputs)
@@ -548,6 +628,33 @@ def build_parser() -> argparse.ArgumentParser:
     an.add_argument("--independent-clusters", action="store_true",
                     help="Keep one deterministic representative per patient and reviewed genetic cluster.")
     an.set_defaults(func=_run_analyse)
+
+    from .analysis.baseline import ASSESSED_FRACTION_FOR_SUSCEPTIBLE
+
+    bl = sub.add_parser(
+        "baseline",
+        help="Measure what the WHO catalogue itself achieves on a cohort.")
+    bl.add_argument("--catalogue", required=True,
+                    help="INGESTED catalogue JSON.")
+    bl.add_argument("--reuse-table", required=True)
+    bl.add_argument("--cache-dir", required=True,
+                    help="Where per-isolate VCFs are cached.")
+    bl.add_argument("--out-dir", default="results/baseline")
+    bl.add_argument("--limit", type=int, default=None)
+    bl.add_argument("--sample-seed", type=int, default=None, metavar="S",
+                    help="Draw --limit isolates at random with this seed.")
+    bl.add_argument("--jobs", type=int, default=1, metavar="N")
+    bl.add_argument("--cached-only", action="store_true")
+    bl.add_argument("--drug", action="append")
+    bl.add_argument("--assessed-fraction", type=float,
+                    default=ASSESSED_FRACTION_FOR_SUSCEPTIBLE,
+                    metavar="F",
+                    help="Share of a drug's graded coordinates that must have "
+                         "been examined before 'no resistant variant found' "
+                         "may mean susceptible.")
+    bl.add_argument("--source", default="WHO catalogue",
+                    help="Name recorded as the baseline's source.")
+    bl.set_defaults(func=_run_baseline)
 
     sub.add_parser("version", help="Print version.").set_defaults(
         func=lambda _a: (print(f"mycobench {__version__}"), 0)[1])
