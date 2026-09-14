@@ -1,0 +1,503 @@
+<nav class="section-nav" id="nav">
+  <a href="#summary">Summary</a>
+  <a href="#bench">Benchmark</a>
+  <a href="#calls">Calls</a>
+  <a href="#coverage">Coverage</a>
+  <a href="#lineage">Lineage</a>
+  <a href="#evidence">Evidence</a>
+  <a href="#alignment">Alignment</a>
+  <a href="#discordance">Discordance</a>
+  <a href="#vus">VUS Workbench</a>
+  <a href="#mechanisms">Mechanisms</a>
+  <a href="#validation">Validation</a>
+  <a href="#federated">Federated</a>
+  <a href="#audit">Audit</a>
+  <a href="#interpretation">Interpretation</a>
+  <a href="#review">Review table</a>
+  <a href="#followup">Follow-up</a>
+  <a href="#qc">QC</a>
+  <a href="#methods">Methods</a>
+</nav>
+
+<main>
+
+<!-- ============ §1 SUMMARY ============ -->
+<section id="summary">
+  <div class="section-head">
+    <div class="section-kicker">§ 1 · Executive Summary</div>
+    <h2 class="section-title">__SUMMARY_TITLE__</h2>
+    <p class="section-desc">__SUMMARY_DESC__</p>
+  </div>
+
+  <div class="kpi-strip">__KPIS__</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Call state distribution</div>
+        <div class="card-note">__CALLS_NOTE__</div>
+      </div>
+      <div id="donutChart"></div>
+      <div class="legend" style="justify-content:center; margin-top:6px">
+        <div class="legend-item"><span class="legend-swatch call-res"></span> RESISTANT</div>
+        <div class="legend-item"><span class="legend-swatch call-sus"></span> SUSCEPTIBLE</div>
+        <div class="legend-item"><span class="legend-swatch call-ind"></span> INDETERMINATE</div>
+        <div class="legend-item"><span class="legend-swatch call-na"></span> NOT_ASSESSED</div>
+        <div class="legend-item"><span class="legend-swatch call-nc"></span> NO_CALL</div>
+        <div class="legend-item"><span class="legend-swatch call-un"></span> UNSUPPORTED</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Cumulative error rate by isolate order</div>
+        <div class="card-note">__TREND_NOTE__</div>
+      </div>
+      <div id="trendChart"></div>
+      <p style="font-size:11.5px; color:var(--text-2); margin-top:12px; line-height:1.6">__TREND_PROSE__</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §2 BENCHMARK ============ -->
+<section id="bench">
+  <div class="section-head">
+    <div class="section-kicker">§ 2 · Benchmark Performance</div>
+    <h2 class="section-title">Per-drug accuracy against phenotypic DST</h2>
+    <p class="section-desc">Click any card for full evidence breakdown. Drugs with fewer than 20 phenotypically resistant isolates are marked <em>not estimable</em> — they cannot support an accuracy claim.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Error rate per drug</div>
+      <div class="card-note">lower is better · amber = 5–10% · red = &gt;10%</div>
+      <div class="card-toolbar">
+        <button class="mini-btn active" onclick="setChartMode(this,'error')">Error rate</button>
+        <button class="mini-btn" onclick="setChartMode(this,'coverage')">Coverage</button>
+        <button class="mini-btn" onclick="setChartMode(this,'vme')">VME count</button>
+      </div>
+    </div>
+    <div id="drugBarChart"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Coverage vs. error rate</div>
+        <div class="card-note">each point = one drug · bubble size = evaluable n</div>
+      </div>
+      <div id="scatterChart"></div>
+      <p style="font-size:11.5px; color:var(--text-2); margin-top:10px; line-height:1.6">__SCATTER_PROSE__</p>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Very major vs. major errors</div>
+        <div class="card-note">VME = false-susceptible · ME = false-resistant</div>
+      </div>
+      <div id="errorStackChart"></div>
+      <p style="font-size:11.5px; color:var(--text-2); margin-top:10px; line-height:1.6">
+        The VME/ME ratio is the clinical safety signal. A tool that produces more MEs than VMEs is over-calling resistance; the reverse under-calls it.
+      </p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Headline benchmark table</div>
+      <div class="card-note">__HEADLINE_NOTE__</div>
+    </div>
+    <div class="heatmap-wrap">
+      <table class="perf-heatmap" id="headlineTable">
+        <thead>
+          <tr>
+            <th class="row-head">Drug</th>
+            <th>Class</th>
+            <th>Coverage</th>
+            <th>Error rate</th>
+            <th>Very major errors</th>
+            <th>Major errors</th>
+            <th>Evaluable n</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="drug-grid" id="drugGrid"></div>
+</section>
+
+<!-- ============ §3 CALLS ============ -->
+<section id="calls">
+  <div class="section-head">
+    <div class="section-kicker">§ 3 · Call Matrix</div>
+    <h2 class="section-title">Isolate × drug call states</h2>
+    <p class="section-desc">Every call, every isolate, coloured by the reconciled six-state ontology. Hover for a full tooltip; click any cell for the evidence chain. This view makes coverage-gating visible: a drug is <code>NOT_ASSESSED</code> unless its loci were sequenced.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Call matrix</div>
+      <div class="card-note">__MATRIX_NOTE__</div>
+      <div class="card-toolbar">
+        <button class="mini-btn active" onclick="setHeatmapCount(this,60)">60</button>
+        <button class="mini-btn" onclick="setHeatmapCount(this,100)">100</button>
+        <button class="mini-btn" onclick="setHeatmapCount(this,200)">200</button>
+      </div>
+    </div>
+    <div class="heatmap-wrap">
+      <div class="heatmap" id="callHeatmap"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch call-res"></span> RESISTANT</div>
+      <div class="legend-item"><span class="legend-swatch call-sus"></span> SUSCEPTIBLE</div>
+      <div class="legend-item"><span class="legend-swatch call-ind"></span> INDETERMINATE</div>
+      <div class="legend-item"><span class="legend-swatch call-na"></span> NOT_ASSESSED</div>
+      <div class="legend-item"><span class="legend-swatch call-nc"></span> NO_CALL</div>
+      <div class="legend-item"><span class="legend-swatch call-un"></span> UNSUPPORTED</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §4 COVERAGE ============ -->
+<section id="coverage">
+  <div class="section-head">
+    <div class="section-kicker">§ 4 · Coverage</div>
+    <h2 class="section-title">Locus callability across the cohort</h2>
+    <p class="section-desc">Coverage is the load-bearing precondition for every call. A drug whose defining loci are not callable cannot be reported as susceptible — this is the structural guarantee that absence of evidence is never rendered as susceptibility.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Per-locus callability profile</div>
+      <div class="card-note">fraction of isolates with ≥ 95% callable locus</div>
+    </div>
+    <div id="locusBarChart"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Callability heatmap</div>
+      <div class="card-note">locus × isolate · green = callable, amber = partial, red = absent</div>
+    </div>
+    <div class="heatmap-wrap">
+      <div class="heatmap" id="coverageHeatmap"></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--sus)"></span> ≥ 95% callable</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:#a8c94a"></span> 80 – 95%</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--ind)"></span> 50 – 80%</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--res)"></span> &lt; 50%</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §5 LINEAGE ============ -->
+<section id="lineage">
+  <div class="section-head">
+    <div class="section-kicker">§ 5 · Lineage Stratification</div>
+    <h2 class="section-title">Does the tool work everywhere?</h2>
+    <p class="section-desc">Aggregate error rates hide lineage-specific failure. This view disaggregates by lineage for every estimable drug. Cells with n &lt; 20 are marked unstable and should be treated as hypotheses rather than measurements.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Error rate by lineage × drug</div>
+        <div class="card-note">colour = error rate · value = error rate · subscript = evaluable n</div>
+      </div>
+      <div class="heatmap-wrap">
+        <table class="perf-heatmap" id="lineageTable">
+          <thead>
+            <tr>
+              <th class="row-head">Drug</th>
+              <th>L1</th><th>L2</th><th>L3</th><th>L4</th>
+              <th>Overall</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Lineage coverage balance</div>
+        <div class="card-note">per drug · deviation from cohort baseline</div>
+      </div>
+      <div id="radarChart"></div>
+      <p style="font-size:11.5px; color:var(--text-2); margin-top:10px; line-height:1.6">
+        A balanced tool performs consistently across lineages. Where a polygon is asymmetric, the tool's evidence base is lineage-biased for that drug.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §6 EVIDENCE ============ -->
+<section id="evidence">
+  <div class="section-head">
+    <div class="section-kicker">§ 6 · Evidence Composition</div>
+    <h2 class="section-title">What tier drove each call?</h2>
+    <p class="section-desc">Every call traces back to a specific evidence tier. Only <strong>catalogued</strong> and <strong>phenotypic</strong> evidence can establish resistance. This view shows the composition of evidence behind every drug's calls.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Evidence tier by drug</div>
+      <div class="card-note">percentage of calls by tier</div>
+    </div>
+    <div id="tierStackChart"></div>
+    <div class="legend" style="margin-top:14px">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--res)"></span> Catalogued (tier 1) — can establish resistance</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:#c17a86"></span> Phenotypic (site-local) — can establish resistance</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--ind)"></span> Inferred — capped at INDETERMINATE</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:#8d9b8d"></span> Predicted (ML) — capped at INDETERMINATE</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--na)"></span> Unsupported / unassessed</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §7 ALIGNMENT ============ -->
+<section id="alignment">
+  <div class="section-head">
+    <div class="section-kicker">§ 7 · Variant Alignment</div>
+    <h2 class="section-title">Called variants in context</h2>
+    <p class="section-desc">An alignment of the variants this run actually called, at their real
+    coordinates, with the reference allele beside each. Positions with no record are not drawn:
+    &ldquo;no variant was called here&rdquo; is not the same as knowing the base, and filling the gap
+    with a generated one would be inventing sequence. Click any variant for its evidence card.</p>
+  </div>
+
+  <div class="card" style="padding:14px">
+    <div class="aliview">
+      <div class="av-toolbar">
+        <label>Locus</label>
+        <select id="avLocus" onchange="renderAliView()">
+          <option value="katG">katG · codon 315 window</option>
+          <option value="rpoB">rpoB · RRDR (507–533)</option>
+          <option value="pncA">pncA · promoter + CDS</option>
+          <option value="gyrA">gyrA · QRDR (88–94)</option>
+          <option value="Rv0678">Rv0678 · efflux repressor</option>
+        </select>
+        <label>Isolates</label>
+        <select id="avCount" onchange="renderAliView()">
+          <option value="24">24</option>
+          <option value="40">40</option>
+          <option value="60">60</option>
+        </select>
+        <div class="spacer"></div>
+        <div class="av-legend">
+          <span><span class="b" style="background:var(--res)"></span>resistance-associated</span>
+          <span><span class="b" style="background:var(--ind)"></span>uncertain</span>
+          <span><span class="b" style="background:var(--bg)"></span>gap</span>
+        </div>
+      </div>
+      <div class="av-scroll">
+        <div class="av-content" id="avContent"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §8 DISCORDANCE ============ -->
+<section id="discordance">
+  <div class="section-head">
+    <div class="section-kicker">§ 8 · Discordance Workbench</div>
+    <h2 class="section-title">Where engines disagree</h2>
+    <p class="section-desc">Myconductor does not vote. It reports. Each row is a variant where at least two engines produced different calls, alongside the reconciled call and the reason for the reconciliation.</p>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden">
+    <table class="disc-table" id="discTable">
+      <thead>
+        <tr>
+          <th>Variant</th>
+          <th>Drug</th>
+          <th>TB-Profiler</th>
+          <th>Mykrobe</th>
+          <th>Myconductor</th>
+          <th>Reason</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ §9 VUS WORKBENCH ============ -->
+<section id="vus">
+  <div class="section-head">
+    <div class="section-kicker">§ 9 · VUS Workbench</div>
+    <h2 class="section-title">Variants prioritised for laboratory validation</h2>
+    <p class="section-desc">Myconductor does not predict resistance for these variants. It ranks them by the evidence that would resolve them — structural context, conservation, coverage, and catalogue proximity. The output is a research queue, not a clinical call.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Ranked VUS</div>
+      <div class="card-note">__VUS_NOTE__</div>
+      <div class="card-toolbar">
+        <button class="mini-btn active">All</button>
+        <button class="mini-btn">Structural evidence</button>
+        <button class="mini-btn">No structural evidence</button>
+        <button class="mini-btn">BDQ/CFZ</button>
+      </div>
+    </div>
+    <div class="vus-list" id="vusList"></div>
+  </div>
+</section>
+
+<!-- ============ §10 MECHANISMS ============ -->
+<section id="mechanisms">
+  <div class="section-head">
+    <div class="section-kicker">§ 10 · Mechanism Queue</div>
+    <h2 class="section-title">Efflux, regulatory, and non-catalogue mechanisms</h2>
+    <p class="section-desc">These are variants where a resistance mechanism is plausible but not measured. The call is held at INDETERMINATE with a mechanistic annotation, and the evidence gap that would resolve it is stated explicitly.</p>
+  </div>
+
+  <div class="mech-grid" id="mechGrid"></div>
+</section>
+
+<!-- ============ §11 VALIDATION ============ -->
+<section id="validation">
+  <div class="section-head">
+    <div class="section-kicker">§ 11 · Closed-Loop Validation</div>
+    <h2 class="section-title">Site-local phenotypic feedback</h2>
+    <p class="section-desc">When a laboratory validates a VUS, that result is ingested as site-local phenotypic evidence. It is <strong>never</strong> promoted to the global catalogue. The closed loop is explicitly local.</p>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Validation activity timeline</div>
+        <div class="card-note">__TIMELINE_NOTE__</div>
+      </div>
+      <div class="timeline" id="validationTimeline"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Validation outcomes</div>
+        <div class="card-note">__VALIDATION_NOTE__</div>
+      </div>
+      <div id="validationDonut"></div>
+      <div class="legend" style="justify-content:center; margin-top:8px">
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--res)"></span> Confirmed resistant</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--sus)"></span> Confirmed susceptible</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:var(--ind)"></span> Inconclusive</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ §12 FEDERATED ============ -->
+<section id="federated">
+  <div class="section-head">
+    <div class="section-kicker">§ 12 · Federated Learning</div>
+    <h2 class="section-title">Multi-site contribution summary</h2>
+    <p class="section-desc">Isolate-level data never leaves a site. What is shared is aggregated statistics with k-anonymity gating and signed submissions. This view shows which sites contributed and at what k-threshold.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Site contributions</div>
+      <div class="card-note">__FEDERATED_NOTE__</div>
+    </div>
+    <div id="siteBarChart"></div>
+  </div>
+
+  <div class="grid-3">__FEDERATED_KPIS__</div>
+</section>
+
+<!-- ============ §13 AUDIT ============ -->
+<section id="audit">
+  <div class="section-head">
+    <div class="section-kicker">§ 13 · Audit Ledger</div>
+    <h2 class="section-title">Append-only evidence trail</h2>
+    <p class="section-desc">Every catalogue update, every VUS validation, every model registration, every call that was promoted or retracted is recorded with a hash-chained entry. This is the preview; the full ledger is downloadable as JSONL.</p>
+  </div>
+
+  <div class="card" style="padding:0; overflow:hidden">
+    <table class="disc-table" id="auditTable">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Event</th>
+          <th>Actor</th>
+          <th>Target</th>
+          <th>Hash</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ============ REVIEW TABLE (preserved from the prior report) ============ -->
+<section id="review">
+  <div class="section-head">
+    <div class="section-kicker">&sect; R1 &middot; Evidence Review</div>
+    <h2 class="section-title">Per-drug conclusion and its evidence chain</h2>
+    <p class="section-desc">The reviewable table this report has always carried: every drug, the reconciled conclusion, the genomic and phenotypic components separately, whether the assay was adequate, and the reason. Expand any row for the full evidence chain with identifiers.</p>
+  </div>
+  <div class="card" style="padding:0; overflow:hidden">
+    <table class="review-table">
+      <thead><tr><th>Drug</th><th>Conclusion</th><th>Genomic evidence</th>
+        <th>Phenotype</th><th>Assay adequacy</th><th>Reason</th></tr></thead>
+      <tbody>__REVIEW_ROWS__</tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ FOLLOW-UP (preserved) ============ -->
+<section id="followup">
+  <div class="section-head">
+    <div class="section-kicker">&sect; R2 &middot; Investigation Queue</div>
+    <h2 class="section-title">Unresolved findings and their follow-up</h2>
+    <p class="section-desc">Priorities are review rules, not measured probabilities of resolution. No test is ordered and no treatment is selected here.</p>
+  </div>
+  __FOLLOWUP__
+</section>
+
+<!-- ============ QC (preserved) ============ -->
+<section id="qc">
+  <div class="section-head">
+    <div class="section-kicker">&sect; R3 &middot; Quality Control</div>
+    <h2 class="section-title">What was checked, and what was not</h2>
+    <p class="section-desc">A control that was not performed is listed as such. Absence of a failure is not evidence that a check passed.</p>
+  </div>
+  <div class="card" style="padding:0; overflow:hidden">
+    <ul class="qc-list">__QC__</ul>
+  </div>
+</section>
+
+<!-- ============ §14 INTERPRETATION ============ -->
+<section id="interpretation">
+  <div class="section-head">
+    <div class="section-kicker">§ 14 · Interpretation</div>
+    <h2 class="section-title">What this report does and does not say</h2>
+    <p class="section-desc">Numbers are only useful when their limits are stated. These interpretations are written to be auditable: each claim points at a specific cell or table above.</p>
+  </div>
+  __INTERPRETATION__
+</section>
+
+<!-- ============ §15 METHODS ============ -->
+<section id="methods">
+  <div class="section-head">
+    <div class="section-kicker">§ 15 · Methods &amp; Caveats</div>
+    <h2 class="section-title">How these numbers were produced</h2>
+  </div>
+  <div class="method-grid">__METHODS__</div>
+</section>
+
+</main>
+
+<div class="tooltip" id="tooltip"></div>
+
+<aside class="drill-panel" id="drillPanel">
+  <div class="drill-head">
+    <h3 id="drillTitle">—</h3>
+    <button class="drill-close" id="drillClose">✕</button>
+  </div>
+  <div class="drill-body" id="drillBody"></div>
+</aside>

@@ -164,9 +164,29 @@ class WorkflowTests(unittest.TestCase):
         self.assertTrue(any(c["call_changed"] for c in diff["changes"]))
 
     def test_html_escapes_laboratory_text(self):
-        text = render_html(self.report(phenotypes=[phenotype(method="<script>alert(1)</script>")]))
-        self.assertNotIn("<script>", text)
-        self.assertIn("&lt;script&gt;", text)
+        """Laboratory text must never reach the page as markup.
+
+        The report now carries its own inline runtime, so "no <script> tag
+        anywhere" is not the property to assert — it would be unsatisfiable
+        and would say nothing about injection. What matters is that the
+        *supplied* payload appears only in escaped form, on both routes into
+        the page: the HTML body, and the JSON blob the runtime reads.
+        """
+        payload = "<script>alert(1)</script>"
+        text = render_html(self.report(phenotypes=[phenotype(method=payload)]))
+
+        # The injected markup never appears as markup.
+        self.assertNotIn(payload, text)
+        self.assertNotIn("alert(1)</script>", text)
+
+        # The page's own runtime is still there and is the only script source.
+        self.assertIn("<script>", text)
+
+        # A "<" inside the injected JSON is unicode-escaped, so the payload
+        # cannot close the script element early and become executable.
+        start = text.index("window.__MYCONDUCTOR__")
+        blob = text[start:text.index("</script>", start)]
+        self.assertNotIn("<", blob)
 
     def test_fhir_references_resolve_to_unique_resources(self):
         bundle = to_fhir_bundle(self.report())
