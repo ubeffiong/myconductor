@@ -19,6 +19,8 @@ from __future__ import annotations
 
 from typing import Any, Iterable, Optional, Sequence
 
+from .labels import humanise, humanise_all, variant_name
+
 #: Call value -> the CSS class the mock's palette uses.
 CALL_CLASS = {
     "resistant": "res", "susceptible": "sus", "indeterminate": "ind",
@@ -285,9 +287,9 @@ def discordance_rows(reports: Sequence[dict]) -> list[dict]:
             rows.append({
                 "var": item.get("drug", ""),
                 "drug": code_for(item.get("drug", "")),
-                "prof": calls[0].upper() if calls else "—",
-                "myk": calls[1].upper() if len(calls) > 1 else "—",
-                "rec": "INDETERMINATE",
+                "prof": humanise(calls[0]) if calls else "—",
+                "myk": humanise(calls[1]) if len(calls) > 1 else "—",
+                "rec": humanise("indeterminate"),
                 "reason": item.get("note", ""),
                 "sources": ", ".join(sources),
                 # Populated by modules/discordance_context: model and
@@ -306,15 +308,15 @@ def vus_items(reports: Sequence[dict]) -> list[dict]:
             available = [n for n, d in dimensions.items() if d.get("available")]
             out.append({
                 "rank": rank,
-                "variant": item.get("variant_label", ""),
+                "variant": variant_name(item.get("variant_label", "")),
                 "gene": item.get("gene", ""),
                 "drug": code_for(item.get("drug") or ""),
                 # The workbench's own word, not a number invented here. A
                 # score of None means it declined to rank, and the card says so.
-                "priority": item.get("priority", "insufficient-data"),
+                "priority": humanise(item.get("priority", "insufficient-data")),
                 "score": item.get("score"),
                 "features": {
-                    "dimensions": ", ".join(available) or "none available",
+                    "dimensions": humanise_all(available) or "None available",
                     "gaps": "; ".join(item.get("data_gaps") or []) or "none recorded",
                     "experiment": item.get("recommended_experiment") or "not specified",
                 },
@@ -326,7 +328,7 @@ def mechanism_cards(reports: Sequence[dict]) -> list[dict]:
     cards = []
     for report in reports:
         for item in report.get("mechanism_queue", []) or []:
-            tags = [{"t": "ind", "l": "INDETERMINATE"}]
+            tags = [{"t": "ind", "l": humanise("indeterminate")}]
             if item.get("gene"):
                 tags.append({"t": "accent", "l": item["gene"]})
             if item.get("evidence_gaps"):
@@ -337,7 +339,8 @@ def mechanism_cards(reports: Sequence[dict]) -> list[dict]:
             if item.get("resolving_experiments"):
                 body += " Resolved by: " + "; ".join(item["resolving_experiments"])
             cards.append({
-                "title": f"{item.get('variant_label', '')} — {item.get('drug', '')}",
+                "title": (f"{variant_name(item.get('variant_label', ''))} — "
+                          f"{humanise(item.get('drug', ''))}"),
                 "body": body, "tags": tags,
             })
     return cards
@@ -397,8 +400,9 @@ def audit_events(entries: Iterable[dict]) -> list[dict]:
     out = []
     for entry in entries or []:
         out.append({
-            "ts": entry.get("timestamp") or entry.get("ts") or "",
-            "event": (entry.get("action") or entry.get("event") or "").upper(),
+            "ts": (entry.get("timestamp_utc") or entry.get("timestamp")
+                   or entry.get("ts") or ""),
+            "event": humanise(entry.get("action") or entry.get("event") or ""),
             "actor": entry.get("actor") or entry.get("reviewer") or "unknown",
             "target": entry.get("target") or entry.get("summary") or "",
             "hash": (entry.get("hash") or entry.get("entry_hash") or "")[:8],

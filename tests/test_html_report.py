@@ -21,6 +21,7 @@ from __future__ import annotations
 import json
 import re
 import unittest
+from pathlib import Path
 
 from myconductor.core.pipeline import Myconductor
 from myconductor.reporting import html_data as shape
@@ -137,8 +138,9 @@ class RealDataTests(unittest.TestCase):
 
     def test_vus_carry_the_workbench_band_not_an_invented_score(self):
         for item in self.payload["vus"]:
+            # Humanised for display; the raw band stays in the JSON payload.
             self.assertIn(item["priority"],
-                          ("high", "moderate", "low", "insufficient-data"))
+                          ("High", "Moderate", "Low", "Insufficient data"))
 
     def test_coverage_loci_come_from_the_mask(self):
         self.assertTrue(self.payload["coverage_loci"])
@@ -238,8 +240,140 @@ class CohortInputTests(unittest.TestCase):
             {"timestamp": "2026-09-14T10:22:14Z", "action": "call_promoted",
              "actor": "myconductor", "target": "x", "hash": "a3f9c2e1dead"}])
         payload = payload_of(html)
-        self.assertEqual(payload["audit"][0]["event"], "CALL_PROMOTED")
+        self.assertEqual(payload["audit"][0]["event"], "Call promoted")
         self.assertEqual(payload["audit"][0]["hash"], "a3f9c2e1")
+
+
+class ExportBarTests(unittest.TestCase):
+    """The page must be able to hand its data back.
+
+    The runtime always carried ``downloadReport``, but the bar that calls it
+    was lost when the design's header was replaced. Nothing failed and nothing
+    looked wrong; the data simply could not be got out of the page.
+    """
+
+    def setUp(self):
+        self.html = render_html(demo_report())
+
+    def test_the_bar_is_present_with_every_export(self):
+        from myconductor.reporting.html_report import DOWNLOADS
+        self.assertIn('id="downloadBar"', self.html)
+        self.assertEqual(self.html.count('<button class="dl-btn'),
+                         len(DOWNLOADS))
+        for kind, _label, _primary in DOWNLOADS:
+            self.assertIn("downloadReport('%s')" % kind, self.html, kind)
+
+    def test_exports_never_invent_coordinates(self):
+        """The design's VCF wrote 1000000 + i*100 as a position.
+
+        A VCF exists to carry coordinates. Writing a synthetic one for every
+        variant produces a file that is valid, loadable, and wrong in the only
+        field that matters.
+        """
+        runtime = (Path(__file__).resolve().parent.parent
+                   / "myconductor/reporting/assets/report.js"
+                   ).read_text(encoding="utf-8")
+        # Assert against the executable code. The runtime's own comments name
+        # the defect they guard against, and matching those would make this
+        # test pass or fail on prose rather than on behaviour.
+        code = re.sub(r"/\*.*?\*/", "", runtime, flags=re.S)
+        code = re.sub(r"^\s*//.*$", "", code, flags=re.M)
+        self.assertNotIn("1000000", code)
+        self.assertIn("alignment_loci", code)
+        # Positions come from the record, not from an index.
+        self.assertIn("v.pos", code)
+
+    def test_the_export_filename_carries_the_run(self):
+        self.assertIn("'myconductor-' + stamp + '-' + kind", self.html)
+
+
+class VusFilterTests(unittest.TestCase):
+    """The design's filter buttons had no handler at all."""
+
+    def setUp(self):
+        self.html = render_html(demo_report())
+
+    def test_every_filter_button_is_wired(self):
+        for mode in ("all", "structural", "no-structural", "unranked"):
+            self.assertIn("setVusFilter(this,'%s')" % mode, self.html, mode)
+
+    def test_the_filter_function_exists_in_the_runtime(self):
+        self.assertIn("function setVusFilter", self.html)
+        self.assertIn("function vusMatches", self.html)
+
+
+class ReadableLabelTests(unittest.TestCase):
+    """Internal identifiers must not reach a reader.
+
+    ``not_assessed``, ``mtbc_vs_ntm``, ``_ranking_basis`` are written for code.
+    They are not wrong on screen, merely unreadable — and a reader who cannot
+    parse a label stops reading the value beside it.
+    """
+
+    def setUp(self):
+        self.html = render_html(demo_report())
+        self.markup = re.sub(r"<(script|style).*?</>", "", self.html,
+                             flags=re.S)
+        self.text = re.sub(r"<[^>]+>", " ", self.markup)
+
+    def test_no_snake_case_identifier_is_displayed(self):
+        leaked = sorted(set(re.findall(r"[a-z]+_[a-z_]+", self.text)))
+        # A variant name such as eis_c.-10G>A is an identifier, not a label.
+        leaked = [t for t in leaked if not t.endswith("_c")]
+        self.assertEqual(leaked, [], leaked)
+
+    def test_no_screaming_enum_is_displayed(self):
+        leaked = sorted(set(re.findall(r"[A-Z]{2,}_[A-Z_]+", self.text)))
+        self.assertEqual(leaked, [], leaked)
+
+    def test_specific_terms_read_as_english(self):
+        for expected in ("Not assessed", "Not performed"):
+            self.assertIn(expected, self.text, expected)
+
+    def test_acronyms_are_not_sentence_cased(self):
+        from myconductor.reporting.labels import humanise
+        self.assertEqual(humanise("mtbc_vs_ntm"), "MTBC vs NTM")
+        self.assertEqual(humanise("mic_association"), "MIC association")
+        self.assertEqual(humanise("ppv"), "PPV")
+
+    def test_an_unknown_token_still_reads_sensibly(self):
+        from myconductor.reporting.labels import humanise
+        self.assertEqual(humanise("some_new_field"), "Some new field")
+        self.assertEqual(humanise("someNewField"), "Some new field")
+
+    def test_the_label_map_travels_in_the_payload(self):
+        """One source of truth, so the runtime cannot drift from Python."""
+        payload = payload_of(self.html)
+        self.assertIn("labels", payload)
+        self.assertEqual(payload["labels"]["not_assessed"], "Not assessed")
+
+    def test_a_variant_name_keeps_its_gene_case(self):
+        from myconductor.reporting.labels import variant_name
+        self.assertEqual(variant_name("Rv0678_L117R"), "Rv0678 L117R")
+
+
+class DrillPanelTests(unittest.TestCase):
+    """Drill-downs must not throw on a record that is not there."""
+
+    def setUp(self):
+        self.html = render_html(demo_report())
+
+    def test_every_drill_handler_is_present(self):
+        for fn in ("openDrugDrill", "openCallDrill", "openVariantDrill",
+                   "openVUSDrill", "openMechDrill", "openPanel"):
+            self.assertIn("function %s" % fn, self.html, fn)
+
+    def test_handlers_guard_a_missing_record(self):
+        runtime = (Path(__file__).resolve().parent.parent
+                   / "myconductor/reporting/assets/report.js"
+                   ).read_text(encoding="utf-8")
+        for fn in ("openDrugDrill", "openMechDrill"):
+            block = runtime[runtime.index("function %s" % fn):][:320]
+            self.assertIn("return;", block, fn)
+
+    def test_the_drill_panel_exists_to_receive_them(self):
+        self.assertIn('id="drillPanel"', self.html)
+        self.assertIn('id="drillBody"', self.html)
 
 
 if __name__ == "__main__":

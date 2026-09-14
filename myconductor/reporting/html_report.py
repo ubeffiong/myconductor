@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional, Sequence
 
 from . import html_data as shape
+from .labels import EXPLICIT, humanise, variant_name
 from .json_report import report_dict
 
 ASSETS = Path(__file__).resolve().parent / "assets"
@@ -54,11 +55,11 @@ def _review_rows(data: dict) -> str:
     rows = []
     for result in data.get("drug_results", []):
         cells = [
-            result.get("drug", ""),
-            result.get("call", ""),
-            result.get("genomic_call") or "unavailable",
-            result.get("phenotypic_call") or "not measured",
-            result.get("assay_status", ""),
+            result.get("drug", "").capitalize(),
+            humanise(result.get("call", "")),
+            humanise(result.get("genomic_call")) or "Unavailable",
+            humanise(result.get("phenotypic_call")) or "Not measured",
+            humanise(result.get("assay_status", "")),
             result.get("reason") or "",
         ]
         evidence = "".join(
@@ -106,8 +107,9 @@ def _qc(data: dict) -> str:
         status = (check.get("status") or "").lower()
         cls = _QC_CLASS.get(status, "qc-none")
         items.append(
-            f'<li><span class="qc-status {cls}">{_esc(status or "not performed")}</span>'
-            f'<span><strong>{_esc(check.get("check", ""))}</strong> — '
+            f'<li><span class="qc-status {cls}">'
+            f'{_esc(humanise(status or "not_performed"))}</span>'
+            f'<span><strong>{_esc(humanise(check.get("check", "")))}</strong> — '
             f'{_esc(check.get("detail", ""))}</span></li>')
     return "".join(items) or (
         '<li><span class="qc-status qc-none">none</span>'
@@ -285,6 +287,39 @@ def _methods(data: dict, drugs: Sequence[dict], n_samples: int,
         f'<div class="method-item"><h4>{title}</h4><p>{body}</p></div>'
         for title, body in items)
 
+
+
+#: The export bar. Restoring this mattered more than it looks: the runtime
+#: always carried ``downloadReport``, but the bar was lost when the design's
+#: header was replaced, so nothing could reach it and a reader had no way to
+#: get the data back out of the page.
+DOWNLOADS = (
+    ("json", "Full report (JSON)", True),
+    ("calls", "Call matrix (CSV)", False),
+    ("bench", "Benchmark (CSV)", False),
+    ("disc", "Discordance (TSV)", False),
+    ("vcf", "Variants (VCF)", False),
+    ("coverage", "Coverage (TSV)", False),
+    ("audit", "Audit ledger (JSONL)", False),
+    ("html", "This report (HTML)", False),
+)
+
+_DL_ICON = (
+    '<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">'
+    '<path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12v1.5A1.5 1.5 0 003.5 15h9a1.5'
+    ' 1.5 0 001.5-1.5V12" fill="none" stroke="currentColor" stroke-width="1.5"'
+    ' stroke-linecap="round" stroke-linejoin="round"/></svg>')
+
+
+def _download_bar() -> str:
+    buttons = []
+    for kind, label, primary in DOWNLOADS:
+        cls = "dl-btn primary" if primary else "dl-btn"
+        onclick = "downloadReport('" + kind + "')"
+        buttons.append('<button class="' + cls + '" onclick="' + onclick
+                       + '">' + _DL_ICON + _esc(label) + "</button>")
+    return ('<div class="download-bar" id="downloadBar">'
+            + "".join(buttons) + "</div>")
 
 # -- summary figures ------------------------------------------------------
 def _kpi(label: str, value: Any, sub: str, tone: str = "") -> str:
@@ -523,6 +558,9 @@ def render_html(report,
         "federated_sites": list(federated_sites or []),
         "error_trend": list(error_trend or []),
         "measurability": list(measurability or []),
+        # One label source for both sides, so the runtime and the
+        # renderer cannot drift into two spellings of one term.
+        "labels": dict(EXPLICIT),
     }
 
     body = _asset("body.html")
@@ -562,6 +600,7 @@ def render_html(report,
         'susceptibility · governed evidence. Nothing in this document is a '
         'clinical decision.</p>\n'
         f'  <div class="meta-grid">{_meta(data, drugs, len(reports), lineages)}</div>\n'
+        + '  ' + _download_bar() + '\n'
         '</header>\n'
         + body +
         '\n<div class="tooltip" id="tooltip"></div>\n'

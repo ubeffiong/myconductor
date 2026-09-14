@@ -346,7 +346,7 @@ function drugRowHover(e, id){
   showTip(e, `<div class="tt-head"><div class="tt-title">${d.name} · ${d.id}</div><div class="tt-sub">${d.cls}</div></div>
     <div class="tt-body">
       <div class="tt-row"><span class="tt-k">Coverage</span><span class="tt-v">${pct(d.coverage)}</span></div>
-      <div class="tt-row"><span class="tt-k">Error rate</span><span class="tt-v">${d.estimable?d.error+'%':'not estimable'}</span></div>
+      <div class="tt-row"><span class="tt-k">Error rate</span><span class="tt-v">${d.estimable ? pct(d.error) : 'Not estimable'}</span></div>
       <div class="tt-row"><span class="tt-k">Evaluable n</span><span class="tt-v">${d.evaluable||'—'}</span></div>
       <div class="tt-section"><div class="tt-note">Click for full evidence breakdown.</div></div>
     </div>`);
@@ -790,7 +790,12 @@ function discHover(e, row){
 function renderVUS(){
   if(!(VUS_ITEMS) || !(VUS_ITEMS).length){ return emptyState('vusList', 'No variants queued for validation', 'The workbench ranked nothing in this run.'); }
   const list = document.getElementById('vusList');
-  list.innerHTML = VUS_ITEMS.map(v => {
+  const shown = VUS_ITEMS.filter(vusMatches);
+  if(!shown.length){
+    return emptyState('vusList', 'No variant matches this filter',
+      'Every variant was excluded by the current selection. Choose All to see the whole queue.');
+  }
+  list.innerHTML = shown.map(v => {
     const f = v.features || {};
     /* The workbench emits a priority *band* and, only where it could rank,
        a score. A band without a score is shown as a band: inventing a
@@ -954,6 +959,7 @@ document.getElementById('drillClose').addEventListener('click', ()=>panel.classL
 
 function openDrugDrill(id){
   const d = DRUGS.find(x=>x.id===id);
+  if(!d) return;
   const body = `
     <div class="drill-section">
       <h4>Identity</h4>
@@ -993,7 +999,11 @@ function openDrugDrill(id){
 
 function openCallDrill(d){
   const drug = DRUGS.find(x=>x.id===d.drug);
-  const call = d.call.toUpperCase();
+  if(!drug) return;
+  const longForm = { res:'resistant', sus:'susceptible',
+                     ind:'indeterminate', nc:'no_call',
+                     un:'unsupported', na:'not_assessed' };
+  const call = lbl(longForm[d.call] || 'not_assessed');
   const callClass = { res:'res', sus:'sus', ind:'ind' }[d.call] || 'na';
   const body = `
     <div class="drill-section">
@@ -1113,6 +1123,7 @@ function openVUSDrill(rank){
 
 function openMechDrill(i){
   const m = MECH_CARDS[i];
+  if(!m) return;
   const body = `
     <div class="drill-section">
       <h4>Mechanism</h4>
@@ -1136,34 +1147,169 @@ function openMechDrill(i){
 /* ==========================================================
    DOWNLOADS
    ========================================================== */
+const LABELS = DATA.labels || {};
+
+/* Display labels come from the renderer, so Python and this runtime cannot
+   drift into two spellings of the same term. An unknown token falls back to a
+   mechanical rule rather than rendering raw. */
+function lbl(token){
+  if(token === null || token === undefined || token === '') return '—';
+  const key = String(token);
+  if(LABELS[key]) return LABELS[key];
+  if(LABELS[key.toLowerCase()]) return LABELS[key.toLowerCase()];
+  const words = key.replace(/^_+/, '').split(/[\s_\-.\/]+/).filter(Boolean);
+  if(!words.length) return key;
+  return words.map(function(w, i){
+    return i === 0 ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+                   : w.toLowerCase();
+  }).join(' ');
+}
+
+/* ==========================================================
+   EXPORTS
+   ========================================================== */
 function downloadReport(kind){
+  /* Every export is built from the injected payload. The design this was
+     ported from wrote a VCF whose coordinates were 1000000 + i*100 - an
+     invented position for every variant, in a file format whose entire
+     purpose is coordinates. An export that cannot be built from real data
+     emits a header comment saying so and writes no rows. */
+  const run = DATA.run || {};
+  const stamp = run.sample_id || 'report';
+  const NL = String.fromCharCode(10);
+  const TAB = String.fromCharCode(9);
+
   const payloads = {
-    json: () => JSON.stringify({ run: DATA.run || {}, drugs:DRUGS, vus:VUS_ITEMS, discordance:DISCORDANCE_ROWS, audit:AUDIT_EVENTS, coverage_loci:COVERAGE_LOCI, lineages:LINEAGES }, null, 2),
-    calls: () => {
-      let csv = 'isolate,lineage,' + DRUGS.map(d=>d.id).join(',') + '\n';
-      (isolateData||[]).slice(0,400).forEach(iso=>{
-        csv += `${iso.id},${iso.lin},` + DRUGS.map(d=>iso.calls[d.id]).join(',') + '\n';
+    json: function(){
+      return JSON.stringify({
+        run: run, drugs: DRUGS, vus: VUS_ITEMS, discordance: DISCORDANCE_ROWS,
+        audit: AUDIT_EVENTS, coverage_loci: COVERAGE_LOCI, lineages: LINEAGES,
+        call_distribution: DATA.call_distribution || [],
+        alignment: DATA.alignment_loci || {}, tiers: DATA.tiers || {},
+        mechanisms: MECH_CARDS, measurability: DATA.measurability || [],
+        lineage_strata: DATA.lineage || {}
+      }, null, 2);
+    },
+
+    calls: function(){
+      const rows = DATA.isolates || [];
+      let csv = '# myconductor call matrix. Six states; only susceptible admits a drug.' + NL;
+      csv += 'sample,lineage,' + DRUGS.map(function(d){ return d.id; }).join(',') + NL;
+      if(!rows.length){ return csv + '# no per-sample call matrix in this run' + NL; }
+      rows.forEach(function(iso){
+        csv += iso.id + ',' + (iso.lin || 'untyped') + ','
+             + DRUGS.map(function(d){ return iso.calls[d.id] || 'na'; }).join(',') + NL;
       });
       return csv;
     },
-    bench: () => 'drug,abbreviation,class,coverage,error_rate,vme,me,evaluable_n\n' + DRUGS.map(d=>`${d.name},${d.id},${d.cls},${d.coverage??'NA'},${d.error??'NA'},${d.vme??'NA'},${d.me??'NA'},${d.evaluable??'NA'}`).join('\n'),
-    disc: () => 'variant\tdrug\ttb_profiler\tmykrobe\tmyconductor\treason\n' + DISCORDANCE_ROWS.map(r=>`${r.var}\t${r.drug}\t${r.prof}\t${r.myk}\t${r.rec}\t${r.reason}`).join('\n'),
-    vcf: () => '##fileformat=VCFv4.2\n##source=myconductor\n##reference=NC_000962.3\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n' +
-      VUS_ITEMS.map((v,i)=>`NC_000962.3\t${1000000 + i*100}\t.\tA\tG\t100\tPASS\tGENE=${v.gene};PRIORITY=${v.priority}`).join('\n'),
-    coverage: () => 'chrom\tstart\tend\tlocus\tdrug\tcallable_pct\n' + COVERAGE_LOCI.map(l=>`NC_000962.3\t0\t0\t${l.id}\t${l.drug}\t${l.callable}`).join('\n'),
-    audit: () => AUDIT_EVENTS.map(a=>JSON.stringify(a)).join('\n'),
-    html: () => document.documentElement.outerHTML,
+
+    bench: function(){
+      const f = function(v){ return (v === null || v === undefined) ? '' : v; };
+      let csv = '# Blank accuracy columns mean the drug was not estimable in this run.' + NL;
+      csv += 'drug,abbreviation,class,coverage_pct,error_rate_pct,sensitivity,'
+           + 'specificity,ppv,npv,vme,me,evaluable_n,estimable' + NL;
+      DRUGS.forEach(function(d){
+        csv += [d.name, d.id, d.cls, f(d.coverage), f(d.error), f(d.sensitivity),
+                f(d.specificity), f(d.ppv), f(d.npv), f(d.vme), f(d.me),
+                f(d.evaluable), d.estimable ? 'yes' : 'no'].join(',') + NL;
+      });
+      return csv;
+    },
+
+    disc: function(){
+      let tsv = '# Discordance is retained, never resolved by vote. Context is display only.' + NL;
+      tsv += ['drug','sources','calls','reconciled','reason','context'].join(TAB) + NL;
+      if(!DISCORDANCE_ROWS.length){ return tsv + '# no discordance in this run' + NL; }
+      DISCORDANCE_ROWS.forEach(function(r){
+        const calls = [r.prof, r.myk].filter(Boolean).join('/');
+        tsv += [r.drug, r.sources || '', calls, r.rec,
+                String(r.reason || '').split(TAB).join(' '),
+                (r.context || []).join(' | ').split(TAB).join(' ')].join(TAB) + NL;
+      });
+      return tsv;
+    },
+
+    vcf: function(){
+      const loci = DATA.alignment_loci || {};
+      let out = '##fileformat=VCFv4.2' + NL + '##source=myconductor' + NL;
+      out += '##reference=' + (run.reference_assembly || 'unspecified') + NL;
+      out += '##INFO=<ID=GENE,Number=1,Type=String,Description="Locus">' + NL;
+      out += '##INFO=<ID=CATALOGUED,Number=0,Type=Flag,Description="Graded catalogue entry">' + NL;
+      out += ['#CHROM','POS','ID','REF','ALT','QUAL','FILTER','INFO'].join(TAB) + NL;
+      const rows = [];
+      Object.keys(loci).forEach(function(gene){
+        (loci[gene].positions || []).forEach(function(v){
+          let info = 'GENE=' + gene;
+          if(v.catalogued){ info += ';CATALOGUED'; }
+          if(v.drugs && v.drugs.length){ info += ';DRUGS=' + v.drugs.join('|'); }
+          rows.push([loci[gene].assembly || '.', v.pos, '.', v.ref, v.alt,
+                     '.', 'PASS', info].join(TAB));
+        });
+      });
+      if(!rows.length){
+        return out + '##note=No coordinate-resolved variant in this run. '
+             + 'Positions are never invented, so no records are written.' + NL;
+      }
+      return out + rows.join(NL) + NL;
+    },
+
+    coverage: function(){
+      let out = '# BED requires real locus spans. This profile does not carry them,' + NL
+              + '# so callable fractions are exported as a table rather than as BED' + NL
+              + '# intervals with invented start and end coordinates.' + NL;
+      out += ['locus','drugs','callable_pct'].join(TAB) + NL;
+      if(!COVERAGE_LOCI.length){ return out + '# no callable-locus evidence supplied' + NL; }
+      COVERAGE_LOCI.forEach(function(l){
+        const c = (l.callable === null || l.callable === undefined) ? '' : l.callable;
+        out += [l.id, l.drug, c].join(TAB) + NL;
+      });
+      return out;
+    },
+
+    audit: function(){
+      if(!AUDIT_EVENTS.length){
+        return '{"note":"no ledger was supplied to this report"}' + NL;
+      }
+      return AUDIT_EVENTS.map(function(a){ return JSON.stringify(a); }).join(NL) + NL;
+    },
+
+    html: function(){
+      return '<!doctype html>' + NL + document.documentElement.outerHTML;
+    }
   };
-  const ext = { json:'json', calls:'csv', bench:'csv', disc:'tsv', vcf:'vcf', coverage:'bed', audit:'jsonl', html:'html' }[kind];
-  const mime = { json:'application/json', csv:'text/csv', tsv:'text/tab-separated-values', vcf:'text/plain', bed:'text/plain', jsonl:'application/x-ndjson', html:'text/html' }[kind];
-  const content = payloads[kind]();
-  const blob = new Blob([content], { type: mime });
+
+  const ext = { json:'json', calls:'csv', bench:'csv', disc:'tsv', vcf:'vcf',
+                coverage:'tsv', audit:'jsonl', html:'html' }[kind];
+  const mime = { json:'application/json', csv:'text/csv',
+                 tsv:'text/tab-separated-values', vcf:'text/plain',
+                 jsonl:'application/x-ndjson', html:'text/html' }[ext] || 'text/plain';
+  const blob = new Blob([payloads[kind]()], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `myconductor-report-${kind}.${ext}`;
+  a.download = 'myconductor-' + stamp + '-' + kind + '.' + ext;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/* ==========================================================
+   VUS FILTERS
+   ========================================================== */
+let vusFilter = 'all';
+function setVusFilter(btn, mode){
+  document.querySelectorAll('#vus .card-toolbar .mini-btn')
+    .forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  vusFilter = mode;
+  renderVUS();
+}
+function vusMatches(v){
+  const dims = String((v.features || {}).dimensions || '').toLowerCase();
+  const structural = dims.indexOf('structural') >= 0 || dims.indexOf('ligand') >= 0;
+  if(vusFilter === 'structural'){ return structural; }
+  if(vusFilter === 'no-structural'){ return !structural; }
+  if(vusFilter === 'unranked'){ return v.score === null || v.score === undefined; }
+  return true;
 }
 
 /* ==========================================================

@@ -336,10 +336,10 @@
       <div class="card-title">Ranked VUS</div>
       <div class="card-note">__VUS_NOTE__</div>
       <div class="card-toolbar">
-        <button class="mini-btn active">All</button>
-        <button class="mini-btn">Structural evidence</button>
-        <button class="mini-btn">No structural evidence</button>
-        <button class="mini-btn">BDQ/CFZ</button>
+        <button class="mini-btn active" onclick="setVusFilter(this,'all')">All</button>
+        <button class="mini-btn" onclick="setVusFilter(this,'structural')">Structural evidence</button>
+        <button class="mini-btn" onclick="setVusFilter(this,'no-structural')">No structural evidence</button>
+        <button class="mini-btn" onclick="setVusFilter(this,'unranked')">Unranked</button>
       </div>
     </div>
     <div class="vus-list" id="vusList"></div>
