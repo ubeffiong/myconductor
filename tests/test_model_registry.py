@@ -94,6 +94,19 @@ class BaselineFalsificationTests(unittest.TestCase):
                                        base_coverage=0.90)])
         self.assertIn("abstains more than the incumbent", str(caught.exception))
 
+    def test_matching_the_incumbent_exactly_is_not_beating_it(self):
+        """A tie earns nothing.
+
+        Approving a model that performs identically to the catalogue buys an
+        unvalidated dependency, a training provenance to maintain and a second
+        thing that can drift, in exchange for accuracy already on hand.
+        """
+        with self.assertRaises(ValueError) as caught:
+            self._approve([performance(call_rate=0.90, error_rate=0.08,
+                                       base_coverage=0.90, base_error=0.08)])
+        self.assertIn("nothing gained for the added dependency",
+                      str(caught.exception))
+
     def test_one_failing_scope_refuses_the_whole_approval(self):
         good = performance(drug="drug-a")
         bad = performance(drug="drug-b", error_rate=0.30)

@@ -56,11 +56,20 @@ def baseline_verdict(row: dict, margin: float = MIN_ERROR_MARGIN) -> tuple[bool,
             f"answers {coverage:.0%} of isolates where {baseline['source']} "
             f"answers {base_coverage:.0%}; a model that abstains more than the "
             f"incumbent has not reduced the unanswered fraction")
-    if error > base_error - margin:
+    # Strictly better, not merely equal. A model that matches the incumbent has
+    # earned nothing: approving it adds an unvalidated dependency, a training
+    # provenance to maintain and a second thing that can drift, in exchange for
+    # the accuracy already on hand. "Beats" has to mean beats.
+    if error >= base_error - margin:
+        verb = "matches" if error == base_error else "errs on"
+        detail = (f"matches {baseline['source']} at {base_error:.1%}"
+                  if error == base_error else
+                  f"errs on {error:.1%} where {baseline['source']} errs on "
+                  f"{base_error:.1%}")
         return False, (
-            f"errs on {error:.1%} of the isolates it answers where "
-            f"{baseline['source']} errs on {base_error:.1%} at "
-            f"{base_coverage:.0%} coverage; no improvement to deploy")
+            f"{detail} at {base_coverage:.0%} coverage; no improvement to "
+            f"deploy" + ("" if verb == "errs on" else
+                         " and nothing gained for the added dependency"))
     return True, (
         f"answers {coverage:.0%} versus {base_coverage:.0%} and errs on "
         f"{error:.1%} versus {base_error:.1%} against {baseline['source']}")

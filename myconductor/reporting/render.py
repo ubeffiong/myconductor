@@ -100,6 +100,11 @@ def render_text(report: AnalysisReport) -> str:
             lines.append(f"   ! {d.drug}: {'/'.join(d.calls)} "
                          f"from {', '.join(d.sources)}")
             lines.append(f"       {_wrap(d.note, 7)}")
+            if d.context:
+                # Shown to inform the reader's judgement, never to make it.
+                lines.append("       context (does not resolve the conflict):")
+                for signal in d.context:
+                    lines.append(f"         - {_wrap(signal, 11)}")
 
     # -- minority alleles --------------------------------------------------
     if report.heteroresistance:

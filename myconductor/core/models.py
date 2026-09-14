@@ -431,6 +431,12 @@ class Discordance:
     calls: tuple[str, ...]
     sources: tuple[str, ...]
     note: str
+    #: Signals shown beside the conflict to help a human adjudicate it —
+    #: model predictions, imported structural annotations. Display only. They
+    #: are not counted, not voted with, and cannot change ``calls`` or the
+    #: conclusion in ``note``: a discordance resolved by an unvalidated model
+    #: would be exactly the black-box override this design exists to avoid.
+    context: tuple[str, ...] = ()
 
 
 @dataclass
