@@ -186,6 +186,11 @@ class BaselineComparison:
     matched: Optional[RiskCoveragePoint]
     verdict: str
     reasons: list[str] = field(default_factory=list)
+    #: Which baseline this was compared against (e.g. "WHO catalogue,
+    #: nigeria-v1 cohort"). Optional because a caller comparing against an
+    #: ad hoc number may not have a citable source; ``None`` here is a
+    #: legitimate "not recorded", not an empty string standing in for one.
+    baseline_source: Optional[str] = None
 
     @property
     def passed(self) -> bool:

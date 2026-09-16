@@ -465,5 +465,119 @@ class DrillPanelTests(unittest.TestCase):
         self.assertIn('id="drillBody"', self.html)
 
 
+class ExternalBenchmarkGridTests(unittest.TestCase):
+    """The section prose promises green/red/amber for the model verdict;
+    the renderer and its CSS must actually exist, not just the promise."""
+
+    ROW = {
+        "model_id": "vus-classifier", "model_version": "2.1",
+        "drug": "rifampicin", "lineage": "L2", "cohort": "external-eval",
+        "source": "bring-your-own", "call_rate": "0.62", "error_rate": "0.03",
+        "baseline_coverage": "0.95", "baseline_error_rate": "0.10",
+        "matched_coverage": "0.95", "matched_error_rate": "0.04",
+        "sensitivity": "0.9", "specificity": "0.95",
+        "n_evaluable": "40", "n_called": "38", "n_dropped": "2",
+        "verdict": "beats-baseline", "registry_ready": "yes",
+        "notes": "selective risk 0.040 versus baseline 0.100",
+    }
+
+    def test_the_renderer_and_its_styling_both_exist(self):
+        runtime = (Path(__file__).resolve().parent.parent
+                   / "myconductor/reporting/assets/report.js"
+                   ).read_text(encoding="utf-8")
+        self.assertIn("function renderExternalBenchmarks", runtime)
+        self.assertIn("renderExternalBenchmarks();", runtime)
+        css = (Path(__file__).resolve().parent.parent
+              / "myconductor/reporting/assets/report.css"
+              ).read_text(encoding="utf-8")
+        self.assertIn(".external-benchmark-grid", css)
+        self.assertIn(".eb-card", css)
+
+    def test_a_supplied_benchmark_row_reaches_the_payload(self):
+        html = render_html(demo_report(), external_benchmark_rows=[self.ROW])
+        benchmarks = payload_of(html)["external_benchmarks"]
+        self.assertEqual(len(benchmarks), 1)
+        self.assertEqual(benchmarks[0]["verdict_key"], "beats-baseline")
+        self.assertIn("externalBenchmarkGrid", html)
+
+    def test_no_benchmark_row_is_an_empty_grid_not_a_missing_one(self):
+        html = render_html(demo_report())
+        self.assertEqual(payload_of(html)["external_benchmarks"], [])
+
+
+class DiscordanceTicketTests(unittest.TestCase):
+    """A ticket this run itself opened (genomic vs. phenotypic disagreement),
+    distinct from the externally supplied watch-list aggregate."""
+
+    TICKET = {
+        "ticket_id": "abc123def456", "sample_id": "demo-sample",
+        "isolate_id": "iso-1", "site_id": "site-A", "organism": "mtbc",
+        "drug": "rifampicin", "genomic_call": "resistant",
+        "phenotypic_call": "susceptible", "source": "fingerprint-xyz",
+        "timestamp": "2026-01-01T00:00:00+00:00",
+        "candidate_mechanisms": [], "evidence_gaps": ["repeat the DST"],
+        "status": "open", "resolution": "",
+    }
+
+    def _html_with_ticket(self):
+        report = demo_report()
+        report.discordance_tickets = [dict(self.TICKET,
+                                           sample_id=report.sample_id)]
+        return render_html(report)
+
+    def test_a_ticket_reaches_the_payload_with_readable_calls(self):
+        payload = payload_of(self._html_with_ticket())
+        tickets = payload["discordance_tickets"]
+        self.assertEqual(len(tickets), 1)
+        self.assertEqual(tickets[0]["genomic_call_key"], "res")
+        self.assertEqual(tickets[0]["phenotypic_call_key"], "sus")
+
+    def test_the_section_and_renderer_exist(self):
+        html = self._html_with_ticket()
+        self.assertIn('id="discordance-tickets"', html)
+        self.assertIn('id="discordanceTicketTable"', html)
+        runtime = (Path(__file__).resolve().parent.parent
+                   / "myconductor/reporting/assets/report.js"
+                   ).read_text(encoding="utf-8")
+        self.assertIn("function renderDiscordanceTickets", runtime)
+
+    def test_no_ticket_is_an_empty_state_not_a_missing_section(self):
+        payload = payload_of(render_html(demo_report()))
+        self.assertEqual(payload["discordance_tickets"], [])
+
+
+class SampleDrilldownTests(unittest.TestCase):
+    """The select/filter markup existed before with no renderer behind it —
+    this is the fix, not new decoration."""
+
+    def test_the_runtime_defines_what_the_markup_calls(self):
+        html = render_html(demo_report())
+        self.assertIn('onchange="renderSampleDrilldown(this.value)"', html)
+        runtime = (Path(__file__).resolve().parent.parent
+                   / "myconductor/reporting/assets/report.js"
+                   ).read_text(encoding="utf-8")
+        self.assertIn("function renderSampleDrilldown", runtime)
+        self.assertIn("function initSampleFilter", runtime)
+        self.assertIn("initSampleFilter();", runtime)
+
+    def test_the_current_sample_is_carried_in_the_payload(self):
+        report = demo_report()
+        payload = payload_of(render_html(report))
+        details = payload["sample_details"]
+        self.assertIn(report.sample_id, details)
+        entry = details[report.sample_id]
+        self.assertIn("drug_calls", entry)
+        self.assertIn("coverage", entry)
+        self.assertTrue(entry["drug_calls"])
+
+    def test_a_second_isolate_in_a_cohort_gets_its_own_entry(self):
+        primary = demo_report()
+        second = demo_report()
+        second.sample_id = "second-isolate"
+        html = render_html(primary, extra_reports=[second])
+        details = payload_of(html)["sample_details"]
+        self.assertEqual(set(details), {primary.sample_id, "second-isolate"})
+
+
 if __name__ == "__main__":
     unittest.main()

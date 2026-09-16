@@ -15,6 +15,9 @@ const EPISTASIS = DATA.epistasis || [];
 const WATCHLIST = DATA.watchlist || [];
 const WORKFLOWS = DATA.workflows || {};
 const DISCORDANCE_ROWS = DATA.discordance || [];
+const DISCORDANCE_TICKETS = DATA.discordance_tickets || [];
+const SAMPLE_DETAILS = DATA.sample_details || {};
+const EXTERNAL_BENCHMARKS = DATA.external_benchmarks || [];
 const AUDIT_EVENTS = DATA.audit || [];
 
 /* ==========================================================
@@ -34,6 +37,20 @@ function pct(v, digits){ return (v === null || v === undefined || Number.isNaN(v
 function num(v){ return (v === null || v === undefined) ? '—' : v; }
 function esc(v){ return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
 function pctFraction(v, digits){ return (v === null || v === undefined || Number.isNaN(v)) ? '—' : (Number(v) * 100).toFixed(digits === undefined ? 1 : digits) + '%'; }
+
+/* Status words this report shows (ticket/watchlist lifecycle, benchmark
+   verdicts) get one shared tone mapping, so "open"/"resolved"/"beats
+   baseline" read the same amber/green/red semantics as a call state does. */
+function statusTone(status){
+  const key = String(status || '').toLowerCase().replace(/[\s-]+/g, '_');
+  if(['resolved', 'beats_baseline', 'approved', 'pass'].indexOf(key) >= 0) return 'sus';
+  if(['open', 'no_better_than_baseline', 'rejected', 'fail'].indexOf(key) >= 0) return 'res';
+  if(['under_investigation', 'cannot_match_coverage', 'underpowered', 'reviewed', 'submitted'].indexOf(key) >= 0) return 'ind';
+  return 'na';
+}
+function statusPill(status){
+  return `<span class="status-pill status-${statusTone(status)}">${safeText(status)}</span>`;
+}
 
 function textColorForError(e){
   if(e === null) return 'var(--text-3)';
@@ -419,6 +436,76 @@ function emptyState(target, title, detail){
   return true;
 }
 let isolateData = DATA.isolates || [];
+
+/* ==========================================================
+   SAMPLE DRILLDOWN
+   Select one isolate out of a cohort report and inspect its own site,
+   lineage, drug calls, called variants and locus coverage -- all read from
+   the same payload the cohort-level views already use. Nothing here is
+   re-fetched or re-derived per selection.
+   ========================================================== */
+function initSampleFilter(){
+  const select = document.getElementById('sampleFilter');
+  if(!select) return;
+  const ids = Object.keys(SAMPLE_DETAILS);
+  if(!ids.length){
+    return emptyState('sampleDrilldown', 'No sample detail available',
+      'This payload carries no per-sample context to drill into.');
+  }
+  select.innerHTML = ids.map(function(id){
+    return `<option value="${safeText(id)}">${safeText(id)}</option>`;
+  }).join('');
+  renderSampleDrilldown(ids[0]);
+}
+
+function renderSampleDrilldown(sampleId){
+  const container = document.getElementById('sampleDrilldown');
+  if(!container) return;
+  const sample = SAMPLE_DETAILS[sampleId];
+  if(!sample){
+    container.innerHTML = `<div class="empty-state"><div class="empty-title">Sample not found</div>
+      <div class="empty-detail">No detail is carried for "${safeText(sampleId)}" in this payload.</div></div>`;
+    return;
+  }
+  const calls = (sample.drug_calls || []).map(function(d){
+    return `<tr><td>${safeText(d.drug)}</td>
+      <td><span class="pill call-${safeText(d.call_key)}">${safeText(d.call)}</span></td>
+      <td>${safeText(d.tier)}</td><td>${safeText(d.reason)}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" style="color:var(--text-2)">No drug results for this sample.</td></tr>';
+
+  const variants = (sample.variants || []).map(function(v){
+    return `<tr><td>${safeText(v.gene)}</td><td>${safeText(v.variant)}</td>
+      <td>${safeText(v.consequence)}</td><td>${safeText(v.drug)}</td><td>${safeText(v.call)}</td></tr>`;
+  }).join('') || '<tr><td colspan="5" style="color:var(--text-2)">No called variants recorded for this sample.</td></tr>';
+
+  const coverage = (sample.coverage || []).map(function(c){
+    const frac = c.callable_fraction;
+    const cls = frac === null || frac === undefined ? '' : (frac >= 0.95 ? 'good' : frac >= 0.5 ? 'low' : 'crit');
+    return `<tr><td>${safeText(c.locus)}</td>
+      <td class="${cls ? 'value ' + cls : ''}">${pctFraction(frac, 0)}</td>
+      <td>${num(c.mean_depth)}</td></tr>`;
+  }).join('') || '<tr><td colspan="3" style="color:var(--text-2)">No coverage evidence recorded for this sample.</td></tr>';
+
+  container.innerHTML = `
+    <div class="sample-meta-grid">
+      <div><span class="k">Site</span><span class="v">${safeText(sample.site)}</span></div>
+      <div><span class="k">Lineage</span><span class="v">${safeText(sample.lineage)}</span></div>
+      <div><span class="k">Organism</span><span class="v">${safeText(sample.organism)}</span></div>
+      <div><span class="k">Assay</span><span class="v">${safeText(sample.assay)}</span></div>
+    </div>
+    <div class="two-col">
+      <div><h4>Drug calls</h4><div class="tw"><table class="disc-table">
+        <thead><tr><th>Drug</th><th>Call</th><th>Tier</th><th>Reason</th></tr></thead>
+        <tbody>${calls}</tbody></table></div></div>
+      <div><h4>Called variants</h4><div class="tw"><table class="disc-table">
+        <thead><tr><th>Gene</th><th>Variant</th><th>Consequence</th><th>Drug</th><th>Call</th></tr></thead>
+        <tbody>${variants}</tbody></table></div></div>
+    </div>
+    <h4>Locus coverage</h4><div class="tw"><table class="disc-table">
+      <thead><tr><th>Locus</th><th>Callable fraction</th><th>Mean depth</th></tr></thead>
+      <tbody>${coverage}</tbody></table></div>`;
+}
+
 function renderCallHeatmap(){
   const hm = document.getElementById('callHeatmap');
   const cols = DRUGS.length;
@@ -1537,13 +1624,52 @@ function renderWatchlist(){
   }
   document.getElementById('watchlistSummary').innerHTML = `<div class="watch-grid">${WATCHLIST.map(function(w){
     return `<article class="watch-card"><div class="watch-head">
-      <strong>${safeText(w.drug)}</strong><span>${safeText(w.status)}</span></div>
+      <strong>${safeText(w.drug)}</strong>${statusPill(w.status)}</div>
       <div class="watch-variant">${safeText(w.variant)}</div>
       <div class="watch-metrics"><div><b>${num(w.unresolved_isolates)}</b><span>unresolved isolates</span></div>
       <div><b>${num(w.contributing_sites)}</b><span>contributing sites</span></div></div>
       <p>${safeText(w.evidence_gaps)}</p>
       <small>${safeText(w.limitations)} Source: ${safeText(w.source)}</small></article>`;
   }).join('')}</div>`;
+}
+
+function renderDiscordanceTickets(){
+  const table = document.getElementById('discordanceTicketTable');
+  if(!DISCORDANCE_TICKETS.length){
+    return emptyState('discordanceTicketTable', 'No discordance tickets',
+      'This run\'s genomic and phenotypic calls agreed everywhere a phenotype was measured, so no ticket was opened.');
+  }
+  table.querySelector('tbody').innerHTML = DISCORDANCE_TICKETS.map(function(t){
+    return `<tr><td>${safeText(t.sample)}</td><td>${safeText(t.drug)}</td>
+      <td><span class="pill call-${safeText(t.genomic_call_key)}">${safeText(t.genomic_call)}</span></td>
+      <td><span class="pill call-${safeText(t.phenotypic_call_key)}">${safeText(t.phenotypic_call)}</span></td>
+      <td>${statusPill(t.status)}</td>
+      <td>${safeText(t.evidence_gaps)}</td></tr>`;
+  }).join('');
+}
+
+function renderExternalBenchmarks(){
+  const target = document.getElementById('externalBenchmarkGrid');
+  if(!target) return;
+  if(!EXTERNAL_BENCHMARKS.length){
+    return emptyState('externalBenchmarkGrid', 'No external model benchmarked',
+      'Run `mycobench benchmark-model` against a bring-your-own prediction file, then supply the resulting rows as report context.');
+  }
+  target.innerHTML = EXTERNAL_BENCHMARKS.map(function(b){
+    const tone = statusTone(b.verdict_key);
+    return `<article class="eb-card eb-${tone}">
+      <div class="eb-head"><strong>${safeText(b.model)} <span class="eb-version">${safeText(b.version)}</span></strong>${statusPill(b.verdict)}</div>
+      <div class="eb-drug">${safeText(b.drug)} · ${safeText(b.lineage)}</div>
+      <div class="eb-metrics">
+        <div><b>${pct(b.call_rate, 1)}</b><span>call rate</span></div>
+        <div><b>${pct(b.error_rate, 1)}</b><span>error rate</span></div>
+        <div><b>${pct(b.baseline_coverage, 1)}</b><span>baseline coverage</span></div>
+        <div><b>${pct(b.baseline_error_rate, 1)}</b><span>baseline error</span></div>
+      </div>
+      <p>${safeText(b.notes)}</p>
+      <small>${num(b.n_evaluable)} evaluable · ${num(b.n_called)} called · ${num(b.n_dropped)} dropped without a matching phenotype · source: ${safeText(b.source)}</small>
+    </article>`;
+  }).join('');
 }
 
 function workflowEmpty(id, title){
@@ -1635,6 +1761,7 @@ function initNav(){
    ========================================================== */
 renderDonut();
 renderTrend();
+initSampleFilter();
 renderDrugBar();
 renderScatter();
 renderErrorStack();
@@ -1655,6 +1782,8 @@ renderTargets();
 renderWorkflowEvidence();
 renderAliView();
 renderDiscordance();
+renderDiscordanceTickets();
+renderExternalBenchmarks();
 renderVUS();
 renderMech();
 renderTimeline();

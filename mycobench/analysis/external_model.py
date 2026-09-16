@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import csv
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Iterable, Optional, Sequence
 
@@ -33,7 +33,7 @@ PREDICTION_COLUMNS = ("isolate_id", "drug", "predicted", "confidence")
 RESULT_COLUMNS = (
     "model_id", "model_version", "drug", "lineage", "cohort", "source",
     "n_predictions", "n_evaluable", "n_called", "n_dropped", "call_rate",
-    "error_rate", "baseline_coverage", "baseline_error_rate",
+    "error_rate", "baseline_source", "baseline_coverage", "baseline_error_rate",
     "matched_coverage", "matched_threshold", "matched_error_rate",
     "risk_ci", "verdict", "sensitivity", "specificity", "vme_rate",
     "me_rate", "registry_ready", "notes",
@@ -100,7 +100,35 @@ class ExternalModelResult:
             return 0.0
         return sum(1 for p in self.predictions if p.answerable and not p.correct) / self.n_called
 
+    @property
+    def baseline_source(self) -> str:
+        return self.comparison.baseline_source or "catalogue baseline"
+
+    def registry_exclusion(self) -> Optional[str]:
+        # The registry compares summary numbers and cannot see how many
+        # predictions stand behind them: five correct answers would pass it.
+        # Only a scope with a measurable matched-coverage risk and estimable
+        # sensitivity and specificity is exported; the rest keep their reason.
+        matched = self.comparison.matched
+        if matched is None or matched.selective_risk is None:
+            return ("no measurable risk at the baseline's coverage ("
+                    + self.comparison.verdict + ")")
+        missing = [name for name in ("sensitivity", "specificity")
+                   if getattr(self.accuracy, name) is None]
+        if missing:
+            return (" and ".join(missing) + " not estimable: the evaluable set "
+                    "lacks phenotypically resistant or susceptible isolates")
+        return None
+
     def registry_performance(self, independent: bool = True) -> dict:
+        # Rates are taken at the matched-coverage point the verdict was decided
+        # on, so the registry's summary check and this benchmark cannot
+        # disagree about the same model.
+        matched = self.comparison.matched
+        if matched is not None and matched.selective_risk is not None:
+            coverage, error = matched.coverage, matched.selective_risk
+        else:
+            coverage, error = self.call_rate, self.error_rate
         return {
             "drug": self.drug,
             "lineage": self.lineage,
@@ -109,10 +137,10 @@ class ExternalModelResult:
             "independent": independent,
             "sensitivity": _round(self.accuracy.sensitivity),
             "specificity": _round(self.accuracy.specificity),
-            "call_rate": round(self.call_rate, 4),
-            "error_rate": round(self.error_rate, 4),
+            "call_rate": round(coverage, 4),
+            "error_rate": round(error, 4),
             "baseline": {
-                "source": self.comparison.baseline_source if hasattr(self.comparison, "baseline_source") else "catalogue baseline",
+                "source": self.baseline_source,
                 "coverage": round(self.comparison.baseline_coverage, 4),
                 "error_rate": round(self.comparison.baseline_risk, 4),
             },
@@ -134,6 +162,7 @@ class ExternalModelResult:
             "n_dropped": len(self.dropped),
             "call_rate": f"{self.call_rate:.4f}",
             "error_rate": f"{self.error_rate:.4f}" if self.n_called else "",
+            "baseline_source": self.baseline_source,
             "baseline_coverage": f"{self.comparison.baseline_coverage:.4f}",
             "baseline_error_rate": f"{self.comparison.baseline_risk:.4f}",
             "matched_coverage": f"{matched.coverage:.4f}" if matched else "",
@@ -145,13 +174,19 @@ class ExternalModelResult:
             "specificity": _rate(self.accuracy.specificity),
             "vme_rate": _rate(self.accuracy.vme_rate),
             "me_rate": _rate(self.accuracy.me_rate),
-            "registry_ready": "yes" if self.comparison.passed else "no",
-            "notes": " | ".join(self.comparison.reasons + _drop_summary(self.dropped)),
+            "registry_ready": ("yes" if self.comparison.passed
+                               and self.registry_exclusion() is None else "no"),
+            "notes": " | ".join(
+                self.comparison.reasons
+                + ([f"not exported to the registry: {self.registry_exclusion()}"]
+                   if self.registry_exclusion() else [])
+                + _drop_summary(self.dropped)),
         }
 
 
-def _round(value: Optional[float]) -> float:
-    return round(float(value), 4) if value is not None else 0.0
+def _round(value: Optional[float]) -> Optional[float]:
+    # None stays None: a missing sensitivity rounded to 0.0 reads as measured.
+    return round(float(value), 4) if value is not None else None
 
 
 def _rate(value: Optional[float]) -> str:
@@ -308,7 +343,17 @@ def measure_external_model(
     source: str = "external prediction file",
     lineage: str = "unknown",
     baseline_source: Optional[str] = None,
-) -> dict[str, ExternalModelResult]:
+) -> tuple[dict[str, ExternalModelResult], list[str]]:
+    """Score ``predictions`` per drug against ``catalogue_baseline``.
+
+    A drug with predictions but no supplied baseline is **skipped, not
+    fatal** — one drug the catalogue baseline doesn't cover (e.g.
+    pretomanid, unmeasurable from either source; see
+    ``baseline.py::measurability``) must not discard every other drug's
+    result. The skip is reported back as a note, mirroring this codebase's
+    "record and continue" posture everywhere else (stage failures,
+    unassessed drugs, dropped predictions).
+    """
     wanted = {d.lower() for d in drugs} if drugs else None
     external = [p for p in predictions if wanted is None or p.drug.lower() in wanted]
     grouped, dropped = to_selective_predictions(external, truths)
@@ -316,15 +361,22 @@ def measure_external_model(
     for note in dropped:
         dropped_by_drug.setdefault(note.drug.lower(), []).append(note)
     results: dict[str, ExternalModelResult] = {}
+    skipped: list[str] = []
     for drug in sorted(set(grouped) | set(dropped_by_drug)):
         baseline = catalogue_baseline.get(drug)
         if not baseline:
-            raise ValueError(f"no catalogue baseline supplied for {drug}")
+            skipped.append(
+                f"{drug}: no catalogue baseline supplied; cannot compare at "
+                f"matched coverage")
+            continue
         rows = grouped.get(drug, [])
         curve = risk_coverage_curve(rows)
         comparison = beats_baseline_at_matched_coverage(
             curve, float(baseline["coverage"]), float(baseline["error_rate"]))
-        comparison.baseline_source = baseline.get("source") or baseline_source or "catalogue baseline"
+        comparison = replace(
+            comparison,
+            baseline_source=baseline.get("source") or baseline_source
+            or "catalogue baseline")
         accuracy = score_accuracy(
             [("resistant" if p.predicted == "R" else "susceptible" if p.predicted == "S" else "not_assessed", p.truth) for p in rows], drug)
         interval = None
@@ -333,7 +385,7 @@ def measure_external_model(
         results[drug] = ExternalModelResult(
             model_id, model_version, drug, lineage, cohort, source, rows,
             curve, comparison, accuracy, dropped_by_drug.get(drug, []), interval)
-    return results
+    return results, skipped
 
 
 def result_rows(results: dict[str, ExternalModelResult]) -> list[dict]:
@@ -343,8 +395,11 @@ def result_rows(results: dict[str, ExternalModelResult]) -> list[dict]:
 def registry_payload(results: dict[str, ExternalModelResult], *, model_id: str,
                      model_version: str, training_data_provenance: str,
                      organism: str = "mtbc", independent: bool = True) -> dict:
+    # Exactly RegisteredModel's fields, so RegisteredModel(**block) accepts it
+    # unmodified. Unexportable scopes are reported by excluded_scopes().
     performance = [r.registry_performance(independent=independent)
-                   for _, r in sorted(results.items())]
+                   for _, r in sorted(results.items())
+                   if r.registry_exclusion() is None]
     return {
         "model_id": model_id,
         "version": model_version,
@@ -352,11 +407,13 @@ def registry_payload(results: dict[str, ExternalModelResult], *, model_id: str,
         "organism": organism,
         "validated_cohorts": sorted({r["cohort"] for r in performance}),
         "performance": performance,
-        "notes": [
-            "Generated by mycobench benchmark-model from externally supplied predictions.",
-            "Approval still requires ModelRegistry governance review; this payload only supplies measured performance rows.",
-        ],
     }
+
+
+def excluded_scopes(results: dict[str, ExternalModelResult]) -> list[dict]:
+    return [{"drug": r.drug, "lineage": r.lineage, "verdict": r.comparison.verdict,
+             "reason": r.registry_exclusion()}
+            for _, r in sorted(results.items()) if r.registry_exclusion()]
 
 
 def payload(results: dict[str, ExternalModelResult], *, model_id: str,
@@ -368,6 +425,11 @@ def payload(results: dict[str, ExternalModelResult], *, model_id: str,
             results, model_id=model_id, model_version=model_version,
             training_data_provenance=training_data_provenance,
             organism=organism),
+        "excluded_scopes": excluded_scopes(results),
+        "notes": [
+            "Generated by mycobench benchmark-model from externally supplied predictions.",
+            "Approval still requires ModelRegistry governance review; this payload only supplies measured performance rows.",
+        ],
         "results": [asdict_row(r) for _, r in sorted(results.items())],
     }
 

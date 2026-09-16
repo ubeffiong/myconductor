@@ -677,6 +677,96 @@ def watchlist_rows(rows: Iterable[dict]) -> list[dict]:
     return out
 
 
+def discordance_tickets(reports: Sequence[dict]) -> list[dict]:
+    """Per-isolate genomic/phenotypic disagreement tickets from this run.
+
+    Distinct from ``discordance_rows`` (cross-tool disagreement inside one
+    report) and from ``watchlist_rows`` (externally supplied, privacy-gated
+    cross-site aggregates): this reads ``AnalysisReport.discordance_tickets``
+    directly — the tickets *this run itself* opened when its own genomic and
+    phenotypic calls for one drug disagreed (see
+    ``federated/watchlist.py::WatchlistStore.capture``).
+    """
+    out = []
+    for report in reports:
+        for item in report.get("discordance_tickets", []) or []:
+            status = str(item.get("status") or "open")
+            out.append({
+                "ticket_id": str(item.get("ticket_id") or "")[:12],
+                "sample": item.get("sample_id") or report.get("sample_id") or "Unknown sample",
+                "drug": humanise(item.get("drug") or ""),
+                "genomic_call": humanise(item.get("genomic_call") or ""),
+                "genomic_call_key": CALL_CLASS.get(item.get("genomic_call"), "na"),
+                "phenotypic_call": humanise(item.get("phenotypic_call") or ""),
+                "phenotypic_call_key": CALL_CLASS.get(item.get("phenotypic_call"), "na"),
+                "status": humanise(status),
+                "status_key": status.lower().replace(" ", "_"),
+                "candidate_mechanisms": humanise_all(
+                    item.get("candidate_mechanisms") or []) or "None recorded",
+                "evidence_gaps": humanise_all(
+                    item.get("evidence_gaps") or []) or "Not supplied",
+                "resolution": str(item.get("resolution") or ""),
+                "source": str(item.get("source") or "Not supplied"),
+            })
+    return out
+
+
+def sample_details(reports: Sequence[dict]) -> dict[str, dict]:
+    """Per-sample drilldown: site, lineage, drug calls, called variants and
+    locus coverage — read from the same per-report payload every cohort-level
+    view already reads. Selecting one sample never re-derives or re-fetches
+    anything; it only narrows the same data to one ``sample_id``.
+    """
+    out: dict[str, dict] = {}
+    for report in reports:
+        sample_id = report.get("sample_id") or "sample"
+        context = report.get("context") or {}
+        drug_calls = []
+        coverage_by_locus: dict[str, dict] = {}
+        variants_seen: dict[str, dict] = {}
+        for result in report.get("drug_results", []):
+            drug_calls.append({
+                "drug": humanise(result.get("drug") or ""),
+                "call": humanise(result.get("call") or ""),
+                "call_key": CALL_CLASS.get(result.get("call"), "na"),
+                "tier": humanise(result.get("tier") or ""),
+                "reason": str(result.get("reason") or ""),
+            })
+            for cov in result.get("coverage", []) or []:
+                locus = cov.get("locus")
+                if not locus:
+                    continue
+                coverage_by_locus[locus] = {
+                    "locus": locus,
+                    "callable_fraction": _float(cov.get("callable_fraction")),
+                    "mean_depth": cov.get("mean_depth"),
+                }
+            for item in result.get("evidence", []) or []:
+                variant = item.get("variant") or {}
+                key = item.get("variant_label") or variant.get("gene")
+                if not key or key in variants_seen:
+                    continue
+                variants_seen[key] = {
+                    "variant": display_variant(item.get("variant_label") or key),
+                    "gene": variant.get("gene") or "Not supplied",
+                    "consequence": humanise(variant.get("consequence") or "not supplied"),
+                    "drug": humanise(result.get("drug") or ""),
+                    "call": humanise(item.get("call") or ""),
+                    "tier": humanise(item.get("tier") or ""),
+                }
+        out[sample_id] = {
+            "sample_id": sample_id,
+            "site": context.get("site_id") or "Not recorded",
+            "lineage": context.get("lineage") or "Untyped",
+            "organism": context.get("organism") or "Not recorded",
+            "assay": humanise(context.get("assay") or "unknown"),
+            "drug_calls": sorted(drug_calls, key=lambda d: d["drug"]),
+            "variants": sorted(variants_seen.values(), key=lambda v: v["gene"]),
+            "coverage": sorted(coverage_by_locus.values(), key=lambda c: c["locus"]),
+        }
+    return out
+
+
 def implemented_workflows(reports: Sequence[dict]) -> dict[str, list[dict]]:
     """Shape advanced evidence produced by the analysis pipeline.
 

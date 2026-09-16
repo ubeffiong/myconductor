@@ -15,7 +15,7 @@ from typing import Any, Union
 COLLECTIONS = {
     "baseline_rows", "lineage_rows", "measurability", "audit_entries",
     "federated_sites", "error_trend", "prevalence_rows", "target_rows",
-    "watchlist_rows",
+    "watchlist_rows", "external_benchmark_rows",
 }
 ALLOWED = COLLECTIONS | {"validation", "reference_method"}
 

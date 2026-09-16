@@ -4,11 +4,15 @@
   "lineage_rows": [],
   "measurability": [],
   "audit_entries": [],
-  "validation": {"outcomes": [], "timeline": []},
+  "validation": {
+    "outcomes": [],
+    "timeline": []
+  },
   "federated_sites": [],
   "error_trend": [],
   "prevalence_rows": [],
   "target_rows": [],
   "watchlist_rows": [],
+  "external_benchmark_rows": [],
   "reference_method": ""
 }

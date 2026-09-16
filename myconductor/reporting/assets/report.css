@@ -704,11 +704,66 @@ button.av-base{border:0; font-family:var(--mono); line-height:22px; padding:0}
 .workflow-item dt{color:var(--text-2)}.workflow-item dd{margin:0;word-break:break-word}
 .workflow-caveat{border-left:3px solid var(--ind);padding-left:9px;color:var(--text-2)!important}
 .workflow-badge{display:inline-block;font:600 10px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+/* ===== STATUS PILLS (ticket/watchlist lifecycle, benchmark verdicts) ===== */
+.status-pill{display:inline-block;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.04em;text-transform:uppercase;font-weight:600;
+  padding:3px 9px;border-radius:20px;white-space:nowrap}
+.status-sus{background:var(--sus-bg);color:var(--sus)}
+.status-res{background:var(--res-bg);color:var(--res)}
+.status-ind{background:var(--ind-bg);color:var(--ind)}
+.status-na{background:var(--na-bg);color:var(--na)}
+
+/* ===== EXTERNAL MODEL BENCHMARK GRID ===== */
+.external-benchmark-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.eb-card{border-radius:10px;border:1px solid var(--border);background:var(--card);
+  box-shadow:var(--shadow);padding:16px 18px;border-left:4px solid var(--na)}
+.eb-card.eb-sus{border-left-color:var(--sus)}
+.eb-card.eb-res{border-left-color:var(--res)}
+.eb-card.eb-ind{border-left-color:var(--ind)}
+.eb-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.eb-head strong{font-size:13.5px;color:var(--text)}
+.eb-version{font-family:var(--mono);font-size:10.5px;color:var(--text-2);font-weight:400}
+.eb-drug{font-size:12px;color:var(--text-1);margin-bottom:10px}
+.eb-metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.eb-metrics div{background:var(--bg-soft);border:1px solid var(--border);border-radius:6px;padding:8px 9px}
+.eb-metrics b{display:block;font:600 18px var(--mono);color:var(--accent)}
+.eb-metrics span{display:block;font-size:10.3px;color:var(--text-2)}
+.eb-card p{font-size:12px;color:var(--text-1);line-height:1.5;margin:0 0 6px}
+.eb-card small{display:block;color:var(--text-3);font-size:10.5px;line-height:1.5}
+
+/* ===== SAMPLE DRILLDOWN ===== */
+.sample-filter-card{padding:18px 22px}
+.sample-filter-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.sample-filter-row label{font-size:12px;font-weight:600;color:var(--text-2);
+  text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.sample-filter-row select{
+  background:var(--bg-soft);border:1px solid var(--border-strong);color:var(--text);
+  padding:7px 12px;border-radius:6px;font-size:13px;font-family:var(--mono);min-width:200px;
+}
+.sample-meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:14px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.sample-meta-grid .k{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text-2);margin-bottom:4px;font-weight:600}
+.sample-meta-grid .v{font-family:var(--mono);font-size:13px;color:var(--text)}
+.two-col{display:grid;grid-template-columns:1fr;gap:18px;margin-bottom:18px}
+.two-col h4{font-size:13px;margin-bottom:8px;color:var(--text)}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:8px}
+.tw table{width:100%}
+td.value.good{color:var(--sus);font-weight:600}
+td.value.low{color:var(--ind);font-weight:600}
+td.value.crit{color:var(--res);font-weight:600}
+
+@media(min-width:860px){
+  .two-col{grid-template-columns:1fr 1fr}
+}
+
 @media(max-width:700px){
   .lookup-row{flex-direction:column}.result-list{grid-template-columns:1fr}
   .atlas-row{grid-template-columns:70px 1fr 28px}.atlas-note{grid-column:2/-1}
   .prevalence-row{grid-template-columns:80px 1fr 54px}
   .workflow-grid{grid-template-columns:1fr}
+  .sample-filter-row{flex-direction:column;align-items:stretch}
+  .sample-filter-row select{width:100%}
 }
 
 @media print{

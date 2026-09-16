@@ -370,11 +370,13 @@ def _run_benchmark_model(args) -> int:
     print(f"[benchmark-model] phenotypes  {args.phenotypes}")
     print(f"[benchmark-model] baseline    {args.baseline}")
 
-    results = external_model.measure_external_model(
+    results, skipped_drugs = external_model.measure_external_model(
         predictions, truths, baselines, drugs=tuple(args.drug) if args.drug else None,
         model_id=args.model_id, model_version=args.model_version,
         cohort=args.cohort, source=args.source, lineage=args.lineage,
         baseline_source=baseline_source)
+    for note in skipped_drugs:
+        print(f"  skipped: {note}")
     out_dir = Path(args.out_dir)
     rows = external_model.result_rows(results)
     written = [write_rows(out_dir / "external_model_benchmark.tsv", rows,
@@ -392,6 +394,7 @@ def _run_benchmark_model(args) -> int:
         "baseline": str(args.baseline),
         "baseline_source": baseline_source,
     }
+    payload["skipped_drugs"] = skipped_drugs
     manifest = out_dir / "external_model_benchmark.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
